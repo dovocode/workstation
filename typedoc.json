@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Workstation",
+  "entryPoints": ["src/index.ts"],
+  "out": "dist/docs",
+  "readme": "docs/README.md",
+  "projectDocuments": ["docs/*.md"],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "disableSources": true
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@dovocode/workstation",
+  "version": "0.1.0",
+  "description": "A stateful, programmable workstation configuration reconciler",
+  "type": "module",
+  "bin": {
+    "workstation": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts",
+    "dist/*.map"
+  ],
+  "scripts": {
+    "docs": "node scripts/check-docs.mjs && typedoc --options typedoc.json --treatWarningsAsErrors",
+    "docs:check": "node scripts/check-docs.mjs",
+    "build": "tsup",
+    "build:native": "tsup && node scripts/build-native.mjs",
+    "check": "tsc --noEmit && eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "jiti": "2.7.0",
+    "smol-toml": "1.8.0",
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.3.1",
+    "eslint": "10.10.0",
+    "postject": "1.0.0-alpha.6",
+    "tsup": "8.5.0",
+    "typedoc": "0.28.20",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.69.0",
+    "vitest": "3.2.4"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "packageManager": "pnpm@10.17.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dovocode/workstation.git"
+  },
+  "homepage": "https://github.com/dovocode/workstation",
+  "bugs": {
+    "url": "https://github.com/dovocode/workstation/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
