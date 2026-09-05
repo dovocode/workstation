@@ -53,6 +53,10 @@ jobs:
         run: |
           node dist/cli.js --help
           dist/bin/workstation-${{ matrix.platform }}-${{ matrix.arch }} --help
+          node dist/cli.js init --config "$RUNNER_TEMP/workstation-js/workstation.config.ts"
+          node dist/cli.js --config "$RUNNER_TEMP/workstation-js/workstation.config.ts" hi
+          dist/bin/workstation-${{ matrix.platform }}-${{ matrix.arch }} init --config "$RUNNER_TEMP/workstation-native/workstation.config.ts"
+          dist/bin/workstation-${{ matrix.platform }}-${{ matrix.arch }} --config "$RUNNER_TEMP/workstation-native/workstation.config.ts" hi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: workstation-${{ matrix.platform }}-${{ matrix.arch }}

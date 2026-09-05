@@ -22,6 +22,11 @@ own setup project and make this package available there (for local development,
 use a pnpm link or a tarball produced by `pnpm pack`). No npm release is implied
 by the GitHub repository.
 
+Run `workstation init` in your setup project to create a typed starter with
+empty resources, machine sections, and an example task and alias. It never
+overwrites an existing file or applies your setup. Use
+`workstation init --config setup/workstation.config.ts` for another location.
+
 ```ts
 import { defineConfig, files, jsonc, task, tools } from "@dovocode/workstation";
 

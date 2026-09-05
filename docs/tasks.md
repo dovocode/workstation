@@ -38,6 +38,6 @@ environment entries. Later fragments override task names. Aliases can chain;
 cycles, missing targets, and task/alias name collisions are rejected.
 
 Place Workstation's own flags before the task name. All arguments after it
-belong to the task; one optional `--` separator is removed. `help` is reserved.
+belong to the task; one optional `--` separator is removed. `help` and `init` are reserved.
 Task aliases are CLI shortcuts, not executable symlinks or shell aliases; use
 the symlink and shell helpers for those separately.

@@ -5,8 +5,10 @@ import { ProcessRunner } from "./resources/runner.js";
 import { lockConfig } from "./persistence/lock.js";
 import type { Action } from "./api/types.js";
 import { runTask } from "./resources/tasks.js";
+import { initConfig } from "./config/init.js";
 
 interface Options {
+  readonly init: boolean;
   readonly task?: string;
   readonly taskArgs: readonly string[];
   readonly listTasks: boolean;
@@ -17,6 +19,13 @@ interface Options {
 /** Load the entry point, update its lock and manifest, then reconcile the current machine. */
 async function main(): Promise<void> {
   const options = parseArguments(process.argv.slice(2));
+  if (options.init) {
+    const path = await initConfig(options.config);
+    console.log(`Created ${path}`);
+    console.log("Edit the configuration, then run workstation with the same --config path if provided.");
+    console.log("No tools installed or setup applied. Make @dovocode/workstation available in your project for editor types and helper imports.");
+    return;
+  }
   const sourcePath = await findConfig(options.config);
   const sourceConfig = await loadConfig(sourcePath, options.machine);
   const runner = new ProcessRunner();
@@ -55,9 +64,13 @@ function parseArguments(args: readonly string[]): Options {
   let task: string | undefined;
   let taskArgs: readonly string[] = [];
   let listTasks = false;
+  let init = false;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
-    if (argument === "--list-tasks") {
+    if (argument === "init") {
+      if (init) throw new Error("init may only be specified once");
+      init = true;
+    } else if (argument === "--list-tasks") {
       listTasks = true;
     } else if (argument && !argument.startsWith("-") && argument !== "help") {
       task = argument;
@@ -76,13 +89,14 @@ function parseArguments(args: readonly string[]): Options {
     }
   }
   if (listTasks && task) throw new Error("--list-tasks cannot be combined with a task name");
-  return { taskArgs, listTasks, ...(task ? { task } : {}), ...(config ? { config } : {}), ...(machine ? { machine } : {}) };
+  if (init && (task || listTasks || machine)) throw new Error("init supports only --config PATH and --help");
+  return { init, taskArgs, listTasks, ...(task ? { task } : {}), ...(config ? { config } : {}), ...(machine ? { machine } : {}) };
 }
 
 /** Read a required CLI option value or report the missing argument. */
 function requireValue(args: readonly string[], index: number, option: string): string {
   const value = args[index];
-  if (!value) throw new Error(`${option} requires a value`);
+  if (!value || value.startsWith("--")) throw new Error(`${option} requires a value`);
   return value;
 }
 
@@ -97,6 +111,9 @@ function help(): void {
 
 Loads workstation.config.ts, updates workstation.lock, writes a resolved
 config.toml, and reconciles it.
+
+Commands:
+  init            Create a starter configuration without applying it; never overwrite
 
 Options:
   --config PATH    Configuration entry point (default: workstation.config.ts)

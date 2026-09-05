@@ -19,7 +19,15 @@ node dist/cli.js --help
 
 ## Your first configuration
 
-Create `workstation.config.ts` with a default export:
+Run `workstation init` to create `workstation.config.ts` in the current directory.
+Use `workstation init --config setup/workstation.config.ts` for a custom path;
+missing parent directories are created. Existing files and symlinks are never
+overwritten. Initialization does not install dependencies, execute configuration,
+or create a lock, manifest, or ownership state. The starter uses a type-only
+import; make the package available in your project for editor types and helpers.
+
+The starter includes empty shared and machine-specific resources plus a harmless
+`hello` task and `hi` alias. Add resources using a default export like this:
 
 ```ts
 import { defineConfig, files, tools } from "@dovocode/workstation";
@@ -46,6 +54,8 @@ Generated files overwrite by default and retain an original backup in local stat
 
 | Invocation | Behavior |
 | --- | --- |
+| `workstation init` | Create a starter configuration without applying it |
+| `workstation init --config setup/workstation.config.ts` | Create a starter at a custom path |
 | `workstation` | Execute `workstation.config.ts` in the current directory |
 | `workstation --config /path/workstation.config.ts` | Use another entry point |
 | `workstation --machine studio` | Override the machine name for configuration and state |

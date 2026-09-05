@@ -45,7 +45,7 @@ export function resolveTaskName(name: string, tasks: Readonly<Record<string, Tas
   return current;
 }
 
-/** Keep task names distinct from flags and the reserved help command. */
+/** Keep task names distinct from flags and reserved CLI commands. */
 function validateName(name: string): void {
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]*$/.test(name) || name === "help") throw new Error(`Invalid or reserved task name: ${name}`);
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]*$/.test(name) || name === "help" || name === "init") throw new Error(`Invalid or reserved task name: ${name}`);
 }
