@@ -13,6 +13,9 @@ See [setup and installation instructions](docs/getting-started.md).
 
 ## Build from source
 
+Use Node.js 26.8.1 (pinned in `.node-version`) and pnpm 12.3.4. Install Corepack
+with `npm install --global corepack` if needed; Node.js 26 does not bundle it.
+
 ```sh
 git clone https://github.com/dovocode/workstation.git
 cd workstation

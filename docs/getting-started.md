@@ -2,8 +2,10 @@
 
 ## Prerequisites
 
-- macOS or Linux; Node.js 22.13 or later for the JavaScript CLI.
-- This package's pinned pnpm, invoked through Corepack.
+- macOS or Linux; Node.js 26.8.1 or later for the JavaScript CLI.
+- pnpm 12.3.4, pinned in `package.json` and invoked through Corepack.
+  Node.js 26 does not bundle Corepack; install it with `npm install --global corepack`
+  if it is not already available.
 - The package managers used by your configuration must already be available
   on PATH: mise, Homebrew, APT, DNF, YUM, pacman, Flatpak, or mas. Workstation does not bootstrap them itself.
 - Build tools required by custom executables must be available when their build runs.
@@ -101,7 +103,7 @@ not bootstrap it before version resolution and inspection.
 If Node.js is not installed yet, mise can provide it on either platform:
 
 ```sh
-mise use --global node@lts
+mise use --global node@26.8.1
 node --version
 ```
 

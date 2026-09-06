@@ -7,6 +7,13 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## 0.1.1 — 2026-09-06
 
+### Changed
+
+- Require Node.js 26.8.1 or later; pin development and CI to 26.8.1 and target
+  Node.js 26 for native builds.
+- Upgrade pnpm to 12.3.4 and Node.js typings to 26.4.1; refresh the lockfile.
+- Migrate esbuild's existing build-script approval to pnpm's `allowBuilds` setting.
+
 ### Added
 
 - DNF and YUM package backends with exact RPM pins and upgrade/downgrade support.

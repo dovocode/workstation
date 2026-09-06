@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "24.3.1",
+    "@types/node": "26.4.1",
     "eslint": "10.10.0",
     "postject": "1.0.0-alpha.6",
     "tsup": "8.5.0",
@@ -42,9 +42,9 @@
     "vitest": "3.2.4"
   },
   "engines": {
-    "node": ">=22.13"
+    "node": ">=26.8.1"
   },
-  "packageManager": "pnpm@10.17.1",
+  "packageManager": "pnpm@12.3.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dovocode/workstation.git"

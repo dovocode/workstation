@@ -24,7 +24,7 @@ export default defineConfig([
     format: ["cjs"],
     outDir: "dist/sea",
     platform: "node",
-    target: "node24",
+    target: "node26",
     clean: false,
     sourcemap: false,
     noExternal: [/.*/],
