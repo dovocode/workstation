@@ -7,6 +7,8 @@ import { hashSource } from "./source-hash.js";
 import { validateResource } from "./validation.js";
 import { createJiti } from "jiti/static";
 import { resolveTasks } from "./tasks.js";
+import { detectLinuxManager } from "./system-manager.js";
+import { isPackageName } from "./package-options.js";
 import type {
   ConfigDefinition,
   ConfigInput,
@@ -84,7 +86,11 @@ async function resolveResource(
   context: Context,
 ): Promise<ResolvedResource> {
   if (resource.kind === "package") {
-    const manager = resolveManager(resource.manager, definition, context);
+    const manager = await resolveManager(resource.manager, definition, context);
+    if (!isPackageName(manager, resource.name)) throw new Error(`Invalid ${manager} package ID: ${resource.name}`);
+    if ((manager === "pacman" || manager === "flatpak") && context.platform !== "linux") throw new Error(`${manager} requires Linux`);
+    if (manager === "mas" && context.platform !== "darwin") throw new Error("mas requires macOS");
+    if (resource.flatpak !== undefined && manager !== "flatpak") throw new Error(`Flatpak options require the flatpak backend (${resource.name})`);
     if (resource.upgrade !== undefined && manager !== "brew-cask") {
       throw new Error(`Upgrade options are only supported for Homebrew casks (${resource.name})`);
     }
@@ -94,7 +100,9 @@ async function resolveResource(
     if (resource.version !== undefined) {
       throw new Error(`${manager} package ${resource.name} cannot declare a version`);
     }
-    return { ...resource, manager };
+    return { ...resource, manager, ...(manager === "flatpak" ? { flatpak: {
+      scope: resource.flatpak?.scope ?? "user", remote: resource.flatpak?.remote ?? "flathub", branch: resource.flatpak?.branch ?? "stable",
+    } } : {}) };
   }
   if (resource.kind === "symlink") {
     return {
@@ -148,13 +156,15 @@ async function resolveResource(
 }
 
 /** Replace the system manager alias with the configured platform backend. */
-function resolveManager(
+async function resolveManager(
   manager: PackageManager,
   definition: ConfigDefinition,
   context: Context,
-): Exclude<PackageManager, "system"> {
+): Promise<Exclude<PackageManager, "system">> {
   if (manager !== "system") return manager;
-  return definition.managers?.[context.platform] ?? (context.platform === "darwin" ? "brew" : "apt");
+  const configured = definition.managers?.[context.platform];
+  if (configured !== undefined) return configured;
+  return context.platform === "darwin" ? "brew" : await detectLinuxManager();
 }
 
 /** Expand home shorthand and resolve relative paths against home or the entry directory. */

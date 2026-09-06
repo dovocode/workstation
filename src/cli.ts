@@ -9,6 +9,7 @@ import { initConfig } from "./config/init.js";
 
 interface Options {
   readonly init: boolean;
+  readonly verbose: boolean;
   readonly task?: string;
   readonly taskArgs: readonly string[];
   readonly listTasks: boolean;
@@ -27,29 +28,29 @@ async function main(): Promise<void> {
     return;
   }
   const sourcePath = await findConfig(options.config);
+  if (!options.listTasks && !options.task) console.log(`Loading configuration: ${sourcePath}`);
   const sourceConfig = await loadConfig(sourcePath, options.machine);
-  const runner = new ProcessRunner();
+  const runner = new ProcessRunner({ progress: !options.listTasks, verbose: options.verbose });
   if (options.listTasks) {
     for (const [name, task] of Object.entries(sourceConfig.tasks ?? {})) console.log(`${name}${task.description ? `  ${task.description}` : ""}`);
     for (const [name, target] of Object.entries(sourceConfig.aliases ?? {})) console.log(`${name} -> ${target}`);
     return;
   }
   if (options.task) {
-    const result = await runTask(sourceConfig, options.task, options.taskArgs, runner);
-    process.stdout.write(result.stdout);
-    process.stderr.write(result.stderr);
+    const result = await runTask(sourceConfig, options.task, options.taskArgs, new ProcessRunner({ progress: true, verbose: true }));
     process.exitCode = result.exitCode;
     return;
   }
+  console.log(`Resolving package versions for ${sourceConfig.context.machine} (${sourceConfig.resources.length} resources)...`);
   const locked = await lockConfig(sourcePath, sourceConfig, runner);
+  console.log(`Lock: ${locked.path}${locked.changed ? " (updated)" : " (unchanged)"}`);
   const outputPath = manifestPath(locked.config);
   await writeManifest(outputPath, locked.config);
+  console.log(`Manifest: ${outputPath}`);
 
   // Re-read the plain manifest so execution never relies on live TypeScript objects.
   const config = await readManifest(outputPath);
-  const actions = await applyPlan(config, runner, printAction);
-  console.log(`Lock: ${locked.path}${locked.changed ? " (updated)" : ""}`);
-  console.log(`Manifest: ${outputPath}`);
+  const actions = await applyPlan(config, runner, printAction, (message) => console.log(message));
   console.log(
     actions.length === 0
       ? "Workstation is already converged."
@@ -65,11 +66,14 @@ function parseArguments(args: readonly string[]): Options {
   let taskArgs: readonly string[] = [];
   let listTasks = false;
   let init = false;
+  let verbose = false;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === "init") {
       if (init) throw new Error("init may only be specified once");
       init = true;
+    } else if (argument === "--verbose" || argument === "-v") {
+      verbose = true;
     } else if (argument === "--list-tasks") {
       listTasks = true;
     } else if (argument && !argument.startsWith("-") && argument !== "help") {
@@ -90,7 +94,7 @@ function parseArguments(args: readonly string[]): Options {
   }
   if (listTasks && task) throw new Error("--list-tasks cannot be combined with a task name");
   if (init && (task || listTasks || machine)) throw new Error("init supports only --config PATH and --help");
-  return { init, taskArgs, listTasks, ...(task ? { task } : {}), ...(config ? { config } : {}), ...(machine ? { machine } : {}) };
+  return { init, verbose, taskArgs, listTasks, ...(task ? { task } : {}), ...(config ? { config } : {}), ...(machine ? { machine } : {}) };
 }
 
 /** Read a required CLI option value or report the missing argument. */
@@ -119,6 +123,7 @@ Options:
   --config PATH    Configuration entry point (default: workstation.config.ts)
   --machine NAME   Override the short hostname
   --list-tasks     List configured tasks and aliases
+  -v, --verbose    Also stream inspection and version-query output
   -h, --help       Show this help`);
 }
 

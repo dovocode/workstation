@@ -74,4 +74,8 @@ export default defineConfig({
 ```
 
 Keep the state path stable: it contains ownership and original-file backups.
+Omit `managers.linux` to detect APT, DNF, YUM, or pacman from PATH (in that order).
+Use `linux: "dnf"`, `linux: "yum"`, or `linux: "pacman"` to select explicitly.
+Flatpak is an additional app backend, not a system-manager detection candidate.
+Use `linux(...)` for Flatpak/pacman declarations and `darwin(...)` for MAS.
 The state belongs to one machine selector and rejects a different selector.

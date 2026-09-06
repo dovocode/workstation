@@ -1,20 +1,65 @@
 import { describe, expect, it } from "vitest";
 import { inspectResource, installResource, removeResource } from "../src/resources/dispatch.js";
 import { resolvePackageVersion } from "../src/resources/package-version.js";
-import type { CommandResult, Runner } from "../src/api/types.js";
+import type { CommandResult, Runner, RunOptions } from "../src/api/types.js";
 
 class RecordingRunner implements Runner {
   readonly calls: Array<{ command: string; args: readonly string[] }> = [];
+  readonly options: Array<RunOptions | undefined> = [];
 
   constructor(private readonly results: CommandResult[]) {}
 
-  async run(command: string, args: readonly string[]): Promise<CommandResult> {
+  async run(command: string, args: readonly string[], options?: RunOptions): Promise<CommandResult> {
     this.calls.push({ command, args });
+    this.options.push(options);
     return this.results.shift() ?? { exitCode: 0, stdout: "", stderr: "" };
   }
 }
 
 describe("package backends", () => {
+  it("upgrades locked auto-updating casks without refreshing validated metadata", async () => {
+    const present = { exitCode: 0, stdout: "ghostty", stderr: "" };
+    const info = (installed: string): CommandResult => ({
+      exitCode: 0, stderr: "",
+      stdout: JSON.stringify({ casks: [{ version: "1.3.1", installed, auto_updates: true }] }),
+    });
+    const runner = new RecordingRunner([present, info("1.3.0"), info("1.3.0"),
+      { exitCode: 0, stdout: "Upgraded", stderr: "" }, present, info("1.3.1")]);
+    await expect(installResource({ kind: "package", manager: "brew-cask", name: "ghostty", lockedVersion: "1.3.1" }, runner))
+      .resolves.toMatchObject({ matches: true, installedVersion: "1.3.1" });
+    expect(runner.calls[3]).toEqual({ command: "brew", args: ["upgrade", "--cask", "--no-ask", "--greedy", "ghostty"] });
+    expect(runner.options[3]).toEqual({ streamOutput: true, environment: { HOMEBREW_NO_AUTO_UPDATE: "1" } });
+  });
+
+  it("reports actual and expected versions when an upgrade succeeds without converging", async () => {
+    const present = { exitCode: 0, stdout: "ghostty", stderr: "" };
+    const info = { exitCode: 0, stderr: "", stdout: JSON.stringify({ casks: [{ version: "1.3.1", installed: "1.3.0" }] }) };
+    const runner = new RecordingRunner([present, info, info, present, present, info]);
+    await expect(installResource({ kind: "package", manager: "brew-cask", name: "ghostty", lockedVersion: "1.3.1" }, runner))
+      .rejects.toThrow("expected 1.3.1; installed 1.3.0");
+  });
+
+  it("identifies missing installed-version metadata", async () => {
+    const runner = new RecordingRunner([
+      { exitCode: 0, stdout: "ghostty", stderr: "" },
+      { exitCode: 0, stdout: JSON.stringify({ casks: [{ version: "1.3.1", installed: null }] }), stderr: "" },
+      { exitCode: 0, stdout: "/missing-workstation-test/ghostty", stderr: "" },
+    ]);
+    await expect(inspectResource({ kind: "package", manager: "brew-cask", name: "ghostty", lockedVersion: "1.3.1" }, runner))
+      .resolves.toMatchObject({ matches: false, conflict: expect.stringContaining("reports no installed version") });
+  });
+
+  it("does not attempt an upgrade with missing installation metadata", async () => {
+    const runner = new RecordingRunner([
+      { exitCode: 0, stdout: "ghostty", stderr: "" },
+      { exitCode: 0, stdout: JSON.stringify({ casks: [{ version: "1.3.1", installed: null }] }), stderr: "" },
+      { exitCode: 0, stdout: "/missing-workstation-test/ghostty", stderr: "" },
+    ]);
+    await expect(installResource({ kind: "package", manager: "brew-cask", name: "ghostty", lockedVersion: "1.3.1" }, runner))
+      .rejects.toThrow("reports no installed version");
+    expect(runner.calls).toHaveLength(3);
+  });
+
   it("uses the same Homebrew formula revision for locking and installed-version checks", async () => {
     const info = {
       exitCode: 0, stderr: "",
@@ -56,6 +101,7 @@ describe("package backends", () => {
 
   it("uses the configured Homebrew cask backend", async () => {
     const runner = new RecordingRunner([
+      { exitCode: 1, stdout: "", stderr: "not installed" },
       { exitCode: 0, stdout: "", stderr: "" },
       { exitCode: 0, stdout: "ghostty\n", stderr: "" },
     ]);
@@ -63,6 +109,7 @@ describe("package backends", () => {
 
     await installResource(resource, runner);
     expect(runner.calls).toEqual([
+      { command: "brew", args: ["list", "--cask", "ghostty"] },
       { command: "brew", args: ["install", "--cask", "ghostty"] },
       { command: "brew", args: ["list", "--cask", "ghostty"] },
     ]);
@@ -99,13 +146,14 @@ describe("package backends", () => {
 
   it("uses sudo only for mutating APT operations", async () => {
     const runner = new RecordingRunner([
+      { exitCode: 1, stdout: "", stderr: "not installed" },
       { exitCode: 0, stdout: "", stderr: "" },
       { exitCode: 0, stdout: "install ok installed", stderr: "" },
     ]);
     const resource = { kind: "package" as const, manager: "apt" as const, name: "jq" };
 
     await installResource(resource, runner);
-    expect(runner.calls[0]).toEqual({
+    expect(runner.calls[1]).toEqual({
       command: "sudo",
       args: ["apt-get", "install", "-y", "jq"],
     });
@@ -113,6 +161,7 @@ describe("package backends", () => {
 
   it("installs and inspects an exact locked APT version", async () => {
     const runner = new RecordingRunner([
+      { exitCode: 1, stdout: "", stderr: "not installed" },
       { exitCode: 0, stdout: "", stderr: "" },
       { exitCode: 0, stdout: "install ok installed\t1.7.1-3ubuntu0.1", stderr: "" },
     ]);
@@ -125,6 +174,7 @@ describe("package backends", () => {
 
     await installResource(resource, runner);
     expect(runner.calls).toEqual([
+      { command: "dpkg-query", args: ["-W", "-f=${Status}\t${Version}", "jq"] },
       {
         command: "sudo",
         args: [

@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parse, stringify, type TomlTableWithoutBigInt } from "smol-toml";
+import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
 import type {
   Context,
   ConfigValue,
@@ -67,6 +68,11 @@ function toTomlResource(resource: ResolvedResource): TomlTableWithoutBigInt {
         name: resource.name,
         ...(resource.version ? { version: resource.version } : {}),
         ...(resource.lockedVersion ? { locked_version: resource.lockedVersion } : {}),
+        ...(resource.flatpak ? { flatpak: {
+          ...(resource.flatpak.scope ? { scope: resource.flatpak.scope } : {}),
+          ...(resource.flatpak.remote ? { remote: resource.flatpak.remote } : {}),
+          ...(resource.flatpak.branch ? { branch: resource.flatpak.branch } : {}),
+        } } : {}),
         ...(resource.upgrade
           ? {
               upgrade: {
@@ -262,6 +268,9 @@ function parsePackage(value: TomlTableWithoutBigInt): ResolvedPackageResource {
   if (!isPackageManager(manager)) {
     throw new Error(`Invalid manifest package manager: ${manager}`);
   }
+  if (!isPackageName(manager, value.name)) throw new Error(`Invalid ${manager} package ID`);
+  if (value.flatpak !== undefined && (manager !== "flatpak" || !isFlatpakOptions(value.flatpak))) throw new Error("Invalid Flatpak options");
+  if (manager === "mas" && value.locked_version !== undefined) throw new Error("mas does not support version pins");
   const upgrade = value.upgrade === undefined ? undefined : requireTable(value.upgrade, "package.upgrade");
   if (value.version !== undefined && manager !== "mise") {
     throw new Error(`Manifest ${manager} package cannot declare a version`);
@@ -273,6 +282,7 @@ function parsePackage(value: TomlTableWithoutBigInt): ResolvedPackageResource {
     kind: "package",
     manager,
     name: requireString(value.name, "package.name"),
+    ...(isFlatpakOptions(value.flatpak) ? { flatpak: value.flatpak } : {}),
     ...(value.version !== undefined
       ? { version: requireString(value.version, "package.version") }
       : {}),
@@ -372,7 +382,7 @@ function requireStringTable(value: unknown, field: string): Record<string, strin
 
 /** Recognize concrete package backends accepted by a resolved manifest. */
 function isPackageManager(value: string): value is PackageResource["manager"] {
-  return value === "mise" || value === "brew" || value === "brew-cask" || value === "apt";
+  return value === "mise" || value === "brew" || value === "brew-cask" || value === "apt" || value === "dnf" || value === "yum" || value === "pacman" || value === "flatpak" || value === "mas";
 }
 
 /** Check that a value consists only of supported finite JSON-like data. */

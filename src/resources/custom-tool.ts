@@ -42,6 +42,7 @@ export async function installCustomTool(
       resource.build.command,
       (resource.build.args ?? []).map(replace),
       {
+        streamOutput: true,
         ...(resource.build.cwd ? { cwd: replace(resource.build.cwd) } : {}),
         ...(resource.build.environment
           ? { environment: Object.fromEntries(Object.entries(resource.build.environment).map(([key, value]) => [key, replace(value)])) }

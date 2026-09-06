@@ -3,8 +3,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config/load.js";
+import { tools } from "../src/api/config.js";
 
 describe("configuration composition", () => {
+  it.each(["dnf", "yum"] as const)("loads %s declarations and explicit system-manager overrides", async (manager) => {
+    const root = await mkdtemp(join(tmpdir(), "workstation-rpm-config-"));
+    const path = join(root, "workstation.config.ts");
+    await writeFile(path, `export default {
+      managers: { darwin: "${manager}", linux: "${manager}" },
+      resources: [{ kind: "package", manager: "system", name: "jq" }, { kind: "package", manager: "${manager}", name: "git" }]
+    };`);
+    expect((await loadConfig(path)).resources).toEqual(tools[manager](["jq", "git"]));
+  });
   it("follows imports, ignores nullish fragments, and lets later resources override", async () => {
     const root = await mkdtemp(join(tmpdir(), "workstation-config-test-"));
     await writeFile(

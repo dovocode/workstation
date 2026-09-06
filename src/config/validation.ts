@@ -1,4 +1,5 @@
 import type { Resource } from "../api/types.js";
+import { isFlatpakOptions, isPackageName } from "./package-options.js";
 
 /** Validate a resource declaration before resolving paths or running backends. */
 export function validateResource(value: unknown): asserts value is Resource {
@@ -9,9 +10,10 @@ export function validateResource(value: unknown): asserts value is Resource {
   switch (candidate.kind) {
     case "package":
       if (
-        !["mise", "brew", "brew-cask", "apt", "system"].includes(String(candidate.manager)) ||
-        typeof candidate.name !== "string" ||
-        candidate.name.length === 0 ||
+        !["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas", "system"].includes(String(candidate.manager)) ||
+        !isPackageName(candidate.manager, candidate.name) ||
+        (candidate.flatpak !== undefined &&
+          (!["flatpak", "system"].includes(String(candidate.manager)) || !isFlatpakOptions(candidate.flatpak))) ||
         (candidate.version !== undefined && typeof candidate.version !== "string") ||
         !isBrewCaskUpgradeOptions(candidate.upgrade)
       ) {

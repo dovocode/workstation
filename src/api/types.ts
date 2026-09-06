@@ -1,5 +1,12 @@
 export type Platform = "darwin" | "linux";
-export type PackageManager = "mise" | "brew" | "brew-cask" | "apt" | "system";
+export type PackageManager = "mise" | "brew" | "brew-cask" | "apt" | "dnf" | "yum" | "pacman" | "flatpak" | "mas" | "system";
+
+/** Flatpak installation target; the selected remote must already be configured. */
+export interface FlatpakOptions {
+  readonly scope?: "user" | "system";
+  readonly remote?: string;
+  readonly branch?: string;
+}
 
 /** Homebrew cask upgrade behavior. */
 export interface BrewCaskUpgradeOptions {
@@ -29,6 +36,7 @@ export interface PackageResource {
   readonly name: string;
   readonly version?: string;
   readonly upgrade?: BrewCaskUpgradeOptions;
+  readonly flatpak?: FlatpakOptions;
 }
 
 export interface ResolvedPackageResource extends PackageResource {
@@ -199,12 +207,16 @@ export interface CommandResult {
 
 /** Command execution boundary, replaceable in tests or embedded integrations. */
 export interface Runner {
+  /** Report a resource-level progress message when supported by the host. */
+  report?(message: string): void;
   /** Execute a command directly and return captured output and its exit code; spawn failures reject. */
   run(command: string, args: readonly string[], options?: RunOptions): Promise<CommandResult>;
 }
 
 
 export interface RunOptions {
+  /** Stream captured output when the process runner has progress logging enabled. */
+  readonly streamOutput?: boolean;
   readonly cwd?: string;
   readonly environment?: Readonly<Record<string, string>>;
 }

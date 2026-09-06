@@ -1,34 +1,30 @@
 import { readInstalledBrewVersion, readAvailableBrewVersion } from "./brew-info.js";
-import type { ResolvedPackageResource, Runner } from "../api/types.js";
-import { requireSuccess, type Inspection } from "./shared.js";
+import type { ResolvedPackageResource, Runner, RunOptions } from "../api/types.js";
+import type { Inspection } from "./shared.js";
+import { inspectMiseCask, migrateMiseCask } from "./mise-cask.js";
+import { inspectRpmPackage, prepareRpmPackage } from "./rpm.js";
+import { inspectPacman, preparePacman } from "./pacman.js";
+import { inspectFlatpak, prepareFlatpak, prepareFlatpakRemoval } from "./flatpak.js";
+import { inspectMas, prepareMas } from "./mas.js";
+import { runPackageCommand, type PackageCommand } from "./package-command.js";
 
 /** Install or upgrade a package as needed, then verify its requested version. */
 export async function reconcilePackage(resource: ResolvedPackageResource, runner: Runner): Promise<Inspection> {
-  if (
-    (resource.manager === "brew" || resource.manager === "brew-cask") &&
-    resource.lockedVersion !== undefined
-  ) {
-    const before = await inspectPackage(resource, runner);
-    if (!before.present) {
-      await installPackage(resource, runner);
-    } else if (!before.matches) {
-      await upgradeLockedBrewPackage(resource, runner);
-    }
-  } else if (resource.manager === "brew-cask" && resource.upgrade !== undefined) {
-    const before = await inspectPackage(resource, runner);
-    if (before.present && !before.matches) {
-      await upgradePackage(resource, runner);
-    } else if (!before.present) {
-      await installPackage(resource, runner);
-    }
+  const before = await inspectPackage(resource, runner);
+  if (before.conflict) throw new Error(before.conflict);
+  if (before.migration === "mise-cask") {
+    await assertBrewVersionAvailable(resource, runner);
+    const mise = await inspectMiseCask(resource, runner);
+    if (!mise) throw new Error(`Mise installation changed during inspection: ${resource.name}`);
+    await migrateMiseCask(resource, mise, runner);
   } else {
-    await installPackage(resource, runner);
+    await runPackageCommand(await preparePackageInstallation(resource, runner, before), runner);
   }
   const inspection = await inspectPackage(resource, runner);
   if (!inspection.matches) {
     throw new Error(
       inspection.conflict ??
-        `${resource.manager} reported success but ${resource.name} does not match the requested version`,
+        `${resource.manager} reported success but ${resource.name} did not converge: expected ${resource.lockedVersion ?? resource.version ?? "no available upgrades"}; installed ${inspection.installedVersion ?? (inspection.present ? "version unknown" : "not present")}. Check the package manager output above for skipped upgrades or warnings.`,
     );
   }
   return inspection;
@@ -56,10 +52,17 @@ export async function inspectPackage(resource: ResolvedPackageResource, runner: 
       const installed = result.exitCode === 0;
       if (installed && resource.lockedVersion !== undefined) {
         const installedVersion = await readInstalledBrewVersion(resource, runner);
+        if (installedVersion === undefined && resource.manager === "brew-cask") {
+          const mise = await inspectMiseCask(resource, runner);
+          if (mise) return { present: true, matches: false, installedVersion: mise.version, migration: "mise-cask" };
+        }
         return {
           present: true,
           matches: installedVersion === resource.lockedVersion,
           ...(installedVersion ? { installedVersion } : {}),
+          ...(installedVersion === undefined ? {
+            conflict: `Homebrew lists ${resource.name} but reports no installed version. Its installation metadata may be incomplete; inspect brew info --json=v2 ${flag} ${resource.name} and repair the Homebrew installation before retrying.`,
+          } : {}),
         };
       }
       if (!installed || resource.manager !== "brew-cask" || resource.upgrade === undefined) {
@@ -89,61 +92,56 @@ export async function inspectPackage(resource: ResolvedPackageResource, runner: 
         ...(installedVersion ? { installedVersion } : {}),
       };
     }
+    case "dnf":
+    case "yum":
+      return await inspectRpmPackage(resource, runner);
+    case "pacman":
+      return await inspectPacman(resource, runner);
+    case "flatpak":
+      return await inspectFlatpak(resource, runner);
+    case "mas":
+      return await inspectMas(resource, runner);
     case "system":
       throw new Error("System package manager must be resolved before inspection");
   }
 }
 
-/** Upgrade a cask using its configured greedy and force policy. */
-async function upgradePackage(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
-  if (resource.manager !== "brew-cask" || resource.upgrade === undefined) {
-    throw new Error(`Upgrade policy is not configured for ${resource.name}`);
-  }
-  await assertBrewVersionAvailable(resource, runner);
-  const args = ["upgrade", "--cask", "--no-ask"];
-  if (resource.upgrade.greedy) args.push("--greedy");
-  if (resource.upgrade.force) args.push("--force");
-  args.push(resource.name);
-  await requireSuccess(runner, "brew", args);
-}
-
-/** Upgrade a formula or cask after verifying that the locked version is available. */
-async function upgradeLockedBrewPackage(
-  resource: ResolvedPackageResource,
-  runner: Runner,
-): Promise<void> {
-  if (resource.manager !== "brew" && resource.manager !== "brew-cask") {
-    throw new Error(`Cannot upgrade non-Homebrew package ${resource.name}`);
-  }
-  await assertBrewVersionAvailable(resource, runner);
-  const args = ["upgrade"];
-  if (resource.manager === "brew-cask") {
-    args.push("--cask", "--no-ask");
-    if (resource.upgrade?.greedy) args.push("--greedy");
-    if (resource.upgrade?.force) args.push("--force");
-  }
-  args.push(resource.name);
-  await requireSuccess(runner, "brew", args);
-}
-
-/** Run the backend's install command using an exact pin where supported. */
-async function installPackage(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
+/** Validate an install/upgrade and expose compatible flags for native batching. */
+export async function preparePackageInstallation(resource: ResolvedPackageResource, runner: Runner, before: Inspection): Promise<PackageCommand | undefined> {
+  if (before.conflict) throw new Error(before.conflict);
+  if (before.migration) throw new Error(`Cask migration must run separately: ${resource.name}`);
+  if (before.matches) return;
   let command: string;
   let args: string[];
+  let spec = resource.name;
   switch (resource.manager) {
     case "mise":
       command = "mise";
-      args = ["install", `${resource.name}@${resource.lockedVersion ?? resource.version ?? "latest"}`];
+      args = ["install"];
+      spec = `${resource.name}@${resource.lockedVersion ?? resource.version ?? "latest"}`;
       break;
+    case "dnf":
+    case "yum":
+      return await prepareRpmPackage(resource, runner, before);
+    case "pacman":
+      return await preparePacman(resource, runner, before);
+    case "flatpak":
+      return await prepareFlatpak(resource, runner, before);
+    case "mas":
+      return await prepareMas(resource, runner, before);
     case "brew":
-      await assertBrewVersionAvailable(resource, runner);
-      command = "brew";
-      args = ["install", resource.name];
-      break;
     case "brew-cask":
       await assertBrewVersionAvailable(resource, runner);
       command = "brew";
-      args = ["install", "--cask", resource.name];
+      args = [before.present ? "upgrade" : "install"];
+      if (resource.manager === "brew-cask") {
+        args.push("--cask");
+        if (before.present) {
+          args.push("--no-ask");
+          if (resource.lockedVersion || resource.upgrade?.greedy) args.push("--greedy");
+          if (resource.upgrade?.force) args.push("--force");
+        }
+      }
       break;
     case "apt":
       command = "sudo";
@@ -152,13 +150,23 @@ async function installPackage(resource: ResolvedPackageResource, runner: Runner)
         "install",
         "-y",
         ...(resource.lockedVersion ? ["--allow-downgrades"] : []),
-        resource.lockedVersion ? `${resource.name}=${resource.lockedVersion}` : resource.name,
       ];
+      spec = resource.lockedVersion ? `${resource.name}=${resource.lockedVersion}` : resource.name;
       break;
     case "system":
       throw new Error("System package manager must be resolved before installation");
   }
-  await requireSuccess(runner, command, args);
+  return { command, args, targets: [spec], options: brewMutationOptions(resource) };
+}
+
+/** Keep Homebrew's validated version stable between the availability check and mutation. */
+function brewMutationOptions(resource: ResolvedPackageResource): RunOptions {
+  return {
+    streamOutput: true,
+    ...((resource.manager === "brew" || resource.manager === "brew-cask") && resource.lockedVersion
+      ? { environment: { HOMEBREW_NO_AUTO_UPDATE: "1" } }
+      : {}),
+  };
 }
 
 /** Reject a Homebrew mutation when the configured taps cannot provide the locked version. */
@@ -181,31 +189,52 @@ export async function removePackage(
   runner: Runner,
   installedVersion?: string,
 ): Promise<void> {
+  await runPackageCommand(preparePackageRemoval(resource, installedVersion), runner);
+}
+
+/** Prepare a native uninstall without broad cleanup or unrelated targets. */
+export function preparePackageRemoval(resource: ResolvedPackageResource, installedVersion?: string): PackageCommand {
   let command: string;
   let args: string[];
+  let spec = resource.name;
   switch (resource.manager) {
     case "mise":
       command = "mise";
       args = [
         "uninstall",
         "--yes",
-        `${resource.name}@${installedVersion ?? resource.lockedVersion ?? resource.version ?? "latest"}`,
       ];
+      spec = `${resource.name}@${installedVersion ?? resource.lockedVersion ?? resource.version ?? "latest"}`;
       break;
     case "brew":
       command = "brew";
-      args = ["uninstall", resource.name];
+      args = ["uninstall"];
       break;
     case "brew-cask":
       command = "brew";
-      args = ["uninstall", "--cask", resource.name];
+      args = ["uninstall", "--cask"];
       break;
     case "apt":
       command = "sudo";
-      args = ["apt-get", "remove", "-y", resource.name];
+      args = ["apt-get", "remove", "-y"];
+      break;
+    case "dnf":
+    case "yum":
+      command = "sudo";
+      args = [resource.manager, "remove", "-y"];
+      break;
+    case "pacman":
+      command = "sudo";
+      args = ["pacman", "-R", "--noconfirm"];
+      break;
+    case "flatpak":
+      return prepareFlatpakRemoval(resource);
+    case "mas":
+      command = "mas";
+      args = ["uninstall"];
       break;
     case "system":
       throw new Error("System package manager must be resolved before removal");
   }
-  await requireSuccess(runner, command, args);
+  return { command, args, targets: [spec] };
 }

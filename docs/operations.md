@@ -24,6 +24,30 @@ an explicit version argument; the repository must still provide that version.
 Homebrew checks the available version before mutation and cannot generally
 recreate arbitrary historical versions. Formula revisions are included.
 
+DNF and YUM pins include RPM epoch, version, release, and architecture, for
+example `0:1.7.1-2.fc42.x86_64`. The backend lists the latest candidate for the
+native architecture (or `noarch`); architecture-qualified names such as
+`jq.x86_64` are also supported. RPM verifies installed versions and compares
+pins for upgrades/downgrades. The exact pinned package must remain available
+in enabled repositories. Queries run without sudo; installs, downgrades and
+removals use sudo. No additional repoquery plugin is required.
+
+pacman pins package versions from the current sync database and refuses to
+install a different version when a pin is unavailable. Maintain Arch with normal
+full upgrades (`sudo pacman -Syu`) and deliberately refresh affected lock entries;
+Workstation does not refresh sync databases or download archived packages.
+
+Flatpak pins full OSTree commit IDs for the declared remote, scope, and branch.
+Existing deployments can update or revert to retained commits. A fresh install
+requires the remote's current commit to match the lock, because Flatpak's install
+command does not select historical commits. Runtime dependencies are managed by
+Flatpak and are not individually pinned by Workstation.
+
+MAS app entries have no lock version and follow available App Store updates.
+Installed versions are recorded in local state. Workstation verifies completion
+using `mas list` and `mas outdated`; account failures and stale Spotlight data
+remain visible errors rather than being treated as successful installations.
+
 To intentionally refresh an unchanged package, remove its entry from the relevant
 machine section of `workstation.lock`, then run Workstation and review the diff.
 There is no separate update/frozen-lock CLI flag. Run one checkout at a time when
@@ -45,7 +69,76 @@ Successful actions checkpoint state. This is not an all-or-nothing transaction:
 if a later action fails, earlier successful actions remain. Fix the reported
 problem and rerun; preserve the state file and backups.
 
+## Native package batches
+
+Batching is automatic; keep declaring packages with the existing `tools.*`
+helpers. Compatible installs, upgrades, and uninstalls in each package phase
+share one native command, for example `brew install git jq` or
+`sudo apt-get install -y --allow-downgrades git=<pin> jq=<pin>`.
+mise upgrades install the requested exact versions together, then remove each
+previous owned version only after its replacement has been verified.
+
+Workstation groups by backend, operation, and flags. Casks and formulae stay
+separate, as do different cask policies, RPM downgrades, and Flatpak scopes/remotes.
+Flatpak pinned updates remain single-target because `--commit` selects one ref.
+Mise-to-Homebrew migrations also run separately for individual backups/recovery.
+Adoptions, files, custom tools, and service ordering remain unchanged.
+
+Each native command receives multiple explicit targets; the package manager
+controls download/install parallelism. Workstation does not launch competing
+transactions against the same package database or issue untargeted upgrades.
+The output shows batch membership, the command, and each package's result.
+
+Every target is inspected after the command, even if it exits unsuccessfully.
+Verified successes are checkpointed; a partially installed package retains
+removal ownership with its observed version. Failed removals keep their state.
+Workstation stops before the next batch after a failure. Fix the reported issue
+and rerun to reconcile the remaining differences. Batches are not atomic rollback
+transactions; preserve state and backups, especially after an interrupted process
+or failed post-install inspection.
+
 ## Troubleshooting
+
+### Moving mise casks to Homebrew
+
+Declare the application with `tools.brewCask(["ghostty"])` and remove its
+`"brew-cask:ghostty"` entry from your mise configuration. Remove the declaration
+without uninstalling the app (`mise unuse --no-prune --path <config-file>
+brew-cask:ghostty` can do this). Do not use `mise uninstall` after migration,
+because both backends use the same Caskroom paths.
+
+Font casks use the same path, for example
+`tools.brewCask(["font-jetbrains-mono-nerd-font"])`. Remove the corresponding
+`brew-cask:font-jetbrains-mono-nerd-font` mise declaration without uninstalling it.
+
+On the next run, Workstation automatically recognizes versioned app/font/binary mise
+casks with a schema-3 `.mise-cask.toml` receipt and no Homebrew receipt. The plan
+reports `migrate from mise to Homebrew`. App staging symlinks must match their
+installed bundles; copied font files must match their staged contents and reside
+in a `Library/Fonts` directory. Binary and completion symlinks must resolve inside
+the recognized version's staging directory or a validated app bundle reached
+through that directory (for example `1password-cli`'s `op` or Zed's app CLI).
+It backs up app bundles and fonts with macOS
+metadata intact and moves the original cask directory into a unique
+`.workstation-mise-<cask>-...` backup beside the `Caskroom` directory. The backup path
+is printed before installation.
+
+When the mise version matches the lock, Homebrew installs with `--adopt` to keep
+the existing artifacts. When it differs, `--force` installs the requested version;
+the original artifacts remain in the backup. Workstation verifies Homebrew's receipt
+and version before recording success. Migrated pre-existing casks remain adopted,
+so removing the declaration later does not uninstall them.
+
+If installation fails, Workstation restores the original mise directory and
+missing apps and fonts, and original binary/completion symlinks that are missing
+or were relinked within that cask. Backups are retained on success and failure;
+existing artifacts are not overwritten during recovery. Homebrew can change
+other artifacts before failing, so inspect its output and the retained backups
+before retrying. A crash also leaves backups at the printed path for recovery.
+
+Unknown receipt schemas, mixed/multiple installation directories, package
+installers, non-symlink binaries, changed font copies, and casks without a concrete lock version require manual migration.
+Workstation does not rewrite your mise configuration automatically.
 
 | Error or symptom | What to check |
 | --- | --- |

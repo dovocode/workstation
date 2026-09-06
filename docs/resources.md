@@ -9,13 +9,65 @@ tools.mise({ node: "lts", go: "latest" });
 tools.brew(["git", "jq"]);
 tools.brewCask(["ghostty"], { greedy: true, force: true });
 tools.apt(["git", "jq"]);
+tools.dnf(["git", "jq"]);
+tools.yum(["git", "jq"]);
+tools.pacman(["git", "jq"]);
+tools.flatpak(["org.mozilla.firefox"]);
+tools.mas([497799835]); // Xcode; acquire it in the App Store first
 tools.system(["git", "jq"]);
 ```
 
 Put declarations in a configuration's `resources` array. `system` selects the
-configured platform backend, defaulting to Homebrew on macOS and APT on Linux.
+configured platform backend, defaulting to Homebrew on macOS and detecting
+APT, DNF, YUM, then pacman on PATH on Linux. Set `managers: { linux: "dnf" }`,
+`managers: { linux: "yum" }`, or `managers: { linux: "pacman" }` to choose explicitly. Package names must match
+the chosen distribution's repositories; Workstation does not translate names.
 Only mise accepts version selectors in declarations. `force` affects a cask
 upgrade command; it does not independently trigger an upgrade.
+
+Compatible packages automatically install, upgrade, and uninstall in native
+batches, with per-package verification and ownership tracking. No extra helper
+or flag is required; see [batch behavior and recovery](operations.md#native-package-batches).
+
+### Flatpak applications (Linux)
+
+`tools.flatpak` accepts exact application IDs, not search terms. Defaults are
+user scope, the `flathub` remote, and the `stable` branch:
+
+```ts
+tools.flatpak(["org.mozilla.firefox"]);
+tools.flatpak(["org.example.App"], {
+  scope: "system",
+  remote: "testing",
+  branch: "beta",
+});
+```
+
+The remote must already exist in the chosen installation. User installs do not
+use sudo; system mutations do. Scope and branch have separate ownership identities.
+An app from a different remote is a conflict, requiring an explicit migration.
+Removal retains application data and does not request removal of unused runtimes.
+
+### pacman packages (Arch Linux)
+
+`tools.pacman` accepts repository package names. AUR helpers, package groups,
+and archived package downloads are not included. Queries use the existing sync
+database. Run your normal `sudo pacman -Syu` before applying Workstation;
+Workstation does not run `-Sy` or perform a full system upgrade automatically.
+
+### Mac App Store applications (macOS)
+
+`tools.mas` accepts numeric app IDs as numbers or decimal strings. Find IDs
+with `mas search` or `mas list`. Workstation uses `mas install` for missing apps
+and `mas upgrade <id>` for outdated ones; it never calls `mas get`/`purchase`.
+Acquire free or paid apps in the App Store first and sign in with the matching
+Apple Account. Installed app detection depends on Spotlight indexing.
+
+MAS declarations follow available updates and have no version pin: the store
+cannot supply an arbitrary historical version. Installed versions are recorded
+in ownership state. Previously installed apps are adopted and retained if their
+declaration is removed; owned apps use `mas uninstall <id>` on removal.
+See the [mas documentation](https://github.com/mas-cli/mas) for account requirements.
 
 ## Symlinks
 

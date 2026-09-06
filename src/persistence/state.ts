@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { fingerprint, resourceId } from "../config/identity.js";
+import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
 import type { ResolvedResource, StateEntry, WorkstationState } from "../api/types.js";
 
 /** Load validated ownership state; return empty state for a missing file and reject machine mismatches. */
@@ -78,8 +79,10 @@ function isResolvedResource(value: unknown): value is ResolvedResource {
   switch (candidate.kind) {
     case "package":
       return (
-        ["mise", "brew", "brew-cask", "apt"].includes(String(candidate.manager)) &&
-        typeof candidate.name === "string" &&
+        ["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas"].includes(String(candidate.manager)) &&
+        isPackageName(candidate.manager, candidate.name) &&
+        (candidate.flatpak === undefined || (candidate.manager === "flatpak" && isFlatpakOptions(candidate.flatpak))) &&
+        (candidate.manager !== "mas" || candidate.lockedVersion === undefined) &&
         (candidate.version === undefined || typeof candidate.version === "string") &&
         (candidate.lockedVersion === undefined || typeof candidate.lockedVersion === "string") &&
         (candidate.upgrade === undefined ||

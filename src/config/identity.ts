@@ -5,6 +5,7 @@ import type { ResolvedResource } from "../api/types.js";
 export function resourceId(resource: ResolvedResource): string {
   switch (resource.kind) {
     case "package":
+      if (resource.manager === "flatpak") return `package:flatpak:${resource.flatpak?.scope ?? "user"}:${resource.name}:${resource.flatpak?.branch ?? "stable"}`;
       return `package:${resource.manager}:${resource.name}`;
     case "symlink":
       return `file:${resource.target}`;

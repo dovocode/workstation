@@ -1,8 +1,11 @@
 import { readAvailableBrewVersion } from "./brew-info.js";
 import { requireSuccess } from "./shared.js";
 import type { ResolvedResource, Runner } from "../api/types.js";
+import { resolveRpmVersion } from "./rpm.js";
+import { resolvePacmanVersion } from "./pacman.js";
+import { resolveFlatpakVersion } from "./flatpak.js";
 
-/** Resolve mise/APT/Homebrew selectors; return no pin for non-packages and rolling latest casks. */
+/** Resolve package selectors; return no pin for non-packages and rolling latest casks. */
 export async function resolvePackageVersion(
   resource: ResolvedResource,
   runner: Runner,
@@ -29,7 +32,16 @@ export async function resolvePackageVersion(
       const version = await readAvailableBrewVersion(resource, runner);
       return version === "latest" ? undefined : version;
     }
+    case "dnf":
+    case "yum":
+      return await resolveRpmVersion(resource, runner);
     case "system":
       throw new Error("System package manager must be resolved before locking");
+    case "pacman":
+      return await resolvePacmanVersion(resource, runner);
+    case "flatpak":
+      return await resolveFlatpakVersion(resource, runner);
+    case "mas":
+      return undefined;
   }
 }

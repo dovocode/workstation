@@ -40,6 +40,7 @@ export type {
   Platform,
   ResolvedResource,
   BrewCaskUpgradeOptions,
+  FlatpakOptions,
   ConfigDefinition,
   ConfigFactory,
   ConfigInput,

@@ -1,5 +1,6 @@
 import { fingerprint } from "../config/identity.js";
 import { createPlan } from "./plan.js";
+import { applyPackageBatch, isPackageMutation, type PackageAction } from "./package-batch.js";
 export { createPlan } from "./plan.js";
 import { mkdir, rmdir } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -25,6 +26,7 @@ export async function applyPlan(
   config: ResolvedConfig,
   runner: Runner,
   onAction?: (action: Action) => void,
+  onProgress?: (message: string) => void,
 ): Promise<Action[]> {
   await mkdir(dirname(config.stateFile), { recursive: true, mode: 0o700 });
   const guard = `${config.stateFile}.lock`;
@@ -37,7 +39,7 @@ export async function applyPlan(
     throw error;
   }
   try {
-    return await reconcile(config, runner, onAction);
+    return await reconcile(config, runner, onAction, onProgress);
   } finally {
     await rmdir(guard);
   }
@@ -48,11 +50,40 @@ async function reconcile(
   config: ResolvedConfig,
   runner: Runner,
   onAction?: (action: Action) => void,
+  onProgress?: (message: string) => void,
 ): Promise<Action[]> {
-  const actions = await createPlan(config, runner);
+  onProgress?.("Inspecting resources...");
+  const actions = await createPlan(config, runner, onProgress);
+  onProgress?.(`Plan: ${actions.length} action(s).`);
   let state = await readState(config.stateFile, config.context.machine);
 
-  for (const action of actions) {
+  for (let index = 0; index < actions.length; index++) {
+    const action = actions[index];
+    if (!action) continue;
+    if (isPackageMutation(action)) {
+      const batch: PackageAction[] = [action];
+      while (index + 1 < actions.length) {
+        const next = actions[index + 1];
+        if (!next || !isPackageMutation(next) || (next.type === "remove") !== (action.type === "remove")) break;
+        batch.push(next);
+        index++;
+      }
+      await applyPackageBatch(batch, runner, async (completed, before, after) => {
+        // Keep the prior version in state until cleanup succeeds, allowing a failed cleanup to retry.
+        if (completed.type === "update" && after.matches) await removeReplacedMiseVersion(completed, runner);
+        const resources = { ...state.resources };
+        if (completed.type === "remove") delete resources[completed.id];
+        else {
+          resources[completed.id] = entry(completed, {
+            owned: completed.previous?.owned === true || !before.present,
+            inspection: after,
+          });
+        }
+        state = { ...state, resources };
+        await writeState(config.stateFile, state);
+      }, onAction, onProgress);
+      continue;
+    }
     onAction?.(action);
     const resources = { ...state.resources };
     switch (action.type) {
@@ -132,6 +163,7 @@ async function reconcile(
     }
     state = { ...state, resources };
     await writeState(config.stateFile, state);
+    onProgress?.(`  Done: ${action.type} ${action.id} (state saved)`);
   }
 
   return actions;

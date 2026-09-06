@@ -5,12 +5,13 @@ import { readState } from "../persistence/state.js";
 import type { Action, ResolvedConfig, Runner, StateEntry } from "../api/types.js";
 
 /** Compare declarations, stored ownership, and live inspections to produce ordered actions. */
-export async function createPlan(config: ResolvedConfig, runner: Runner): Promise<Action[]> {
+export async function createPlan(config: ResolvedConfig, runner: Runner, onProgress?: (message: string) => void): Promise<Action[]> {
   const state = await readState(config.stateFile, config.context.machine);
   const desired = new Map(config.resources.map((resource) => [resourceId(resource), resource]));
   const actions: Action[] = [];
 
   for (const [id, resource] of desired) {
+    onProgress?.(`  Inspect: ${id}`);
     const previous = state.resources[id];
     const inspection = await inspectResource(resource, runner);
     if (
@@ -26,7 +27,7 @@ export async function createPlan(config: ResolvedConfig, runner: Runner): Promis
       } else if (inspection.conflict) {
         throw new Error(`Cannot manage ${id}: ${inspection.conflict}`);
       } else if (inspection.present) {
-        actions.push({ type: "update", id, resource, reason: "upgrade available" });
+        actions.push({ type: "update", id, resource, reason: inspection.migration ? "migrate from mise to Homebrew" : "upgrade available" });
       } else {
         actions.push({ type: "create", id, resource, reason: "not present" });
       }
@@ -50,13 +51,14 @@ export async function createPlan(config: ResolvedConfig, runner: Runner): Promis
         id,
         resource,
         previous,
-        reason: inspection.present ? "upgrade available" : "managed resource is missing",
+        reason: inspection.migration ? "migrate from mise to Homebrew" : inspection.present ? "upgrade available" : "managed resource is missing",
       });
     }
   }
 
   for (const [id, previous] of Object.entries(state.resources)) {
     if (desired.has(id)) continue;
+    onProgress?.(`  Inspect removed declaration: ${id}`);
     const removable = previous.owned || previous.originalFile !== undefined;
     if (!removable) {
       actions.push({
@@ -99,7 +101,7 @@ export async function createPlan(config: ResolvedConfig, runner: Runner): Promis
 /** Identify resource policies that permit updating adopted resources without taking removal ownership. */
 function canUpdateAdoptedInPlace(resource: ResolvedConfig["resources"][number]): boolean {
   return (
-    (resource.kind === "package" && resource.manager === "brew-cask") ||
+    (resource.kind === "package" && ["brew-cask", "flatpak", "mas", "pacman"].includes(resource.manager)) ||
     (resource.kind === "generated-file" && resource.ifExists === "overwrite") ||
     resource.kind === "custom-tool"
   );

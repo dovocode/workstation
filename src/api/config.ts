@@ -1,6 +1,7 @@
 import { JsoncDocument } from "./jsonc.js";
 import type {
   BrewCaskUpgradeOptions,
+  FlatpakOptions,
   ConfigDefinition,
   ConfigFactory,
   ConfigInput,
@@ -62,7 +63,23 @@ export const tools = {
   ): PackageResource[] => packageList("brew-cask", packages, upgrade),
   /** Install Debian/Ubuntu packages through APT. Mutations request sudo. */
   apt: (packages: readonly string[]): PackageResource[] => packageList("apt", packages),
-  /** Use the configured platform manager; defaults to Homebrew on macOS and APT on Linux. */
+  /** Install RPM packages through DNF. Mutations request sudo. */
+  dnf: (packages: readonly string[]): PackageResource[] => packageList("dnf", packages),
+  /** Install RPM packages through legacy YUM. Mutations request sudo. */
+  yum: (packages: readonly string[]): PackageResource[] => packageList("yum", packages),
+  /** Install Arch Linux repository packages through pacman; does not refresh databases or upgrade the whole system. */
+  pacman: (packages: readonly string[]): PackageResource[] => packageList("pacman", packages),
+  /** Install Flatpak app IDs; defaults to the user's flathub remote and stable branch. */
+  flatpak: (packages: readonly string[], options: FlatpakOptions = {}): PackageResource[] =>
+    packages.map((name) => ({ kind: "package", manager: "flatpak", name, flatpak: { ...options } })),
+  /** Install previously acquired Mac App Store apps by numeric ID; follows available updates without version pins. */
+  mas: (ids: readonly (string | number)[]): PackageResource[] => ids.map((id) => {
+    if ((typeof id === "number" && !Number.isSafeInteger(id)) || !/^[1-9]\d*$/.test(String(id))) {
+      throw new Error(`Invalid Mac App Store ID: ${id}`);
+    }
+    return { kind: "package", manager: "mas", name: String(id) };
+  }),
+  /** Use the configured manager, Homebrew on macOS, or detect APT/DNF/YUM/pacman on Linux. */
   system: (packages: readonly string[]): PackageResource[] => packageList("system", packages),
 };
 

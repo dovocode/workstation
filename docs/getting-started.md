@@ -5,8 +5,107 @@
 - macOS or Linux; Node.js 22.13 or later for the JavaScript CLI.
 - This package's pinned pnpm, invoked through Corepack.
 - The package managers used by your configuration must already be available
-  on PATH: mise, Homebrew, or APT. Workstation does not bootstrap them itself.
+  on PATH: mise, Homebrew, APT, DNF, YUM, pacman, Flatpak, or mas. Workstation does not bootstrap them itself.
 - Build tools required by custom executables must be available when their build runs.
+
+### macOS: Homebrew and mise
+
+Homebrew and mise are recommended companions: Homebrew manages system packages
+and applications; mise manages development runtimes such as Node.js and Go.
+They are required only when your configuration uses those backends.
+
+Install Homebrew using its [official installer](https://docs.brew.sh/Installation):
+
+```sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Follow the installer's **Next steps** to add `brew shellenv` to your shell profile.
+The default prefix is `/opt/homebrew` on Apple Silicon and `/usr/local` on Intel.
+Open a new terminal, then install mise:
+
+```sh
+brew install mise
+```
+
+Add this line to `~/.zshrc`, then open a new terminal:
+
+```sh
+eval "$(mise activate zsh)"
+```
+
+For Bash, use `eval "$(mise activate bash)"` in `~/.bashrc` instead.
+See [mise installation](https://mise.jdx.dev/installing-mise.html) for other shells.
+
+### Linux: mise and the distro package manager
+
+On Linux, mise is the recommended additional tool; Homebrew is not needed.
+Workstation uses APT on Debian/Ubuntu, DNF on distributions that provide it,
+legacy YUM, or pacman on Arch Linux. `tools.system(...)` checks PATH in that order. Package mutations
+use `sudo`; the distro package manager and `sudo` must already be installed.
+
+Install mise with its [official installer](https://mise.jdx.dev/getting-started.html):
+
+```sh
+curl https://mise.run | sh
+```
+
+If `curl` is missing, install it with your distro's package manager first
+(`sudo apt-get install curl`, `sudo dnf install curl`, `sudo yum install curl`,
+or `sudo pacman -S curl`).
+
+Add this line to `~/.bashrc`, then open a new terminal:
+
+```sh
+eval "$(~/.local/bin/mise activate bash)"
+```
+
+For Zsh, use `eval "$(~/.local/bin/mise activate zsh)"` in `~/.zshrc` instead.
+
+### Optional application backends
+
+For Mac App Store declarations on macOS, install the
+[mas CLI](https://github.com/mas-cli/mas#installation) and sign in using the App Store app:
+
+```sh
+brew install mas
+mas list
+```
+
+Acquire each declared app in the App Store first. `mas` can request administrator
+authentication during mutations; Workstation does not purchase apps or manage
+your Apple Account. macOS compatibility depends on the installed mas release.
+
+For Flatpak declarations on Linux, install Flatpak with your distro's manager
+(`sudo apt-get install flatpak`, `sudo dnf install flatpak`,
+`sudo yum install flatpak`, or `sudo pacman -S flatpak`). Follow
+[Flatpak's setup guide](https://flatpak.org/setup/) for your distribution, then
+configure Flathub in user scope to match Workstation's defaults:
+
+```sh
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
+For `scope: "system"`, configure the system remote instead:
+
+```sh
+sudo flatpak remote-add --system --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
+Flatpak and mas must be installed before Workstation resolves their declarations;
+declaring the backend executable itself as a package in the same first run does
+not bootstrap it before version resolution and inspection.
+
+### Node.js and building Workstation
+
+If Node.js is not installed yet, mise can provide it on either platform:
+
+```sh
+mise use --global node@lts
+node --version
+```
+
+Make sure Corepack is available (`npm install --global corepack` if needed).
 
 The source package is built locally; this repository does not imply an npm release.
 The following commands run from the repository root:
@@ -65,7 +164,7 @@ Within this repository use `node dist/cli.js` in place
 of `workstation` if it is not installed on PATH. Config discovery does not
 walk parent directories. Unknown options fail.
 
-Run as the target login user. APT mutations and system-scope systemd actions
+Run as the target login user. APT/DNF/YUM/pacman mutations, system Flatpak installs, and system-scope systemd actions
 invoke sudo for the individual privileged steps; do not run the entire CLI as root.
 
 ## Native executable

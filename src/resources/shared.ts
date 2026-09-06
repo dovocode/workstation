@@ -7,6 +7,7 @@ export interface Inspection {
   readonly installedVersion?: string;
   readonly installedHash?: string;
   readonly conflict?: string;
+  readonly migration?: "mise-cask";
 }
 
 /** Write a temporary sibling and rename it into place to avoid partial destination content. */
