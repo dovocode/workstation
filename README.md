@@ -1,10 +1,15 @@
 # @dovocode/workstation
 
 Declare your workstation in TypeScript. Install packages through mise,
-Homebrew, or APT; generate configuration and shell files; manage services;
+Homebrew, APT, DNF, YUM, pacman, Flatpak, or the Mac App Store; generate configuration and shell files; manage services;
 build custom tools; and run named tasks.
 
 The package is `@dovocode/workstation`. The executable is **`workstation`**.
+See [CHANGELOG.md](CHANGELOG.md) for release changes and known issues.
+
+On macOS, Homebrew and mise are recommended. On Linux, install mise and use
+your distro's APT, DNF, YUM, or pacman; `tools.system(...)` detects the available backend.
+See [setup and installation instructions](docs/getting-started.md).
 
 ## Build from source
 
@@ -45,6 +50,7 @@ export default defineConfig({
 
 ```sh
 workstation                 # Execute the declared setup
+workstation --verbose       # Include raw inspection and version-query output
 workstation --list-tasks
 workstation t -- --watch    # Run only the named task
 ```
@@ -52,6 +58,13 @@ workstation t -- --watch    # Run only the named task
 Generated files overwrite by default, retaining originals in private state
 for restoration. Existing matching resources are adopted rather than owned.
 The committed `workstation.lock` records package versions per machine.
+Compatible package operations run in native batches, with each result verified
+and saved individually. See [batching and recovery](docs/operations.md#native-package-batches).
+
+Runs report configuration loading, version resolution, resource inspections,
+commands with exit codes and elapsed time, and completed actions. Package changes
+and tasks stream their output live. Use `--verbose` (`-v`) to also show raw query
+output. Embedded `ProcessRunner` usage stays silent unless logging is enabled.
 
 ## Documentation
 
