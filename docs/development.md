@@ -43,3 +43,25 @@ covered by their enclosing function rather than becoming separate API pages.
 Run `corepack pnpm check`, `corepack pnpm test`, and `corepack pnpm run docs`
 before submitting documentation or API changes. Source lives under `src/api`, `src/config`, `src/resources`, `src/rendering`,
 `src/reconciliation`, and `src/persistence`.
+
+## Publish a release
+
+The `build.yml` workflow publishes to npm only for pushed `v*` tags, after all
+four Linux/macOS builds pass. The tag must equal `v` plus the version in
+`package.json`. Stable versions use npm's `latest` tag; prereleases use `next`.
+Branch pushes, pull requests, and manual workflow runs do not publish.
+
+Authentication uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/)
+with GitHub OIDC and provenance, without a stored npm token. The npm package must
+trust GitHub repository `dovocode/workstation`, workflow filename `build.yml`,
+with publishing allowed and no environment restriction.
+
+To release, update the package version, commit it, and push the matching tag:
+
+```sh
+npm version patch
+git push origin main --follow-tags
+```
+
+Use a new version for each release; npm versions cannot be overwritten. Do not
+tag the already-published `0.1.0` expecting it to publish again.
