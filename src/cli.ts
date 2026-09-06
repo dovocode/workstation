@@ -6,6 +6,7 @@ import { lockConfig } from "./persistence/lock.js";
 import type { Action } from "./api/types.js";
 import { runTask } from "./resources/tasks.js";
 import { initConfig } from "./config/init.js";
+import { ensurePrerequisites } from "./bootstrap.js";
 
 interface Options {
   readonly init: boolean;
@@ -36,6 +37,7 @@ async function main(): Promise<void> {
     for (const [name, target] of Object.entries(sourceConfig.aliases ?? {})) console.log(`${name} -> ${target}`);
     return;
   }
+  await ensurePrerequisites(sourceConfig, runner, options.task);
   if (options.task) {
     const result = await runTask(sourceConfig, options.task, options.taskArgs, new ProcessRunner({ progress: true, verbose: true }));
     process.exitCode = result.exitCode;

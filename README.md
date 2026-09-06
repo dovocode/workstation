@@ -7,9 +7,54 @@ build custom tools; and run named tasks.
 The package is `@dovocode/workstation`. The executable is **`workstation`**.
 See [CHANGELOG.md](CHANGELOG.md) for release changes and known issues.
 
-On macOS, Homebrew and mise are recommended. On Linux, install mise and use
-your distro's APT, DNF, YUM, or pacman; `tools.system(...)` detects the available backend.
+On macOS, Homebrew and mise are recommended. Workstation installs them on demand
+when the configuration needs them. On Linux it installs mise on demand and uses
+your existing APT, DNF, YUM, or pacman; `tools.system(...)` detects the available backend.
 See [setup and installation instructions](docs/getting-started.md).
+
+## Install the native executable
+
+The native executable needs no preinstalled Node.js, pnpm, mise, or Homebrew.
+These commands install the latest release into `~/.local/bin` on macOS or Linux.
+
+With curl:
+
+```sh
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in x86_64) arch=x64 ;; arm64|aarch64) arch=arm64 ;; *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; esac
+mkdir -p "$HOME/.local/bin"
+curl -fL "https://github.com/dovocode/workstation/releases/latest/download/workstation-${os}-${arch}" \
+  -o "$HOME/.local/bin/workstation"
+chmod +x "$HOME/.local/bin/workstation"
+```
+
+With wget:
+
+```sh
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in x86_64) arch=x64 ;; arm64|aarch64) arch=arm64 ;; *) echo "Unsupported architecture: $arch" >&2; exit 1 ;; esac
+mkdir -p "$HOME/.local/bin"
+wget -O "$HOME/.local/bin/workstation" \
+  "https://github.com/dovocode/workstation/releases/latest/download/workstation-${os}-${arch}"
+chmod +x "$HOME/.local/bin/workstation"
+```
+
+Add the installation directory to your shell once, then verify it:
+
+```sh
+printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.zshrc" # use ~/.bashrc for Bash
+export PATH="$HOME/.local/bin:$PATH"
+workstation --help
+```
+
+On macOS, if Gatekeeper blocks the unnotarized binary, explicitly remove its
+download quarantine after reviewing the release you downloaded:
+
+```sh
+xattr -d com.apple.quarantine "$HOME/.local/bin/workstation"
+```
 
 ## Build from source
 
@@ -82,10 +127,11 @@ the package without applying a workstation configuration.
 
 ## Native binaries
 
-GitHub Actions builds Linux and macOS executables for x64 and arm64. Download
-the artifact for your platform from a successful build, extract it, and make
-the executable available as `workstation` on PATH. Artifact archives may need
-`chmod +x` after extraction. macOS builds are ad-hoc signed, not notarized.
+GitHub Releases provide Linux and macOS executables for x64 and arm64. They run
+without Node.js, npm, Corepack, or pnpm; selected Node-based tasks bootstrap their
+pinned runtime through mise. Download
+the binary for your platform and make it available as `workstation` on PATH.
+The commands above automate those steps. macOS builds are ad-hoc signed, not notarized.
 The config's package import must still resolve in its project.
 
 To build locally: `corepack pnpm build:native`. Outputs are under `dist/bin/`.

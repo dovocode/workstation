@@ -2,19 +2,86 @@
 
 ## Prerequisites
 
-- macOS or Linux; Node.js 26.8.1 or later for the JavaScript CLI.
-- pnpm 12.3.4, pinned in `package.json` and invoked through Corepack.
-  Node.js 26 does not bundle Corepack; install it with `npm install --global corepack`
-  if it is not already available.
-- The package managers used by your configuration must already be available
-  on PATH: mise, Homebrew, APT, DNF, YUM, pacman, Flatpak, or mas. Workstation does not bootstrap them itself.
+- macOS or Linux. The native executable does not require Node.js, npm, Corepack,
+  or pnpm. The JavaScript CLI requires Node.js 26.8.1 or later.
+- Workstation bootstraps mise when a mise resource or Node-based task needs it.
+  It also bootstraps Homebrew when a Homebrew formula or cask is declared.
+  Newly installed tools are available in the same run; no shell restart is needed.
+- A selected `node`, `npm`, `npx`, or `pnpm` task bootstraps Node.js 26.8.1 through
+  mise. A selected `pnpm` task also bootstraps pnpm 12.3.4.
+- APT, DNF, YUM, pacman, Flatpak, and mas are not bootstrapped.
 - Build tools required by custom executables must be available when their build runs.
+
+## Install the native executable
+
+The release binaries support macOS and Linux on Intel/AMD 64-bit (`x64`) and
+ARM 64-bit (`arm64`) systems. Install the latest release into `~/.local/bin`.
+
+### Install with curl
+
+```sh
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in
+  x86_64) arch=x64 ;;
+  arm64|aarch64) arch=arm64 ;;
+  *) echo "Unsupported architecture: $arch" >&2; exit 1 ;;
+esac
+mkdir -p "$HOME/.local/bin"
+curl -fL "https://github.com/dovocode/workstation/releases/latest/download/workstation-${os}-${arch}" \
+  -o "$HOME/.local/bin/workstation"
+chmod +x "$HOME/.local/bin/workstation"
+```
+
+### Install with wget
+
+```sh
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in
+  x86_64) arch=x64 ;;
+  arm64|aarch64) arch=arm64 ;;
+  *) echo "Unsupported architecture: $arch" >&2; exit 1 ;;
+esac
+mkdir -p "$HOME/.local/bin"
+wget -O "$HOME/.local/bin/workstation" \
+  "https://github.com/dovocode/workstation/releases/latest/download/workstation-${os}-${arch}"
+chmod +x "$HOME/.local/bin/workstation"
+```
+
+Add `~/.local/bin` to your shell's PATH if it is not already present. For Zsh:
+
+```sh
+printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.zshrc"
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+For Bash:
+
+```sh
+printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.bashrc"
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Verify the installation:
+
+```sh
+workstation --help
+```
+
+macOS binaries are ad-hoc signed but not notarized. If Gatekeeper blocks the
+download, review the release and then remove the quarantine attribute explicitly:
+
+```sh
+xattr -d com.apple.quarantine "$HOME/.local/bin/workstation"
+```
 
 ### macOS: Homebrew and mise
 
 Homebrew and mise are recommended companions: Homebrew manages system packages
 and applications; mise manages development runtimes such as Node.js and Go.
-They are required only when your configuration uses those backends.
+They are required only when your configuration uses those backends, and Workstation
+installs either one on demand. The commands below remain useful for manual setup.
 
 Install Homebrew using its [official installer](https://docs.brew.sh/Installation):
 
@@ -42,6 +109,7 @@ See [mise installation](https://mise.jdx.dev/installing-mise.html) for other she
 ### Linux: mise and the distro package manager
 
 On Linux, mise is the recommended additional tool; Homebrew is not needed.
+Workstation installs mise on demand. The commands below show the equivalent manual setup.
 Workstation uses APT on Debian/Ubuntu, DNF on distributions that provide it,
 legacy YUM, or pacman on Arch Linux. `tools.system(...)` checks PATH in that order. Package mutations
 use `sudo`; the distro package manager and `sudo` must already be installed.
@@ -100,7 +168,10 @@ not bootstrap it before version resolution and inspection.
 
 ### Node.js and building Workstation
 
-If Node.js is not installed yet, mise can provide it on either platform:
+The native Workstation executable can run without Node.js. When a selected task's
+command is `node`, `npm`, `npx`, or `pnpm`, Workstation installs the pinned Node.js
+version with mise if needed; `pnpm` tasks similarly install the pinned pnpm version.
+For manual source builds, mise can provide Node.js on either platform:
 
 ```sh
 mise use --global node@26.8.1

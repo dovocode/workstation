@@ -5,6 +5,15 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.1.2 — 2026-09-06
+
+### Added
+
+- Bootstrap Homebrew and mise when required by configured resources, and bootstrap
+  pinned Node.js and pnpm versions when a selected task requires them.
+- Document native installation with curl and wget, and publish all four native
+  platform binaries as GitHub release assets on version tags.
+
 ## 0.1.1 — 2026-09-06
 
 ### Changed
