@@ -51,6 +51,8 @@ jobs:
         if: matrix.platform == 'linux' && matrix.arch == 'x64'
         run: pnpm quality
       - run: pnpm build:native
+      - name: Verify runtime config imports in the native executable
+        run: node scripts/test-native-imports.mjs
       - run: pnpm run docs
       - name: Smoke-test JavaScript and native CLIs
         run: |

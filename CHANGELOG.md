@@ -5,6 +5,13 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.2.1 — 2026-09-07
+
+- Fix native config loading when runtime imports reach external Jiti or other native
+  ESM dependencies. Preserve asynchronous imports and top-level await.
+- Test runtime library imports, nested TypeScript and asynchronous external ESM
+  against the actual native binary on every release platform.
+
 ## 0.2.0 — 2026-09-07
 
 - Resolve Fallow dead-code, duplication and complexity findings without relaxing

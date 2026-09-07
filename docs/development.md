@@ -81,6 +81,21 @@ with `corepack pnpm exec fallow dead-code --trace src/file.ts:symbol`. Do not ru
 automatic fixes without reviewing their changes, especially on resource ownership
 and recovery code. See the [official Fallow guide](https://github.com/fallow-rs/fallow).
 
+## Native config-import regression
+
+After `corepack pnpm build:native`, run `node scripts/test-native-imports.mjs`.
+It creates and removes an isolated project, imports the built library by package
+name, and lists tasks through both CLI distributions. No workstation state is
+applied. CI runs it for all four native platforms. An optional binary path lets
+the same fixture verify a previously released executable.
+
+The SEA-only Jiti build adapter uses Node's filesystem ESM loader through
+`vm.compileFunction`, retaining asynchronous module support instead of replacing
+imports with synchronous `require`. This Node API is experimental and may emit
+an `ExperimentalWarning` when first used; warnings are not globally suppressed.
+The adapter checks the pinned Jiti source signature and fails the build if it
+changes, so dependency updates require reviewing this integration.
+
 ## RPM backend integration tests
 
 The regular test suite uses fake command results and does not change system packages.
