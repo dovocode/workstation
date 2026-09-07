@@ -1,10 +1,11 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { isConfigValue } from "../config/value-validation.js";
 import { dirname, resolve } from "node:path";
 import { parse, stringify, type TomlTableWithoutBigInt } from "smol-toml";
+import { requireTable, requireString } from "./validation.js";
 import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
 import type {
   Context,
-  ConfigValue,
   CustomToolResource,
   GeneratedFileResource,
   LaunchAgentResource,
@@ -62,80 +63,17 @@ export async function readManifest(path: string): Promise<ResolvedConfig> {
 function toTomlResource(resource: ResolvedResource): TomlTableWithoutBigInt {
   switch (resource.kind) {
     case "package":
-      return {
-        kind: resource.kind,
-        manager: resource.manager,
-        name: resource.name,
-        ...(resource.version ? { version: resource.version } : {}),
-        ...(resource.lockedVersion ? { locked_version: resource.lockedVersion } : {}),
-        ...(resource.flatpak ? { flatpak: {
-          ...(resource.flatpak.scope ? { scope: resource.flatpak.scope } : {}),
-          ...(resource.flatpak.remote ? { remote: resource.flatpak.remote } : {}),
-          ...(resource.flatpak.branch ? { branch: resource.flatpak.branch } : {}),
-        } } : {}),
-        ...(resource.upgrade
-          ? {
-              upgrade: {
-                ...(resource.upgrade.greedy !== undefined
-                  ? { greedy: resource.upgrade.greedy }
-                  : {}),
-                ...(resource.upgrade.force !== undefined ? { force: resource.upgrade.force } : {}),
-              },
-            }
-          : {}),
-      };
+      return encodePackage(resource);
     case "symlink":
-      return { kind: resource.kind, source: resource.source, target: resource.target };
+      return encodeSymlink(resource);
     case "launch-agent":
-      return {
-        kind: resource.kind,
-        label: resource.label,
-        program: resource.program,
-        ...(resource.args ? { args: [...resource.args] } : {}),
-        ...(resource.environment ? { environment: { ...resource.environment } } : {}),
-        ...(resource.runAtLoad !== undefined ? { run_at_load: resource.runAtLoad } : {}),
-        ...(resource.keepAlive !== undefined ? { keep_alive: resource.keepAlive } : {}),
-        ...(resource.stdoutPath ? { stdout_path: resource.stdoutPath } : {}),
-        ...(resource.stderrPath ? { stderr_path: resource.stderrPath } : {}),
-      };
+      return encodeLaunchAgent(resource);
     case "generated-file":
-      return {
-        kind: resource.kind,
-        target: resource.target,
-        format: resource.format,
-        if_exists: resource.ifExists,
-        value_json: JSON.stringify(resource.value),
-        ...(resource.renderedContent !== undefined ? { rendered_content: resource.renderedContent } : {}),
-        ...(resource.mode !== undefined ? { mode: resource.mode } : {}),
-      };
+      return encodeGeneratedFile(resource);
     case "systemd-service":
-      return {
-        kind: resource.kind,
-        name: resource.name,
-        scope: resource.scope,
-        program: resource.program,
-        ...(resource.description ? { description: resource.description } : {}),
-        ...(resource.args ? { args: [...resource.args] } : {}),
-        ...(resource.environment ? { environment: { ...resource.environment } } : {}),
-        ...(resource.restart ? { restart: resource.restart } : {}),
-        ...(resource.wantedBy ? { wanted_by: resource.wantedBy } : {}),
-      };
+      return encodeSystemdService(resource);
     case "custom-tool":
-      return {
-        kind: resource.kind,
-        name: resource.name,
-        source: resource.source,
-        source_hash: resource.sourceHash ?? "",
-        target: resource.target,
-        build: {
-          command: resource.build.command,
-          ...(resource.build.args ? { args: [...resource.build.args] } : {}),
-          ...(resource.build.cwd ? { cwd: resource.build.cwd } : {}),
-          ...(resource.build.environment
-            ? { environment: { ...resource.build.environment } }
-            : {}),
-        },
-      };
+      return encodeCustomTool(resource);
   }
 }
 
@@ -173,17 +111,8 @@ function parseGeneratedFile(value: TomlTableWithoutBigInt): GeneratedFileResourc
     throw new Error("Pre-rendered content requires JSONC format");
   }
   const ifExists = requireString(value.if_exists, "generated-file.if_exists");
-  if (
-    format !== "toml" &&
-    format !== "yaml" &&
-    format !== "json" &&
-    format !== "jsonc" &&
-    format !== "zsh" &&
-    format !== "bash"
-  ) {
-    throw new Error(`Invalid generated file format: ${format}`);
-  }
-  if (ifExists !== "update" && ifExists !== "overwrite" && ifExists !== "ignore") {
+  if (!isGeneratedFormat(format)) throw new Error(`Invalid generated file format: ${format}`);
+  if ((ifExists === "merge" && format !== "dotenv") || !["update", "overwrite", "ignore", "inject", "merge"].includes(ifExists)) {
     throw new Error(`Invalid generated file policy: ${ifExists}`);
   }
   const configValue: unknown = JSON.parse(requireString(value.value_json, "generated-file.value_json"));
@@ -199,7 +128,7 @@ function parseGeneratedFile(value: TomlTableWithoutBigInt): GeneratedFileResourc
     kind: "generated-file",
     target: requireString(value.target, "generated-file.target"),
     format,
-    ifExists,
+    ifExists: ifExists as GeneratedFileResource["ifExists"],
     value: configValue,
     ...(value.rendered_content !== undefined
       ? { renderedContent: requireString(value.rendered_content, "generated-file.rendered_content") }
@@ -289,18 +218,7 @@ function parsePackage(value: TomlTableWithoutBigInt): ResolvedPackageResource {
     ...(value.locked_version !== undefined
       ? { lockedVersion: requireString(value.locked_version, "package.locked_version") }
       : {}),
-    ...(upgrade
-      ? {
-          upgrade: {
-            ...(upgrade.greedy !== undefined
-              ? { greedy: requireBoolean(upgrade.greedy, "package.upgrade.greedy") }
-              : {}),
-            ...(upgrade.force !== undefined
-              ? { force: requireBoolean(upgrade.force, "package.upgrade.force") }
-              : {}),
-          },
-        }
-      : {}),
+    ...parseUpgrade(upgrade),
   };
 }
 
@@ -341,20 +259,6 @@ function parseLaunchAgent(value: TomlTableWithoutBigInt): LaunchAgentResource {
   };
 }
 
-/** Require an object-shaped TOML table and identify the invalid field on failure. */
-function requireTable(value: unknown, field: string): TomlTableWithoutBigInt {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error(`${field} must be a table`);
-  }
-  return value as TomlTableWithoutBigInt;
-}
-
-/** Require a non-empty string at a serialized-data boundary. */
-function requireString(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0) throw new Error(`${field} must be a string`);
-  return value;
-}
-
 /** Require a boolean manifest field without coercion. */
 function requireBoolean(value: unknown, field: string): boolean {
   if (typeof value !== "boolean") throw new Error(`${field} must be a boolean`);
@@ -385,16 +289,120 @@ function isPackageManager(value: string): value is PackageResource["manager"] {
   return value === "mise" || value === "brew" || value === "brew-cask" || value === "apt" || value === "dnf" || value === "yum" || value === "pacman" || value === "flatpak" || value === "mas";
 }
 
-/** Check that a value consists only of supported finite JSON-like data. */
-function isConfigValue(value: unknown): value is ConfigValue {
-  if (
-    value === null ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (typeof value === "number" && Number.isFinite(value))
-  ) {
-    return true;
-  }
-  if (Array.isArray(value)) return value.every(isConfigValue);
-  return typeof value === "object" && value !== null && Object.values(value).every(isConfigValue);
+/** Encode the package backend payload. */
+function encodePackage(resource: Extract<ResolvedResource, { kind: "package" }>): TomlTableWithoutBigInt {
+  return {
+    kind: resource.kind,
+    manager: resource.manager,
+    name: resource.name,
+    ...(resource.version ? { version: resource.version } : {}),
+    ...(resource.lockedVersion ? { locked_version: resource.lockedVersion } : {}),
+    ...(resource.flatpak ? {
+      flatpak: {
+        ...(resource.flatpak.scope ? { scope: resource.flatpak.scope } : {}),
+        ...(resource.flatpak.remote ? { remote: resource.flatpak.remote } : {}),
+        ...(resource.flatpak.branch ? { branch: resource.flatpak.branch } : {}),
+      }
+    } : {}),
+    ...(resource.upgrade
+      ? {
+        upgrade: {
+          ...(resource.upgrade.greedy !== undefined
+            ? { greedy: resource.upgrade.greedy }
+            : {}),
+          ...(resource.upgrade.force !== undefined ? { force: resource.upgrade.force } : {}),
+        },
+      }
+      : {}),
+  };
+}
+
+/** Encode the symlink backend payload. */
+function encodeSymlink(resource: Extract<ResolvedResource, { kind: "symlink" }>): TomlTableWithoutBigInt {
+  return { kind: resource.kind, source: resource.source, target: resource.target };
+}
+
+/** Encode the launch-agent backend payload. */
+function encodeLaunchAgent(resource: Extract<ResolvedResource, { kind: "launch-agent" }>): TomlTableWithoutBigInt {
+  return {
+    kind: resource.kind,
+    label: resource.label,
+    program: resource.program,
+    ...(resource.args ? { args: [...resource.args] } : {}),
+    ...(resource.environment ? { environment: { ...resource.environment } } : {}),
+    ...(resource.runAtLoad !== undefined ? { run_at_load: resource.runAtLoad } : {}),
+    ...(resource.keepAlive !== undefined ? { keep_alive: resource.keepAlive } : {}),
+    ...(resource.stdoutPath ? { stdout_path: resource.stdoutPath } : {}),
+    ...(resource.stderrPath ? { stderr_path: resource.stderrPath } : {}),
+  };
+}
+
+/** Encode the generated-file backend payload. */
+function encodeGeneratedFile(resource: Extract<ResolvedResource, { kind: "generated-file" }>): TomlTableWithoutBigInt {
+  return {
+    kind: resource.kind,
+    target: resource.target,
+    format: resource.format,
+    if_exists: resource.ifExists,
+    value_json: JSON.stringify(resource.value),
+    ...(resource.renderedContent !== undefined ? { rendered_content: resource.renderedContent } : {}),
+    ...(resource.mode !== undefined ? { mode: resource.mode } : {}),
+  };
+}
+
+/** Encode the systemd-service backend payload. */
+function encodeSystemdService(resource: Extract<ResolvedResource, { kind: "systemd-service" }>): TomlTableWithoutBigInt {
+  return {
+    kind: resource.kind,
+    name: resource.name,
+    scope: resource.scope,
+    program: resource.program,
+    ...(resource.description ? { description: resource.description } : {}),
+    ...(resource.args ? { args: [...resource.args] } : {}),
+    ...(resource.environment ? { environment: { ...resource.environment } } : {}),
+    ...(resource.restart ? { restart: resource.restart } : {}),
+    ...(resource.wantedBy ? { wanted_by: resource.wantedBy } : {}),
+  };
+}
+
+/** Encode the custom-tool backend payload. */
+function encodeCustomTool(resource: Extract<ResolvedResource, { kind: "custom-tool" }>): TomlTableWithoutBigInt {
+  return {
+    kind: resource.kind,
+    name: resource.name,
+    source: resource.source,
+    source_hash: resource.sourceHash ?? "",
+    target: resource.target,
+    build: {
+      command: resource.build.command,
+      ...(resource.build.args ? { args: [...resource.build.args] } : {}),
+      ...(resource.build.cwd ? { cwd: resource.build.cwd } : {}),
+      ...(resource.build.environment
+        ? { environment: { ...resource.build.environment } }
+        : {}),
+    },
+  };
+}
+
+/** Narrow serialized format identifiers without accepting unknown renderers. */
+function isGeneratedFormat(format: string): format is GeneratedFileResource["format"] {
+  return ["toml", "yaml", "json", "jsonc", "zsh", "bash", "dotenv"].includes(format);
+}
+
+/** Decode optional cask upgrade flags while preserving false values. */
+function parseUpgrade(upgrade: TomlTableWithoutBigInt | undefined): Pick<ResolvedPackageResource, "upgrade"> {
+  return {
+    ...(upgrade
+      ? {
+        upgrade: {
+          ...(upgrade.greedy !== undefined
+            ? { greedy: requireBoolean(upgrade.greedy, "package.upgrade.greedy") }
+            : {}),
+          ...(upgrade.force !== undefined
+            ? { force: requireBoolean(upgrade.force, "package.upgrade.force") }
+            : {}),
+        },
+      }
+      : {}),
+  };
 }

@@ -69,6 +69,16 @@ Verify the installation:
 workstation --help
 ```
 
+Update Workstation later with:
+
+```sh
+workstation update
+```
+
+For a native installation this downloads and validates the latest matching
+release binary before atomically replacing the current executable. For the
+JavaScript CLI it runs `npm install --global @dovocode/workstation@latest`.
+
 macOS binaries are ad-hoc signed but not notarized. If Gatekeeper blocks the
 download, review the release and then remove the quarantine attribute explicitly:
 
@@ -212,10 +222,10 @@ export default defineConfig({
 });
 ```
 
-Then execute it:
+Then reconcile it:
 
 ```sh
-corepack pnpm workstation
+corepack pnpm workstation build
 ```
 
 This resolves package versions into `workstation.lock`, writes a private
@@ -226,11 +236,13 @@ Generated files overwrite by default and retain an original backup in local stat
 
 | Invocation | Behavior |
 | --- | --- |
+| `workstation` | Show command help |
+| `workstation build` | Reconcile the workstation |
 | `workstation init` | Create a starter configuration without applying it |
+| `workstation update` | Update the native executable or global npm installation |
 | `workstation init --config setup/workstation.config.ts` | Create a starter at a custom path |
-| `workstation` | Execute `workstation.config.ts` in the current directory |
-| `workstation --config /path/workstation.config.ts` | Use another entry point |
-| `workstation --machine studio` | Override the machine name for configuration and state |
+| `workstation build --config /path/workstation.config.ts` | Reconcile using another entry point |
+| `workstation build --machine studio` | Reconcile with a machine-name override |
 | `workstation --help` | Show help without loading or executing configuration |
 
 Within this repository use `node dist/cli.js` in place

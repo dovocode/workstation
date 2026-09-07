@@ -62,9 +62,9 @@ export interface LaunchAgentResource {
   readonly stderrPath?: string;
 }
 
-export type StructuredFormat = "toml" | "yaml" | "json" | "jsonc" | "zsh" | "bash";
+export type StructuredFormat = "toml" | "yaml" | "json" | "jsonc" | "zsh" | "bash" | "dotenv";
 /** `overwrite` saves and replaces unmanaged files; `update` rejects unmanaged differences; `ignore` preserves existing targets. */
-export type IfExistsPolicy = "update" | "overwrite" | "ignore";
+export type IfExistsPolicy = "update" | "overwrite" | "ignore" | "inject" | "merge";
 export type ConfigValue =
   | string
   | number

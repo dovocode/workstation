@@ -1,4 +1,5 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { isConfigValue, isStringRecord, isCommandSpec, isBrewCaskUpgradeOptions } from "../config/value-validation.js";
 import { dirname } from "node:path";
 import { fingerprint, resourceId } from "../config/identity.js";
 import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
@@ -77,59 +78,12 @@ function isResolvedResource(value: unknown): value is ResolvedResource {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const candidate = value as Record<string, unknown>;
   switch (candidate.kind) {
-    case "package":
-      return (
-        ["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas"].includes(String(candidate.manager)) &&
-        isPackageName(candidate.manager, candidate.name) &&
-        (candidate.flatpak === undefined || (candidate.manager === "flatpak" && isFlatpakOptions(candidate.flatpak))) &&
-        (candidate.manager !== "mas" || candidate.lockedVersion === undefined) &&
-        (candidate.version === undefined || typeof candidate.version === "string") &&
-        (candidate.lockedVersion === undefined || typeof candidate.lockedVersion === "string") &&
-        (candidate.upgrade === undefined ||
-          (candidate.manager === "brew-cask" && isBrewCaskUpgradeOptions(candidate.upgrade)))
-      );
-    case "symlink":
-      return typeof candidate.source === "string" && typeof candidate.target === "string";
-    case "launch-agent":
-      return (
-        typeof candidate.label === "string" &&
-        typeof candidate.program === "string" &&
-        (candidate.args === undefined ||
-          (Array.isArray(candidate.args) &&
-            candidate.args.every((argument) => typeof argument === "string")))
-      );
-    case "generated-file":
-      return (
-        typeof candidate.target === "string" &&
-        ["toml", "yaml", "json", "jsonc", "zsh", "bash"].includes(String(candidate.format)) &&
-        ["update", "overwrite", "ignore"].includes(String(candidate.ifExists)) &&
-        isConfigValue(candidate.value) &&
-        (candidate.renderedContent === undefined ||
-          (candidate.format === "jsonc" && typeof candidate.renderedContent === "string")) &&
-        (candidate.mode === undefined ||
-          (typeof candidate.mode === "number" &&
-            Number.isInteger(candidate.mode) &&
-            candidate.mode >= 0 &&
-            candidate.mode <= 0o777))
-      );
-    case "custom-tool":
-      return (
-        typeof candidate.name === "string" &&
-        typeof candidate.source === "string" &&
-        typeof candidate.sourceHash === "string" &&
-        typeof candidate.target === "string" &&
-        isCommandSpec(candidate.build)
-      );
-    case "systemd-service":
-      return (
-        typeof candidate.name === "string" &&
-        typeof candidate.program === "string" &&
-        ["user", "system"].includes(String(candidate.scope)) &&
-        (candidate.args === undefined ||
-          (Array.isArray(candidate.args) &&
-            candidate.args.every((argument) => typeof argument === "string"))) &&
-        (candidate.environment === undefined || isStringRecord(candidate.environment))
-      );
+    case "package": return isStoredPackage(candidate);
+    case "symlink": return isStoredSymlink(candidate);
+    case "launch-agent": return isStoredLaunchAgent(candidate);
+    case "generated-file": return isStoredGeneratedFile(candidate);
+    case "custom-tool": return isStoredCustomTool(candidate);
+    case "systemd-service": return isStoredSystemdService(candidate);
     default:
       return false;
   }
@@ -148,50 +102,74 @@ function isOriginalFile(value: unknown): boolean {
     candidate.mode <= 0o777;
 }
 
-/** Check that a value consists only of supported finite JSON-like data. */
-function isConfigValue(value: unknown): boolean {
-  if (
-    value === null ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (typeof value === "number" && Number.isFinite(value))
-  ) {
-    return true;
-  }
-  if (Array.isArray(value)) return value.every(isConfigValue);
-  return typeof value === "object" && value !== null && Object.values(value).every(isConfigValue);
-}
-
-/** Check that an object contains only string values. */
-function isStringRecord(value: unknown): boolean {
+/** Check persisted fields for package resources. */
+function isStoredPackage(candidate: Record<string, unknown>): boolean {
   return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    Object.values(value).every((item) => typeof item === "string")
+    ["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas"].includes(String(candidate.manager)) &&
+    isPackageName(candidate.manager, candidate.name) &&
+    (candidate.flatpak === undefined || (candidate.manager === "flatpak" && isFlatpakOptions(candidate.flatpak))) &&
+    (candidate.manager !== "mas" || candidate.lockedVersion === undefined) &&
+    (candidate.version === undefined || typeof candidate.version === "string") &&
+    (candidate.lockedVersion === undefined || typeof candidate.lockedVersion === "string") &&
+    (candidate.upgrade === undefined ||
+      (candidate.manager === "brew-cask" && isBrewCaskUpgradeOptions(candidate.upgrade)))
   );
 }
 
-/** Validate a direct command declaration, arguments, working directory, and environment. */
-function isCommandSpec(value: unknown): boolean {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const candidate = value as Record<string, unknown>;
+/** Check persisted fields for symlink resources. */
+function isStoredSymlink(candidate: Record<string, unknown>): boolean {
+  return typeof candidate.source === "string" && typeof candidate.target === "string";
+}
+
+/** Check persisted fields for launch-agent resources. */
+function isStoredLaunchAgent(candidate: Record<string, unknown>): boolean {
   return (
-    typeof candidate.command === "string" &&
+    typeof candidate.label === "string" &&
+    typeof candidate.program === "string" &&
     (candidate.args === undefined ||
-      (Array.isArray(candidate.args) && candidate.args.every((item) => typeof item === "string"))) &&
-    (candidate.cwd === undefined || typeof candidate.cwd === "string") &&
-    (candidate.environment === undefined || isStringRecord(candidate.environment))
+      (Array.isArray(candidate.args) &&
+        candidate.args.every((argument) => typeof argument === "string")))
   );
 }
 
-/** Validate the supported Homebrew upgrade option fields. */
-function isBrewCaskUpgradeOptions(value: unknown): boolean {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const options = value as Record<string, unknown>;
+/** Check persisted fields for generated-file resources. */
+function isStoredGeneratedFile(candidate: Record<string, unknown>): boolean {
   return (
-    Object.keys(options).every((key) => key === "greedy" || key === "force") &&
-    (options.greedy === undefined || typeof options.greedy === "boolean") &&
-    (options.force === undefined || typeof options.force === "boolean")
+    typeof candidate.target === "string" &&
+    ["toml", "yaml", "json", "jsonc", "zsh", "bash", "dotenv"].includes(String(candidate.format)) &&
+    ["update", "overwrite", "ignore", "inject", "merge"].includes(String(candidate.ifExists)) &&
+    (candidate.ifExists !== "merge" || candidate.format === "dotenv") &&
+    isConfigValue(candidate.value) &&
+    (candidate.renderedContent === undefined ||
+      (candidate.format === "jsonc" && typeof candidate.renderedContent === "string")) &&
+    (candidate.mode === undefined ||
+      (typeof candidate.mode === "number" &&
+        Number.isInteger(candidate.mode) &&
+        candidate.mode >= 0 &&
+        candidate.mode <= 0o777))
+  );
+}
+
+/** Check persisted fields for custom-tool resources. */
+function isStoredCustomTool(candidate: Record<string, unknown>): boolean {
+  return (
+    typeof candidate.name === "string" &&
+    typeof candidate.source === "string" &&
+    typeof candidate.sourceHash === "string" &&
+    typeof candidate.target === "string" &&
+    isCommandSpec(candidate.build, true)
+  );
+}
+
+/** Check persisted fields for systemd-service resources. */
+function isStoredSystemdService(candidate: Record<string, unknown>): boolean {
+  return (
+    typeof candidate.name === "string" &&
+    typeof candidate.program === "string" &&
+    ["user", "system"].includes(String(candidate.scope)) &&
+    (candidate.args === undefined ||
+      (Array.isArray(candidate.args) &&
+        candidate.args.every((argument) => typeof argument === "string"))) &&
+    (candidate.environment === undefined || isStringRecord(candidate.environment))
   );
 }

@@ -1,6 +1,7 @@
 import { hostname as readHostname, homedir, platform as readPlatform } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { access } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { resourceId } from "./identity.js";
 export { resourceId, fingerprint } from "./identity.js";
 import { hashSource } from "./source-hash.js";
@@ -53,7 +54,12 @@ export async function loadConfig(
   };
   const jiti = createJiti(configPath);
   const imported: unknown = await jiti.import(configPath, { default: true });
-  const definitions = collectDefinitions(imported, context);
+  return resolveConfig(imported as ConfigInput, context, configPath);
+}
+
+/** Resolve an in-memory definition using an explicit context and persistence identity. Does not apply resources. */
+export async function resolveConfig(input: ConfigInput, context: Context, configPath = resolve(context.configDir, DEFAULT_CONFIG_FILE)): Promise<ResolvedConfig> {
+  const definitions = collectDefinitions(input, context);
   if (definitions.length === 0) {
     throw new Error(`${configPath} did not produce any configuration`);
   }
@@ -72,7 +78,7 @@ export async function loadConfig(
     ...resolveTasks(definition, context),
     resources,
     stateFile: expandPath(
-      definition.stateFile ?? "~/.local/state/workstation/state.json",
+      definition.stateFile ?? `~/.local/state/workstation/configs/${createHash("sha256").update(resolve(configPath)).update("\0").update(context.machine).digest("hex").slice(0, 24)}/state.json`,
       context,
       false,
     ),
@@ -85,25 +91,7 @@ async function resolveResource(
   definition: ConfigDefinition,
   context: Context,
 ): Promise<ResolvedResource> {
-  if (resource.kind === "package") {
-    const manager = await resolveManager(resource.manager, definition, context);
-    if (!isPackageName(manager, resource.name)) throw new Error(`Invalid ${manager} package ID: ${resource.name}`);
-    if ((manager === "pacman" || manager === "flatpak") && context.platform !== "linux") throw new Error(`${manager} requires Linux`);
-    if (manager === "mas" && context.platform !== "darwin") throw new Error("mas requires macOS");
-    if (resource.flatpak !== undefined && manager !== "flatpak") throw new Error(`Flatpak options require the flatpak backend (${resource.name})`);
-    if (resource.upgrade !== undefined && manager !== "brew-cask") {
-      throw new Error(`Upgrade options are only supported for Homebrew casks (${resource.name})`);
-    }
-    if (manager === "mise") {
-      return { ...resource, manager, version: resource.version ?? "latest" };
-    }
-    if (resource.version !== undefined) {
-      throw new Error(`${manager} package ${resource.name} cannot declare a version`);
-    }
-    return { ...resource, manager, ...(manager === "flatpak" ? { flatpak: {
-      scope: resource.flatpak?.scope ?? "user", remote: resource.flatpak?.remote ?? "flathub", branch: resource.flatpak?.branch ?? "stable",
-    } } : {}) };
-  }
+  if (resource.kind === "package") { return resolvePackage(resource, definition, context); }
   if (resource.kind === "symlink") {
     return {
       ...resource,
@@ -114,32 +102,8 @@ async function resolveResource(
   if (resource.kind === "generated-file") {
     return { ...resource, target: expandPath(resource.target, context, false) };
   }
-  if (resource.kind === "systemd-service") {
-    if (context.platform !== "linux") {
-      throw new Error(`systemd service ${resource.name} is only supported on Linux`);
-    }
-    return {
-      ...resource,
-      name: resource.name.endsWith(".service") ? resource.name : `${resource.name}.service`,
-      program: expandPath(resource.program, context, true),
-    };
-  }
-  if (resource.kind === "custom-tool") {
-    const source = expandPath(resource.source, context, true);
-    const target = expandPath(resource.target, context, false);
-    return {
-      ...resource,
-      source,
-      target,
-      sourceHash: await hashSource(source),
-      build: {
-        ...resource.build,
-        ...(resource.build.cwd && !resource.build.cwd.includes("{")
-          ? { cwd: expandPath(resource.build.cwd, context, true) }
-          : {}),
-      },
-    };
-  }
+  if (resource.kind === "systemd-service") { return resolveSystemdService(resource, context); }
+  if (resource.kind === "custom-tool") { return resolveCustomTool(resource, context); }
   if (context.platform !== "darwin") {
     throw new Error(`LaunchAgent ${resource.label} is only supported on macOS`);
   }
@@ -217,4 +181,64 @@ function mergeDefinitions(definitions: readonly ConfigDefinition[]): ConfigDefin
     }),
     {},
   );
+}
+
+/** Resolve package declarations with their platform and path constraints. */
+async function resolvePackage(resource: Extract<Resource, { kind: "package" }>, definition: ConfigDefinition, context: Context): Promise<ResolvedResource> {
+  const manager = await resolveManager(resource.manager, definition, context);
+  validatePackageCompatibility(resource, manager, context);
+  if (manager === "mise") {
+    return { ...resource, manager, version: resource.version ?? "latest" };
+  }
+  if (resource.version !== undefined) {
+    throw new Error(`${manager} package ${resource.name} cannot declare a version`);
+  }
+  return {
+    ...resource, manager, ...(manager === "flatpak" ? {
+      flatpak: {
+        scope: resource.flatpak?.scope ?? "user", remote: resource.flatpak?.remote ?? "flathub", branch: resource.flatpak?.branch ?? "stable",
+      }
+    } : {})
+  };
+}
+
+/** Resolve systemd-service declarations with their platform and path constraints. */
+async function resolveSystemdService(resource: Extract<Resource, { kind: "systemd-service" }>, context: Context): Promise<ResolvedResource> {
+  if (context.platform !== "linux") {
+    throw new Error(`systemd service ${resource.name} is only supported on Linux`);
+  }
+  return {
+    ...resource,
+    name: resource.name.endsWith(".service") ? resource.name : `${resource.name}.service`,
+    program: expandPath(resource.program, context, true),
+  };
+}
+
+/** Resolve custom-tool declarations with their platform and path constraints. */
+async function resolveCustomTool(resource: Extract<Resource, { kind: "custom-tool" }>, context: Context): Promise<ResolvedResource> {
+  const source = expandPath(resource.source, context, true);
+  const target = expandPath(resource.target, context, false);
+  return {
+    ...resource,
+    source,
+    target,
+    sourceHash: await hashSource(source),
+    build: {
+      ...resource.build,
+      ...(resource.build.cwd && !resource.build.cwd.includes("{")
+        ? { cwd: expandPath(resource.build.cwd, context, true) }
+        : {}),
+    },
+  };
+}
+
+/** Check backend-specific options and OS support before resolving a package declaration. */
+function validatePackageCompatibility(resource: Extract<Resource, { kind: "package" }>, manager: PackageManager, context: Context): void {
+  if (!isPackageName(manager, resource.name)) throw new Error(`Invalid ${manager} package ID: ${resource.name}`);
+  if ((manager === "pacman" || manager === "flatpak") && context.platform !== "linux") throw new Error(`${manager} requires Linux`);
+  if (manager === "mas" && context.platform !== "darwin") throw new Error("mas requires macOS");
+  if (resource.flatpak !== undefined && manager !== "flatpak") throw new Error(`Flatpak options require the flatpak backend (${resource.name})`);
+  if (resource.upgrade !== undefined && manager !== "brew-cask") {
+    throw new Error(`Upgrade options are only supported for Homebrew casks (${resource.name})`);
+  }
 }

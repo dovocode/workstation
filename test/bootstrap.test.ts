@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ensurePrerequisites } from "../src/bootstrap.js";
 import type { ResolvedConfig, Runner } from "../src/api/types.js";
 
@@ -22,6 +25,20 @@ function recordingRunner(calls: Array<{ command: string; args: readonly string[]
 }
 
 describe("prerequisite bootstrap", () => {
+  it("finds existing executables on the default search path without running them", async () => {
+    const root = await mkdtemp(join(tmpdir(), "workstation-path-"));
+    try {
+      const bin = join(root, ".local", "bin");
+      await mkdir(bin, { recursive: true });
+      await writeFile(join(bin, "mise"), "not executed", { mode: 0o755 });
+      const base = config("linux", [{ kind: "package", manager: "mise", name: "node" }]);
+      const calls: Array<{ command: string; args: readonly string[] }> = [];
+      await ensurePrerequisites({ ...base, context: { ...base.context, home: root } }, recordingRunner(calls));
+      expect(calls).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
   it("installs Homebrew only for a macOS Homebrew resource", async () => {
     const calls: Array<{ command: string; args: readonly string[] }> = [];
     let installed = false;

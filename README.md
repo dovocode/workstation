@@ -97,8 +97,10 @@ export default defineConfig({
 ```
 
 ```sh
-workstation                 # Execute the declared setup
-workstation --verbose       # Include raw inspection and version-query output
+workstation                 # Show help
+workstation build           # Reconcile the declared setup
+workstation update          # Update Workstation itself
+workstation build --verbose # Include raw inspection and version-query output
 workstation --list-tasks
 workstation t -- --watch    # Run only the named task
 ```
@@ -109,14 +111,138 @@ The committed `workstation.lock` records package versions per machine.
 Compatible package operations run in native batches, with each result verified
 and saved individually. See [batching and recovery](docs/operations.md#native-package-batches).
 
-Runs report configuration loading, version resolution, resource inspections,
-commands with exit codes and elapsed time, and completed actions. Package changes
-and tasks stream their output live. Use `--verbose` (`-v`) to also show raw query
-output. Embedded `ProcessRunner` usage stays silent unless logging is enabled.
+Runs report configuration loading, version resolution, inspection counts, planned
+changes, and a final result. Package changes and tasks stream their output live.
+Use `--verbose` (`-v`) for individual inspections, command traces, exit timings,
+and raw query output. Embedded `ProcessRunner` usage stays silent unless logging
+is enabled. Independent version queries and desired-resource inspections run
+with up to four concurrent reads; mutations retain their dependency ordering.
+
+`workstation update` checks the latest GitHub Release. A native installation
+downloads the matching platform binary, verifies that it starts, and atomically
+replaces itself. The JavaScript CLI updates the global npm package instead.
+
+`workstation build` performs the complete lock, manifest, plan, and reconciliation
+flow. Running `workstation` without a command displays help.
 
 ## Documentation
 
+- [Docker, Docker Sandboxes, and Microsandbox task integration](docs/environments.md)
+
+### Use inside a TypeScript codebase
+
+```ts
+import { createWorkstation, files } from "@dovocode/workstation";
+import { fileURLToPath } from "node:url";
+
+const workstation = createWorkstation({
+  configPath: fileURLToPath(new URL("./workstation.config.ts", import.meta.url)),
+  onAction: action => console.log(action.type, action.id),
+});
+
+const actions = await workstation.plan(); // no state/lock writes
+await workstation.build({ frozen: true, noRemove: true });
+const status = await workstation.status();
+```
+
+Or supply an inline definition with `config: { resources: [...] }`. Its `configPath`
+provides the lock location and state identity without requiring a file to exist.
+For example: `createWorkstation({ configPath: "/project/setup.ts", config: {
+resources: [files.dotenv("~/project/.env", { PORT: "3000" })] } })`.
+Targets retain the same home-relative semantics as file-based configurations.
+
+The client also provides `updateLock(ids?)`, `doctor()`, `history()`,
+`rollback(id, { apply: true })`, `task(name, args)`, and `configuration()`.
+It throws errors and returns values instead of exiting the host process. Default
+execution is silent; use callbacks or supply a `ProcessRunner` with logging enabled.
+Pass `runner` for a custom execution boundary and `context` with inline definitions
+for isolated tests. Only `build({ bootstrap: true })` opts into installing prerequisite
+managers; planning never does. `configPath` should be absolute for predictable project
+integration. The JavaScript package still requires its declared Node.js version.
+
+### Dotenv files
+
+```ts
+files.dotenv("~/projects/app/.env", {
+  PORT: "3000",
+  APP_ENV: "development",
+});
+```
+
+Dotenv defaults to `merge` and private `0o600` permissions. It preserves unrelated
+keys, comment lines, inline comments and LF/CRLF endings. Values are literal:
+no shell execution or variable expansion occurs. This initial dialect accepts
+single-line strings without single quotes or NUL; unsupported quoting and duplicate
+keys are rejected. Omitted keys are left untouched. Removal restores declared keys
+from the original backup and preserves unrelated edits; changed managed keys block
+restoration. A newly created dotenv file is retained after its managed keys are
+removed. Existing snapshot/backup files may contain plaintext values; secret-provider
+integration and encrypted backups remain future work.
+
+### Planning and pinned builds
+
+`workstation --version` prints the installed CLI version. `workstation status`
+checks resources against recorded pins and reports untracked declarations, changes,
+drift, removed declarations, and inspection errors. It does not resolve new pins.
+`workstation doctor` checks required commands on PATH and prints backend pin and
+recovery limitations; it does not install or execute managers. Both commands return
+a nonzero status for detected drift/errors or missing commands respectively.
+Use `workstation --config PATH status` (or `doctor`) for another configuration.
+The exported `packageCapabilities` table describes current backend support; it is
+informational and does not itself enable new rollback operations.
+
+`workstation plan` performs inspections without bootstrapping tools or writing locks,
+manifests, or state. Required package managers must already be available. Configuration
+files are executable TypeScript, so their own side effects cannot be prevented.
+`workstation build --frozen-lockfile` requires unchanged existing pins, including
+greedy casks. `workstation build --no-remove` refuses a plan containing removals.
+
+Default state is now scoped by configuration path and machine below
+`~/.local/state/workstation/configs/`. Existing global state is not automatically
+migrated. To continue using existing ownership and original-file backups, explicitly
+set `stateFile: "~/.local/state/workstation/state.json"` in the original configuration
+only. Moving a configuration changes its default namespace. Each build with actions
+saves its preceding state and desired manifest in a private `history` directory.
+Snapshots may contain sensitive configuration or original-file contents.
+
+`workstation history` lists snapshots. `workstation rollback RUN` previews restoring
+updates to previously managed generated files; add `--apply` to execute. Place
+`--config PATH` before the rollback command when selecting a configuration.
+Rollback refuses external edits, unrelated drift, unsupported package changes, creation/removal,
+injection changes, and policy changes. It does not rewrite your source configuration
+or lock: update those separately before your next build. State preconditions are
+rechecked under the apply lock, and rollback itself creates a recovery snapshot.
+
+Exactly pinned mise updates are also supported by rollback. Both versions must be
+recorded; the newer pin must still match, and the prior version must be installed
+or resolvable to the exact same version. Other managers remain unsupported for
+snapshot rollback. This restores installations, not application data or activation.
+
+Refresh locks without installing with `workstation lock update`, or select resources:
+`workstation lock update package:mise:node package:brew:jq`. Then apply with
+`workstation build --frozen-lockfile`. Unknown IDs fail before querying. Unselected
+unchanged pins are retained, including greedy casks; new or changed declarations
+still require resolution. Required managers must already exist.
+
+Use `files.inject` to manage part of an existing file:
+
+```ts
+files.inject("~/.zshrc", '\nexport EDITOR="zed"\n', {
+  start: "# BEGIN WORKSTATION",
+  end: "# END WORKSTATION",
+});
+```
+
+The `inject` policy replaces only the text between exactly one existing pair of
+markers. Include desired newlines in the injected content. Missing, duplicate,
+or reversed markers fail without writing. Surrounding text and existing permissions
+are preserved (an optional fourth argument can specify `mode`). On removal,
+the original section is restored without reverting edits outside the markers.
+As with other file resources, declare each target only once.
+
 - [Full usage guide](docs/README.md)
+- [CLI command reference](docs/cli.md)
+- [Architecture and maintenance](docs/architecture.md)
 - [Tasks and aliases](docs/tasks.md)
 - [Configuration and machines](docs/configuration.md)
 - [Locks and recovery](docs/operations.md)

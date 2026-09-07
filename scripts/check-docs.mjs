@@ -17,15 +17,11 @@ async function checkDirectory(directory) {
       const source = ts.createSourceFile(path, await readFile(path, "utf8"), ts.ScriptTarget.Latest, true);
       /** Visit declarations and record missing JSDoc with a source location. */
       function visit(node) {
-        const namedArrow = (ts.isVariableDeclaration(node) || ts.isPropertyAssignment(node)) &&
-          node.initializer && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer));
-        if (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node) ||
-            ts.isMethodSignature(node) || ts.isConstructorDeclaration(node) || namedArrow) {
+        if (isDocumentedDeclaration(node)) {
           checked += 1;
           const owner = ts.isVariableDeclaration(node) ? node.parent.parent : node;
           if (!ts.getJSDocCommentsAndTags(owner).length) {
-            const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-            missing.push(`${path}:${line} ${node.name?.getText(source) ?? "constructor"}`);
+            recordMissing(node, source, path);
           }
         }
         ts.forEachChild(node, visit);
@@ -41,4 +37,22 @@ if (missing.length) {
   process.exitCode = 1;
 } else {
   console.log(`JSDoc present for all ${checked} named functions and methods.`);
+}
+
+/** Identify named declarations whose contracts require documentation. */
+function isDocumentedDeclaration(node) {
+  if ([ts.isFunctionDeclaration, ts.isMethodDeclaration, ts.isMethodSignature, ts.isConstructorDeclaration].some((check) => check(node))) return true;
+  if (!ts.isVariableDeclaration(node) && !ts.isPropertyAssignment(node)) return false;
+  return isFunctionInitializer(node.initializer);
+}
+
+/** Recognize function-valued properties and variables independently of their declaration owner. */
+function isFunctionInitializer(value) {
+  return value && (ts.isArrowFunction(value) || ts.isFunctionExpression(value));
+}
+
+/** Record a precise source location for a missing declaration contract. */
+function recordMissing(node, source, path) {
+            const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+            missing.push(`${path}:${line} ${node.name?.getText(source) ?? "constructor"}`);
 }

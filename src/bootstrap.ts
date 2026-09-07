@@ -23,36 +23,56 @@ export async function ensurePrerequisites(
   const needsPnpm = taskCommand === "pnpm";
   const needsMise = managers.has("mise") || needsNode;
 
-  if (needsBrew && !await commandExists("brew")) {
-    runner.report?.("Homebrew is required; installing it...");
-    await requireSuccess(runner, "/bin/bash", ["-c",
-      '/usr/bin/env NONINTERACTIVE=1 /bin/bash -c "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
-    ], "Homebrew installer");
-    addKnownToolPaths(config.context.home, config.context.platform);
-    if (!await commandExists("brew")) throw new Error("Homebrew installed but brew was not found on PATH");
+  await ensureBrew();
+
+  await ensureMise();
+
+  await ensureNode();
+  await ensurePnpm();
+
+  /** Install Brew only when required and verify it becomes available. */
+  async function ensureBrew(): Promise<void> {
+    if (needsBrew && !await commandExists("brew")) {
+      runner.report?.("Homebrew is required; installing it...");
+      await requireSuccess(runner, "/bin/bash", ["-c",
+        '/usr/bin/env NONINTERACTIVE=1 /bin/bash -c "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+      ], "Homebrew installer");
+      addKnownToolPaths(config.context.home, config.context.platform);
+      if (!await commandExists("brew")) throw new Error("Homebrew installed but brew was not found on PATH");
+    }
   }
 
-  if (needsMise && !await commandExists("mise")) {
-    runner.report?.("mise is required; installing it...");
-    await requireSuccess(runner, "/bin/sh", ["-c", "curl -fsSL https://mise.run | sh"], "mise installer");
-    addKnownToolPaths(config.context.home, config.context.platform);
-    if (!await commandExists("mise")) throw new Error("mise installed but was not found on PATH");
+  /** Install Mise only when required and verify it becomes available. */
+  async function ensureMise(): Promise<void> {
+    if (needsMise && !await commandExists("mise")) {
+      runner.report?.("mise is required; installing it...");
+      await requireSuccess(runner, "/bin/sh", ["-c", "curl -fsSL https://mise.run | sh"], "mise installer");
+      addKnownToolPaths(config.context.home, config.context.platform);
+      if (!await commandExists("mise")) throw new Error("mise installed but was not found on PATH");
+    }
   }
 
-  if (needsNode && !await commandExists("node")) {
-    runner.report?.(`Node.js ${NODE_VERSION} is required by task ${taskName}; installing it with mise...`);
-    await requireSuccess(runner, "mise", ["use", "--global", `node@${NODE_VERSION}`], "Node.js installation");
-    if (!await commandExists("node")) throw new Error("Node.js installed but node was not found on PATH");
+  /** Install Node only when required and verify it becomes available. */
+  async function ensureNode(): Promise<void> {
+    if (needsNode && !await commandExists("node")) {
+      runner.report?.(`Node.js ${NODE_VERSION} is required by task ${taskName}; installing it with mise...`);
+      await requireSuccess(runner, "mise", ["use", "--global", `node@${NODE_VERSION}`], "Node.js installation");
+      if (!await commandExists("node")) throw new Error("Node.js installed but node was not found on PATH");
+    }
   }
-  if (needsPnpm && !await commandExists("pnpm")) {
-    runner.report?.(`pnpm ${PNPM_VERSION} is required by task ${taskName}; installing it with mise...`);
-    await requireSuccess(runner, "mise", ["use", "--global", `pnpm@${PNPM_VERSION}`], "pnpm installation");
-    if (!await commandExists("pnpm")) throw new Error("pnpm installed but was not found on PATH");
+
+  /** Install Pnpm only when required and verify it becomes available. */
+  async function ensurePnpm(): Promise<void> {
+    if (needsPnpm && !await commandExists("pnpm")) {
+      runner.report?.(`pnpm ${PNPM_VERSION} is required by task ${taskName}; installing it with mise...`);
+      await requireSuccess(runner, "mise", ["use", "--global", `pnpm@${PNPM_VERSION}`], "pnpm installation");
+      if (!await commandExists("pnpm")) throw new Error("pnpm installed but was not found on PATH");
+    }
   }
 }
 
 /** Add default installation locations so tools installed during this process are immediately visible. */
-export function addKnownToolPaths(home: string, platform: Platform): void {
+function addKnownToolPaths(home: string, platform: Platform): void {
   const candidates = [
     join(home, ".local", "bin"),
     join(home, ".local", "share", "mise", "shims"),

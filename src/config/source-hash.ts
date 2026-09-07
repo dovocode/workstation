@@ -10,7 +10,7 @@ export async function hashSource(path: string): Promise<string> {
 }
 
 /** Visit one source entry and its sorted children, recording entry type and relative path. */
-export async function addPathToHash(
+async function addPathToHash(
   hash: ReturnType<typeof createHash>,
   path: string,
   relativePath: string,

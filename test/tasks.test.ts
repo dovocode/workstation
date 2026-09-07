@@ -31,6 +31,8 @@ describe("custom tasks", () => {
     expect(() => resolveTasks({ tasks: { a: task("echo") }, aliases: { a: "a" } }, context)).toThrow("share a name");
     expect(() => resolveTasks({ tasks: { help: task("echo") } }, context)).toThrow("reserved");
     expect(() => resolveTasks({ tasks: { init: task("echo") } }, context)).toThrow("reserved");
+    expect(() => resolveTasks({ tasks: { build: task("echo") } }, context)).toThrow("reserved");
+    expect(() => resolveTasks({ tasks: { update: task("echo") } }, context)).toThrow("reserved");
     expect(() => resolveTasks({ aliases: { init: "hello" } }, context)).toThrow("reserved");
   });
 

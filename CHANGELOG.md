@@ -5,6 +5,48 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.2.0 — 2026-09-07
+
+- Resolve Fallow dead-code, duplication and complexity findings without relaxing
+  thresholds or suppressing the backlog. Use fresh measured coverage for quality checks.
+- Split CLI dispatch, validation, planning, package batching, migration and recovery
+  into documented helpers; preserve checkpoint and ownership behavior.
+- Add isolated CLI, service-state validation, bootstrap and self-update execution tests.
+- Add nested Workstation build/plan tasks for Docker, Docker Sandboxes and Microsandbox.
+- Document architecture, CLI contracts, extension workflows and quality checks.
+
+- Add typed Docker/Compose, Docker Sandboxes (`sbx`), and Microsandbox (`msb`)
+  lifecycle task helpers for CLI configurations and embedded clients.
+
+- Add a typed embedded client for file-based or inline definitions, planning,
+  builds, pin refresh, status, diagnostics, history, rollback and task execution.
+
+- Add explicit all/selected lock refresh and rollback of exactly pinned mise updates
+  with installed-state checks and prior-version availability preflight.
+
+- Add read-only status against recorded pins, executable diagnostics, backend
+  capability descriptions, and a configuration-free `--version` command.
+
+- Add literal dotenv merging with private permissions, comment preservation,
+  duplicate-key rejection and guarded restoration of declared keys.
+
+- Add `files.inject` and the `inject` policy for replacing marked sections and
+  restoring their original content without overwriting the surrounding file.
+
+### Changed
+
+- Reduce default logging to phase progress, inspection counts, actions, and live
+  mutation output; retain command traces and detailed inspections with `--verbose`.
+- Resolve versions and inspect desired resources with four concurrent reads,
+  preserving result order and draining active reads before reporting failure.
+
+### Added
+
+- Add `workstation update` for atomic native-binary self-updates and global npm
+  CLI updates.
+- Add `workstation build` as the explicit command for the full reconciliation flow;
+  bare `workstation` now displays help.
+
 ## 0.1.2 — 2026-09-06
 
 ### Added

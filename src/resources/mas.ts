@@ -1,6 +1,6 @@
 import type { ResolvedPackageResource, Runner } from "../api/types.js";
 import { requireSuccess, type Inspection } from "./shared.js";
-import { runPackageCommand, type PackageCommand } from "./package-command.js";
+import { type PackageCommand } from "./package-command.js";
 
 /** Parse mas's app table while preserving names containing spaces or parentheses. */
 function appRows(output: string): Array<{ id: string; version: string }> {
@@ -20,10 +20,6 @@ export async function inspectMas(resource: ResolvedPackageResource, runner: Runn
   return { present: true, matches: !outdated.some((app) => app.id === resource.name), installedVersion: installed.version };
 }
 
-/** Install previously acquired apps or update an installed app, without purchasing anything. */
-export async function installMas(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
-  await runPackageCommand(await prepareMas(resource, runner), runner);
-}
 
 /** Prepare an explicit list-targeted App Store install or upgrade. */
 export async function prepareMas(resource: ResolvedPackageResource, runner: Runner, inspection?: Inspection): Promise<PackageCommand | undefined> {

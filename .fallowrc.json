@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "minimumVersion": "3.22.0",
+  "entry": ["src/index.ts", "src/cli.ts", "scripts/*.mjs"],
+  "ignoreDependencies": ["postject"]
+}

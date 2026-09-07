@@ -1,4 +1,6 @@
 node_modules/
+.fallow/
+coverage/
 dist/
 *.tgz
 .DS_Store

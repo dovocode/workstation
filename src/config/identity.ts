@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import type { ResolvedResource } from "../api/types.js";
 
+/** Index resolved declarations by their canonical ownership identity. */
+export function indexResources(resources: readonly ResolvedResource[]): Map<string, ResolvedResource> {
+  return new Map(resources.map((resource) => [resourceId(resource), resource]));
+}
+
 /** Stable ownership key. File-like resources share their destination as an identity. */
 export function resourceId(resource: ResolvedResource): string {
   switch (resource.kind) {

@@ -24,8 +24,10 @@ async function fixture(available = "1.3.1") {
   await writeFile(join(version, "completion"), "original completion");
   await symlink(join(version, "completion"), completion);
   await symlink(app, join(version, "Ghostty.app"));
-  const receipt = { schema_version: 3, version: "1.3.1", apps: [app], completions: [completion],
-    binaries: [], fonts: [], flight_directories: [], generic: [], pkg_ids: [] };
+  const receipt = {
+    schema_version: 3, version: "1.3.1", apps: [app], completions: [completion],
+    binaries: [], fonts: [], flight_directories: [], generic: [], pkg_ids: []
+  };
   await writeFile(join(version, ".mise-cask.toml"), stringify(receipt));
   let installed: string | null = null;
   let failInstall = false;
@@ -45,22 +47,28 @@ async function fixture(available = "1.3.1") {
       if (args[0] === "list") return ok("ghostty");
       if (args[0] === "info") return ok(JSON.stringify({ casks: [{ version: available, installed }] }));
       if (args[0] === "install") {
-        await expect(lstat(cask)).rejects.toMatchObject({ code: "ENOENT" });
-        await mkdir(cask);
-        if (failInstall) {
-          // Homebrew may remove adopted artifacts during rollback.
-          await rm(app, { recursive: true });
-          await rm(completion);
-          return { exitCode: 1, stdout: "", stderr: "artifact installation failed" };
-        }
-        installed = available;
-        return ok();
+        return simulateInstall();
       }
       throw new Error(`Unexpected brew arguments: ${args.join(" ")}`);
     },
   };
-  return { root, cask, app, version, completion, receipt, runner, calls, messages,
-    fail: () => { failInstall = true; }, installed: () => { installed = "1.3.1"; } };
+  /** Simulate installation and artifact loss independently from query responses. */
+  async function simulateInstall(): Promise<CommandResult> {
+    await expect(lstat(cask)).rejects.toMatchObject({ code: "ENOENT" });
+    await mkdir(cask);
+    if (failInstall) {
+      // Homebrew may remove adopted artifacts during rollback.
+      await rm(app, { recursive: true });
+      await rm(completion);
+      return { exitCode: 1, stdout: "", stderr: "artifact installation failed" };
+    }
+    installed = available;
+    return { exitCode: 0, stdout: "", stderr: "" };
+  }
+  return {
+    root, cask, app, version, completion, receipt, runner, calls, messages,
+    fail: () => { failInstall = true; }, installed: () => { installed = "1.3.1"; }
+  };
 }
 
 describe("mise cask migration", () => {
@@ -88,13 +96,15 @@ describe("mise cask migration", () => {
     await writeFile(join(f.version, ".mise-cask.toml"), stringify({ ...f.receipt, apps: [], binaries: [binary] }));
     expect(await inspectMiseCask(resource, f.runner)).toMatchObject({ apps: [], fonts: [], links: expect.arrayContaining([{ path: binary, target: original }]) });
     f.fail();
-    const runner: Runner = { ...f.runner, async run(command, args, options) {
-      if (command === "brew" && args[0] === "install") {
-        await rm(binary);
-        await symlink(join(f.cask, "new-layout", "op"), binary);
+    const runner: Runner = {
+      ...f.runner, async run(command, args, options) {
+        if (command === "brew" && args[0] === "install") {
+          await rm(binary);
+          await symlink(join(f.cask, "new-layout", "op"), binary);
+        }
+        return f.runner.run(command, args, options);
       }
-      return f.runner.run(command, args, options);
-    } };
+    };
     await expect(installResource(resource, runner)).rejects.toThrow("Mise staging restored");
     expect(await readFile(binary, "utf8")).toBe("original binary");
   });
@@ -107,8 +117,10 @@ describe("mise cask migration", () => {
     await writeFile(join(f.version, "Test.ttf"), "original font");
     await writeFile(join(f.version, ".mise-cask.toml"), stringify({ ...f.receipt, apps: [], fonts: [font] }));
     expect(await inspectMiseCask(resource, f.runner)).toMatchObject({ apps: [], fonts: [font] });
-    const config: ResolvedConfig = { context: { machine: "test", hostname: "test", platform: "darwin", home: f.root, configDir: f.root },
-      stateFile: join(f.root, "state.json"), resources: [resource] };
+    const config: ResolvedConfig = {
+      context: { machine: "test", hostname: "test", platform: "darwin", home: f.root, configDir: f.root },
+      stateFile: join(f.root, "state.json"), resources: [resource]
+    };
     expect((await applyPlan(config, f.runner))[0]?.reason).toBe("migrate from mise to Homebrew");
     expect(f.calls.find(({ args }) => args[0] === "install")?.args).toEqual(["install", "--cask", "--adopt", "ghostty"]);
     expect((await readState(config.stateFile, "test")).resources["package:brew-cask:ghostty"]?.owned).toBe(false);
@@ -125,10 +137,12 @@ describe("mise cask migration", () => {
     await writeFile(join(f.version, "Test.otf"), "original font");
     await writeFile(join(f.version, ".mise-cask.toml"), stringify({ ...f.receipt, apps: [], fonts: [font] }));
     f.fail();
-    const runner: Runner = { ...f.runner, async run(command, args, options) {
-      if (command === "brew" && args[0] === "install") await rm(font);
-      return f.runner.run(command, args, options);
-    } };
+    const runner: Runner = {
+      ...f.runner, async run(command, args, options) {
+        if (command === "brew" && args[0] === "install") await rm(font);
+        return f.runner.run(command, args, options);
+      }
+    };
     await expect(installResource(resource, runner)).rejects.toThrow("Mise staging restored");
     expect(await readFile(font, "utf8")).toBe("original font");
     expect(await readFile(join(f.version, "Test.otf"), "utf8")).toBe("original font");
@@ -158,8 +172,10 @@ describe("mise cask migration", () => {
 
   it("migrates a matching app and retains its backup and adopted ownership", async () => {
     const f = await fixture();
-    const config: ResolvedConfig = { context: { machine: "test", hostname: "test", platform: "darwin", home: f.root, configDir: f.root },
-      stateFile: join(f.root, "state.json"), resources: [resource] };
+    const config: ResolvedConfig = {
+      context: { machine: "test", hostname: "test", platform: "darwin", home: f.root, configDir: f.root },
+      stateFile: join(f.root, "state.json"), resources: [resource]
+    };
     const actions = await applyPlan(config, f.runner);
     expect(actions[0]?.reason).toBe("migrate from mise to Homebrew");
     expect(f.calls.find(({ args }) => args[0] === "install")).toMatchObject({
@@ -196,10 +212,12 @@ describe("mise cask migration", () => {
 
   it("leaves the original installation in place when app backup fails", async () => {
     const f = await fixture();
-    const runner: Runner = { ...f.runner, async run(command, args, options) {
-      if (command === "/usr/bin/ditto") return { exitCode: 1, stdout: "", stderr: "backup failed" };
-      return f.runner.run(command, args, options);
-    } };
+    const runner: Runner = {
+      ...f.runner, async run(command, args, options) {
+        if (command === "/usr/bin/ditto") return { exitCode: 1, stdout: "", stderr: "backup failed" };
+        return f.runner.run(command, args, options);
+      }
+    };
     await expect(installResource(resource, runner)).rejects.toThrow("backup failed");
     expect(await readFile(join(f.app, "contents"), "utf8")).toBe("original app");
     expect(await lstat(f.version)).toBeDefined();

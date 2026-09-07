@@ -2,7 +2,6 @@ import { JsoncDocument } from "./jsonc.js";
 import type {
   BrewCaskUpgradeOptions,
   FlatpakOptions,
-  ConfigDefinition,
   ConfigFactory,
   ConfigInput,
   Context,
@@ -129,6 +128,12 @@ function generatedFile(
 
 /** Generate structured files from ordinary TypeScript values. Targets resolve relative to home. */
 export const files = {
+  /** Merge literal single-line environment values, preserving unrelated keys. Defaults to private permissions. */
+  dotenv: (target: string, values: Readonly<Record<string, string>>, options: GeneratedFileOptions = {}): GeneratedFileResource =>
+    generatedFile("dotenv", target, values, { ...options, ifExists: options.ifExists ?? "merge", mode: options.mode ?? 0o600 }),
+  /** Replace text between two unique markers in an existing file, preserving the markers and surrounding content. */
+  inject: (target: string, content: string, markers: { readonly start: string; readonly end: string }, options: { readonly mode?: number } = {}): GeneratedFileResource =>
+    generatedFile("bash", target, { content, start: markers.start, end: markers.end }, { ...options, ifExists: "inject" }),
   /**
    * Generate TOML. Values must be representable in TOML (for example, no null).
    * @example files.toml("~/.config/app/config.toml", { server: { port: 3000 } })
@@ -226,5 +231,3 @@ function conditional(predicate: (context: Context) => boolean, config: ConfigInp
 function resolveInput(config: ConfigInput, context: Context): ConfigInput {
   return typeof config === "function" ? config(context) : config;
 }
-
-export type { ConfigDefinition };

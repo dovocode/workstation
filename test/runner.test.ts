@@ -17,10 +17,12 @@ describe("process output", () => {
 
   it("captures query output without printing it by default", async () => {
     const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
-    const result = await new ProcessRunner({ progress: true }).run(process.execPath, ["-e", 'process.stdout.write("metadata")']);
+    const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const result = await new ProcessRunner({ progress: true }).run(process.execPath, ["-e", 'process.stdout.write("metadata"); process.stderr.write("query diagnostic")']);
     expect(result.stdout).toBe("metadata");
+    expect(result.stderr).toBe("query diagnostic");
     expect(stdout).not.toHaveBeenCalled();
+    expect(stderr).not.toHaveBeenCalled();
   });
 
   it("streams raw query output in verbose mode", async () => {

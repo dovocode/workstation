@@ -1,10 +1,12 @@
 import { stringify as stringifyToml } from "smol-toml";
 import { stringify as stringifyYaml } from "yaml";
 import type { GeneratedFileResource } from "../api/types.js";
+import { mergeDotenv } from "./dotenv.js";
 
 /** Render structured or shell content with a final newline; preserve pre-rendered JSONC comments. */
 export function renderGeneratedFile(resource: GeneratedFileResource): string {
   switch (resource.format) {
+    case "dotenv": return mergeDotenv("", resource.value);
     case "toml":
       if (!isRecord(resource.value)) throw new Error("TOML configuration must be an object");
       return ensureNewline(stringifyToml(resource.value));

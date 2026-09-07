@@ -22,37 +22,77 @@ async function fixture(manager: PackageManager) {
   let fail = false;
   let wrong = false;
   let available = version;
-  const runner: Runner = { async run(command, args, options) {
-    const name = args.at(-1) ?? "";
-    const current = installed.get(name);
-    if (command === "brew" && args[0] === "list") return current ? ok(name) : { ...ok(), exitCode: 1 };
-    if (command === "brew" && args[0] === "info") return ok(JSON.stringify(manager === "brew" ? { formulae: [{ versions: { stable: available }, installed: current ? [{ version: current }] : [] }] } : { casks: [{ version: available, installed: current ?? null }] }));
-    if (command === "mise" && args[0] === "where") {
-      const [tool, pin] = name.split("@");
-      return tool && installed.get(tool) === pin ? ok(`/mise/${tool}/${pin}`) : { ...ok(), exitCode: 1 };
+  const queries: Record<string, (args: readonly string[]) => CommandResult | undefined> = {
+    "brew"(args) {
+      const name = args.at(-1) ?? "";
+      const current = installed.get(name);
+      if (args[0] === "list") return current ? ok(name) : { ...ok(), exitCode: 1 };
+      if (args[0] === "info") return ok(JSON.stringify(manager === "brew" ? { formulae: [{ versions: { stable: available }, installed: current ? [{ version: current }] : [] }] } : { casks: [{ version: available, installed: current ?? null }] }));
+      return undefined;
+    },
+    "mise"(args) {
+      const name = args.at(-1) ?? "";
+      if (args[0] === "where") {
+        const [tool, pin] = name.split("@");
+        return tool && installed.get(tool) === pin ? ok(`/mise/${tool}/${pin}`) : { ...ok(), exitCode: 1 };
+      }
+      return undefined;
+    },
+    "dpkg-query"(args) {
+      const name = args.at(-1) ?? "";
+      const current = installed.get(name);
+      return current ? ok(`install ok installed\t${current}`) : { ...ok(), exitCode: 1 };
+    },
+    "rpm"(args) {
+      const name = args.at(-1) ?? "";
+      const current = installed.get(name);
+      if (args[0] === "-q") return current ? ok(current) : { ...ok(`package ${name} is not installed`), exitCode: 1 };
+      if (args[0] === "--eval") return ok("-1");
+      return undefined;
+    },
+    "pacman"(args) {
+      const name = args.at(-1) ?? "";
+      const current = installed.get(name);
+      if (args[0] === "-Q") return current ? ok(`${name} ${current}`) : { ...ok(), exitCode: 1, stderr: `error: package '${name}' was not found` };
+      if (args[0] === "-Sp") return ok(`${name}\t${available}`);
+      return undefined;
+    },
+    "flatpak"(args) {
+      const name = args.at(-1) ?? "";
+      if (args[0] === "list") return ok([...installed.keys()].map((id) => `${id}\tstable\tflathub`).join("\n"));
+      if (args[0] === "info") return ok(installed.get(name.split("/")[1] ?? "") ?? "");
+      if (args[0] === "remote-info") return ok(available);
+      return undefined;
+    },
+    "mas"(args) {
+      if (["list", "outdated"].includes(args[0] ?? "")) return ok([...installed].filter(([, pin]) => args[0] === "list" || pin !== version).map(([id, pin]) => `${id} Test App (${pin})`).join("\n"));
+      return undefined;
+    },
+  };
+  const runner: Runner = {
+    async run(command, args, options) {
+      const query = queries[command]?.(args);
+      if (query) return query;
+      mutations.push({ command, args, ...(options ? { options } : {}) });
+      const removing = ["remove", "uninstall", "-R"].some((operation) => args.includes(operation));
+      const targets = names.filter((id) => args.some((arg) => matchesTarget(arg, id, version)));
+      if (!targets.length) throw new Error(`Unexpected mutation: ${command} ${args.join(" ")}`);
+      mutateTargets(fail ? targets.slice(0, 1) : targets, removing);
+      return fail ? { ...ok(), exitCode: 1, stderr: "transaction failed" } : ok();
     }
-    if (command === "dpkg-query") return current ? ok(`install ok installed\t${current}`) : { ...ok(), exitCode: 1 };
-    if (command === "rpm" && args[0] === "-q") return current ? ok(current) : { ...ok(`package ${name} is not installed`), exitCode: 1 };
-    if (command === "rpm" && args[0] === "--eval") return ok("-1");
-    if (command === "pacman" && args[0] === "-Q") return current ? ok(`${name} ${current}`) : { ...ok(), exitCode: 1, stderr: `error: package '${name}' was not found` };
-    if (command === "pacman" && args[0] === "-Sp") return ok(`${name}\t${available}`);
-    if (command === "flatpak" && args[0] === "list") return ok([...installed.keys()].map((id) => `${id}\tstable\tflathub`).join("\n"));
-    if (command === "flatpak" && args[0] === "info") return ok(installed.get(name.split("/")[1] ?? "") ?? "");
-    if (command === "flatpak" && args[0] === "remote-info") return ok(available);
-    if (command === "mas" && ["list", "outdated"].includes(args[0] ?? "")) return ok([...installed].filter(([, pin]) => args[0] === "list" || pin !== version).map(([id, pin]) => `${id} Test App (${pin})`).join("\n"));
-    mutations.push({ command, args, ...(options ? { options } : {}) });
-    const removing = args.includes("remove") || args.includes("uninstall") || args.includes("-R");
-    const targets = names.filter((id) => args.some((arg) => arg === id || arg === `${id}=${version}` || arg === `${id}-${version}` || arg.startsWith(`${id}@`) || arg === `app/${id}//stable`));
-    if (!targets.length) throw new Error(`Unexpected mutation: ${command} ${args.join(" ")}`);
-    for (const id of fail ? targets.slice(0, 1) : targets) {
+  };
+  /** Simulate native partial outcomes independently of command routing. */
+  function mutateTargets(targets: readonly string[], removing: boolean): void {
+    for (const id of targets) {
       if (removing) installed.delete(id);
       else installed.set(id, wrong ? oldVersion : version);
     }
-    return fail ? { ...ok(), exitCode: 1, stderr: "transaction failed" } : ok();
-  } };
+  }
   const config: ResolvedConfig = { context: { machine: "test", hostname: "test", platform: "linux", home: root, configDir: root }, stateFile: join(root, "state.json"), resources };
-  return { config, resources, runner, mutations, installed, version, oldVersion,
-    fail: (value: boolean) => { fail = value; }, wrong: () => { wrong = true; }, unavailable: () => { available = "unavailable"; } };
+  return {
+    config, resources, runner, mutations, installed, version, oldVersion,
+    fail: (value: boolean) => { fail = value; }, wrong: () => { wrong = true; }, unavailable: () => { available = "unavailable"; }
+  };
 }
 
 describe.each(managers)("%s native batches", (manager) => {
@@ -113,10 +153,12 @@ describe("batch safety", () => {
 
   it("preflights all pins before beginning a package phase", async () => {
     const f = await fixture("brew");
-    const runner: Runner = { async run(command, args, options) {
-      if (command === "brew" && args[0] === "info" && args.at(-1) === "beta") f.unavailable();
-      return f.runner.run(command, args, options);
-    } };
+    const runner: Runner = {
+      async run(command, args, options) {
+        if (command === "brew" && args[0] === "info" && args.at(-1) === "beta") f.unavailable();
+        return f.runner.run(command, args, options);
+      }
+    };
     await expect(applyPlan(f.config, runner)).rejects.toThrow("workstation.lock pins");
     expect(f.mutations).toEqual([]);
   });
@@ -150,11 +192,18 @@ describe("batch safety", () => {
 
   it("does not remove adopted packages when their declarations disappear", async () => {
     const f = await fixture("mas");
-    await writeState(f.config.stateFile, { version: 1, machine: "test", resources: Object.fromEntries(f.resources.map((resource) => {
-      const id = resourceId(resource);
-      return [id, { id, resource, fingerprint: fingerprint(resource), owned: false }];
-    })) });
+    await writeState(f.config.stateFile, {
+      version: 1, machine: "test", resources: Object.fromEntries(f.resources.map((resource) => {
+        const id = resourceId(resource);
+        return [id, { id, resource, fingerprint: fingerprint(resource), owned: false }];
+      }))
+    });
     await applyPlan({ ...f.config, resources: [] }, f.runner);
     expect(f.mutations).toEqual([]);
   });
 });
+
+/** Match only the literal target forms emitted by the package adapters. */
+function matchesTarget(argument: string, id: string, version: string): boolean {
+  return [id, `${id}=${version}`, `${id}-${version}`, `app/${id}//stable`].includes(argument) || argument.startsWith(`${id}@`);
+}

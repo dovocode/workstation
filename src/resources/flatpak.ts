@@ -1,6 +1,6 @@
 import type { ResolvedPackageResource, Runner } from "../api/types.js";
 import { requireSuccess, type Inspection } from "./shared.js";
-import { runPackageCommand, type PackageCommand } from "./package-command.js";
+import { type PackageCommand } from "./package-command.js";
 
 /** Resolve defaults in one place for all Flatpak queries and mutations. */
 function target(resource: ResolvedPackageResource) {
@@ -35,10 +35,6 @@ export async function inspectFlatpak(resource: ResolvedPackageResource, runner: 
   return { present: true, matches: resource.lockedVersion === undefined || installedVersion === resource.lockedVersion, installedVersion };
 }
 
-/** Install the current remote commit or update an existing deployment to its pinned commit. */
-export async function installFlatpak(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
-  await runPackageCommand(await prepareFlatpak(resource, runner), runner);
-}
 
 /** Prepare a scope/remote-specific mutation; commit updates must remain single-target. */
 export async function prepareFlatpak(resource: ResolvedPackageResource, runner: Runner, inspection?: Inspection): Promise<PackageCommand | undefined> {
@@ -57,10 +53,6 @@ export async function prepareFlatpak(resource: ResolvedPackageResource, runner: 
     targets: [ref], ...(before.present && resource.lockedVersion ? { single: true } : {}) };
 }
 
-/** Remove only the declared app/branch, retaining app data and unrelated runtimes. */
-export async function removeFlatpak(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
-  await runPackageCommand(prepareFlatpakRemoval(resource), runner);
-}
 
 /** Prepare removal of declared refs only, grouped by installation scope. */
 export function prepareFlatpakRemoval(resource: ResolvedPackageResource): PackageCommand {

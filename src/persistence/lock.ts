@@ -1,8 +1,10 @@
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { parse, stringify, type TomlTableWithoutBigInt } from "smol-toml";
+import { parse, stringify } from "smol-toml";
+import { requireTable, requireString } from "./validation.js";
 import { fingerprint, resourceId } from "../config/identity.js";
 import { resolvePackageVersion } from "../resources/package-version.js";
+import { mapConcurrent } from "../concurrency.js";
 import type {
   Platform,
   ResolvedConfig,
@@ -35,6 +37,16 @@ export interface LockedConfigResult {
   readonly changed: boolean;
 }
 
+/** Control lock resolution independently from persistence and installation. */
+export interface LockOptions {
+  /** Reject missing or changed pins; never resolve replacements. Incompatible with refresh. */
+  readonly frozen?: boolean;
+  /** Set false for read-only planning; resolution may still issue package-manager queries. */
+  readonly write?: boolean;
+  /** Refresh all packages or selected resource IDs. Unknown selections fail before queries. */
+  readonly refresh?: true | readonly string[];
+}
+
 /** Return the workstation.lock path beside the TypeScript entry point. */
 export function lockPath(configPath: string): string {
   return resolve(dirname(configPath), "workstation.lock");
@@ -45,38 +57,39 @@ export async function lockConfig(
   configPath: string,
   config: ResolvedConfig,
   runner: Runner,
+  options: LockOptions = {},
 ): Promise<LockedConfigResult> {
+  if (options.frozen && options.refresh) throw new Error("Cannot refresh a frozen lock");
+  if (Array.isArray(options.refresh)) {
+    const ids = new Set(config.resources.filter((resource) => resource.kind === "package").map(resourceId));
+    for (const id of options.refresh) if (!ids.has(id)) throw new Error(`Unknown package resource selected for lock refresh: ${id}`);
+  }
   const path = lockPath(configPath);
   const previousText = await readOptional(path);
   const previous = previousText === undefined ? emptyLock() : parseLock(previousText, path);
   const target = previous.targets.find(({ machine }) => machine === config.context.machine);
   const existing = new Map(target?.resources.map((entry) => [entry.id, entry]));
-  const resources: ResolvedResource[] = [];
-  const entries: LockEntry[] = [];
-
-  for (const resource of config.resources) {
+  const resolved = await mapConcurrent(config.resources, async (resource) => {
     const id = resourceId(resource);
     const declarationFingerprint = fingerprint(resource);
     const prior = existing.get(id);
-    const refreshesOnRun =
-      resource.kind === "package" &&
-      resource.manager === "brew-cask" &&
-      resource.upgrade?.greedy === true;
-    const canReuse =
-      !refreshesOnRun &&
-      prior?.fingerprint === declarationFingerprint &&
-      (resource.kind !== "package" || prior.lockedVersion !== undefined);
+    const canReuse = canReusePin(resource, prior, declarationFingerprint, options);
     const lockedVersion =
       canReuse
         ? prior.lockedVersion
-        : await resolvePackageVersion(resource, runner);
-    resources.push(withLockedVersion(resource, lockedVersion));
-    entries.push({
-      id,
-      fingerprint: declarationFingerprint,
-      ...(lockedVersion ? { lockedVersion } : {}),
-    });
-  }
+        : options.frozen
+          ? (() => { throw new Error(`Frozen lock cannot resolve ${id}; refresh the lock first`); })()
+          : await resolvePackageVersion(resource, runner);
+    return {
+      resource: withLockedVersion(resource, lockedVersion), entry: {
+        id,
+        fingerprint: declarationFingerprint,
+        ...(lockedVersion ? { lockedVersion } : {}),
+      }
+    };
+  });
+  const resources = resolved.map(({ resource }) => resource);
+  const entries = resolved.map(({ entry }) => entry);
 
   const nextTarget: LockTarget = {
     machine: config.context.machine,
@@ -92,7 +105,8 @@ export async function lockConfig(
   };
   const nextText = stringifyLock(next);
   const changed = previousText !== nextText;
-  if (changed) await atomicWrite(path, nextText);
+  if (changed && options.frozen) throw new Error("Frozen lock differs from the configuration");
+  if (changed && options.write !== false) await atomicWrite(path, nextText);
 
   return { config: { ...config, resources }, path, changed };
 }
@@ -166,20 +180,6 @@ function parseLock(text: string, path: string): WorkstationLock {
   return { version: LOCK_VERSION, targets };
 }
 
-/** Require an object-shaped TOML table and identify the invalid field on failure. */
-function requireTable(value: unknown, field: string): TomlTableWithoutBigInt {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error(`${field} must be a table`);
-  }
-  return value as TomlTableWithoutBigInt;
-}
-
-/** Require a non-empty string at a serialized-data boundary. */
-function requireString(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0) throw new Error(`${field} must be a string`);
-  return value;
-}
-
 /** Read a lock file, treating only a missing path as an absent lock. */
 async function readOptional(path: string): Promise<string | undefined> {
   try {
@@ -197,4 +197,15 @@ async function atomicWrite(path: string, contents: string): Promise<void> {
   const temporary = `${path}.${process.pid}.tmp`;
   await writeFile(temporary, contents, { mode: 0o644 });
   await rename(temporary, path);
+}
+
+/** Decide pin reuse separately from resolution so frozen and selective-refresh policies stay explicit. */
+function canReusePin(resource: ResolvedResource, prior: LockEntry | undefined, declarationFingerprint: string, options: LockOptions): prior is LockEntry {
+  if (prior?.fingerprint !== declarationFingerprint) return false;
+  if (resource.kind !== "package") return true;
+  if (options.refresh === true) return false;
+  if (Array.isArray(options.refresh) && options.refresh.includes(resourceId(resource))) return false;
+  if (resource.manager !== "mas" && prior.lockedVersion === undefined) return false;
+  const refreshesOnRun = resource.manager === "brew-cask" && resource.upgrade?.greedy === true;
+  return !refreshesOnRun || options.frozen === true || options.refresh !== undefined;
 }

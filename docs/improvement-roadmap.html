@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workstation — Improvement roadmap</title>
+<style>
+:root{color-scheme:light;--ink:#172c35;--muted:#51656b;--line:#cfdbdc;--paper:#f5f6f0;--accent:#075d58}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 system-ui,sans-serif}header,main,footer{max-width:1120px;margin:auto;padding:40px 32px}header{padding-top:72px;border-bottom:1px solid var(--line)}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);font-weight:700}h1{font-size:clamp(36px,7vw,76px);line-height:1.05;letter-spacing:-.05em;max-width:850px;margin:20px 0}h2{font-size:30px;line-height:1.2;letter-spacing:-.025em;margin:0 0 20px}h3{font-size:20px;margin:24px 0 8px}p{max-width:850px}a{color:var(--accent);text-underline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:30px}section{padding:42px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px}.lede{font-size:21px;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 32px}.note{border-left:4px solid var(--accent);padding:8px 20px;background:#e8efea}.meta{color:var(--muted);font-size:14px}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid var(--line)}th{color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em}code{font-family:ui-monospace,monospace;font-size:.9em}pre{background:#172c35;color:#eff8f2;padding:24px;border-radius:8px;overflow:auto;line-height:1.55}.phase{display:grid;grid-template-columns:80px 1fr;gap:20px;margin:30px 0}.num{font-size:44px;line-height:1;color:var(--accent);letter-spacing:-.05em}.phase h3{margin-top:0}li{margin:6px 0}.table-wrap{overflow-x:auto}footer{font-size:14px;color:var(--muted)}@media(max-width:650px){header,main,footer{padding:28px 20px}.grid{grid-template-columns:1fr}.phase{grid-template-columns:44px 1fr;gap:12px}.num{font-size:30px}th,td{padding:10px 8px}h2{font-size:26px}}@media print{body{background:white;font-size:11pt}header,main,footer{padding:20px 0}nav{display:none}section{break-inside:auto}h2,h3{break-after:avoid}pre{white-space:pre-wrap}a{color:inherit}.phase{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+<div class="eyebrow">Workstation / Product &amp; engineering plan / 06 September 2026</div>
+<h1>A dependable foundation for every workstation.</h1>
+<p class="lede">Evolve the tool from a package reconciler into a predictable system for software, configuration, environments, secrets, and services.</p>
+<p class="meta">Proposal, not an implementation commitment. New APIs below are illustrative. Phase estimates are planning ranges for one experienced engineer, not delivery dates.</p>
+<nav aria-label="Roadmap sections"><a href="#direction">Direction</a><a href="#architecture">Architecture</a><a href="#packages">Package managers</a><a href="#config">Dotenv &amp; files</a><a href="#delivery">Delivery plan</a><a href="#commands">CLI</a><a href="#quality">Quality gates</a><a href="#backlog">Full backlog</a></nav>
+</header>
+<main>
+<section id="direction"><div class="eyebrow">01 / Product direction</div><h2>Make every change understandable and recoverable.</h2>
+<div class="grid"><div><h3>The common experience</h3><p>Declare a desired setup, preview exact changes, apply it, and inspect its status. Every resource uses the same identity, dependency, diff, ownership, and reporting model.</p></div><div><h3>Respect backend differences</h3><p>Offer consistent commands across managers without pretending that exact versions, downgrade, offline operation, or rollback work identically. Capability checks produce an actionable explanation before mutation.</p></div></div>
+<h3>Starting point</h3><p>The conversation establishes a published 0.1.2 baseline with multiple package backends, locks, native builds, and prerequisite bootstrapping. Local work adds explicit <code>build</code>, self-update, bounded concurrent reads, quieter logging, and marked file injection. Treat these local changes as candidates requiring review before release.</p>
+<div class="note"><strong>First release gate: configuration-scoped state.</strong> A temporary configuration previously reused the real workstation state and caused unintended restoration. Isolate state, tie plans to a configuration identity, and isolate all executable tests before broadening the resource set.</div>
+</section>
+<section id="architecture"><div class="eyebrow">02 / Technical foundation</div><h2>One engine. Explicit resource capabilities.</h2>
+<ol><li><strong>Load and validate:</strong> resolve machine/profile selections, duplicate targets, secret references, and resource identifiers.</li><li><strong>Inspect:</strong> bounded, read-only queries with shared manager metadata and cancellation.</li><li><strong>Plan:</strong> immutable actions, file diffs, dependency order, backend limitations, and preconditions.</li><li><strong>Apply:</strong> validate plan freshness, journal intent, execute mutations under manager locks, verify results, and checkpoint.</li><li><strong>Recover:</strong> report completed and pending actions; restore supported file changes or propose compensating package actions.</li></ol>
+<h3>Core contracts</h3><div class="table-wrap"><table><thead><tr><th>Component</th><th>Responsibility</th><th>Acceptance rule</th></tr></thead><tbody>
+<tr><td>Configuration identity</td><td>Stable ID plus canonical source path; state namespace, explicit import/migration command.</td><td>Two configurations cannot remove each other's resources; overlapping targets are detected.</td></tr>
+<tr><td>Resource adapter</td><td>Validate, inspect, diff, apply, verify, remove, capabilities.</td><td>Unsupported operations fail during planning; inspection does not mutate.</td></tr>
+<tr><td>Dependency graph</td><td>Explicit dependencies, cycle detection, reverse removal order.</td><td>Services cannot start before required files and packages are verified.</td></tr>
+<tr><td>Scheduler</td><td>Separate read/write limits, per-manager mutation locks, timeouts, cancellation.</td><td>Independent reads overlap; state commits remain serialized.</td></tr>
+<tr><td>State and journal</td><td>Versioned schema, pre-run snapshot, atomic commits, recovery records.</td><td>A crash between mutation and commit can be diagnosed and resumed without duplicate destructive work.</td></tr>
+<tr><td>Event stream</td><td>Typed phase/action/progress/error events rendered as human output or JSON.</td><td>Verbose details never require regex filtering of human messages.</td></tr>
+</tbody></table></div>
+<p>Do not expose a general third-party adapter API until two internal adapters share a stable contract. Avoid global mutable PATH changes where a per-run execution environment can express the same dependency.</p>
+</section>
+<section id="packages"><div class="eyebrow">03 / Package-manager parity</div><h2>All managers participate in the workflow.</h2>
+<p>Scope: mise, Homebrew formulae and casks, APT, DNF, YUM, pacman, Flatpak, and mas. The table is an implementation and verification plan, not a claim that every backend currently supports every feature.</p>
+<div class="table-wrap"><table><thead><tr><th>Backend</th><th>Common work</th><th>Backend-specific verification</th></tr></thead><tbody>
+<tr><td>mise</td><td>Plan, inspect, lock, selected apply, status, diagnostics, recovery reporting.</td><td>Version selectors vs exact versions; activation and shims; plugins and backend dependencies; install-before-remove upgrades.</td></tr>
+<tr><td>Homebrew formulae</td><td>Same common workflow.</td><td>Tap metadata, available-version constraints, keg-only paths, batched info queries, auto-update controls.</td></tr>
+<tr><td>Homebrew casks</td><td>Same common workflow.</td><td>Greedy updates, adoption/migration, app conflicts, permissions, shared artifacts, and no promise of historical-version availability.</td></tr>
+<tr><td>APT</td><td>Same common workflow.</td><td>Repository candidates, held packages, dpkg locks, exact-version availability, noninteractive configuration behavior.</td></tr>
+<tr><td>DNF / YUM</td><td>Same contract, separate backend fixtures.</td><td>Epoch/version/release/architecture comparisons, repository availability, downgrade behavior, native transaction output.</td></tr>
+<tr><td>pacman</td><td>Same common workflow.</td><td>Repository consistency and full-system-upgrade constraints; avoid promising arbitrary pinning against rolling repositories.</td></tr>
+<tr><td>Flatpak</td><td>Same common workflow.</td><td>User/system scope, remotes, branches, commit availability, runtime dependencies, authentication.</td></tr>
+<tr><td>mas</td><td>Same common workflow.</td><td>App Store sign-in and acquisition requirements, interactive prompts, updates, and version availability restrictions.</td></tr>
+</tbody></table></div>
+<h3>Capability negotiation</h3><p>Each adapter reports support or constraints for exact install, upgrade, downgrade, uninstall, batching, offline reads, bootstrap, and recovery. A plan must distinguish “supported,” “conditional,” and “unsupported,” with the reason and remediation. Recovery is not a universal package rollback guarantee.</p>
+<h3>Efficient reads, controlled writes</h3><p>Batch installed inventory and version metadata where possible. Cache within a run using manager, scope, repository state, and package identity; invalidate affected entries after writes. Keep configurable bounded concurrency and per-manager locks. Recheck destructive preconditions immediately before execution.</p>
+</section>
+<section id="config"><div class="eyebrow">04 / Configuration &amp; environments</div><h2>Dotenv becomes a first-class resource.</h2>
+<pre><code>// Proposed API — not yet implemented
+files.dotenv("~/projects/app/.env", {
+  APP_ENV: "development",
+  PORT: "3000",
+  API_TOKEN: secrets.env("APP_API_TOKEN"),
+}, { ifExists: "merge", mode: 0o600 });
+
+files.json("~/.config/app/settings.json", {
+  editor: { theme: "dark" },
+}, { ifExists: "merge" });</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Policy</th><th>Proposed contract</th></tr></thead><tbody>
+<tr><td>update</td><td>Retain current ownership-sensitive behavior; document when unmanaged differences are rejected.</td></tr>
+<tr><td>overwrite</td><td>Manage whole-file contents; retain original bytes and permissions for guarded restoration.</td></tr>
+<tr><td>ignore</td><td>Preserve an existing target; clearly show that its differences are intentionally unmanaged.</td></tr>
+<tr><td>inject</td><td>Own an explicit marker-delimited section, preserve outside edits, reject ambiguous boundaries; support named blocks through one file resource.</td></tr>
+<tr><td>merge</td><td>Own declared keys/paths only; preserve unrelated content. Restore original owned keys only if their current values still match the last managed values.</td></tr>
+</tbody></table></div>
+<h3>Dotenv specification</h3><ul><li>Parse without sourcing or executing the file. Preserve literal dollar signs and command-substitution text by default.</li><li>Define supported quoting, escapes, export prefixes, empty values, multiline values, comments, BOM and line endings; reject unsupported syntax with line/column errors.</li><li>Detect duplicate keys; require an explicit policy instead of silently editing one occurrence.</li><li>Use a deletion sentinel for explicit deletion. Omitted keys remain untouched in merge mode.</li><li>Preserve ordering and comments; append new keys predictably; a second build must produce no diff.</li><li>Add required-key schemas, defaults, allowed values and typed checks. Generate examples with placeholders rather than secrets.</li><li>Define precedence: shared defaults → selected profile → machine overrides → explicit invocation overrides. Keep interpolation opt-in and separate from secret resolution.</li></ul>
+<h3>Secret handling is part of the design</h3><p>Support environment and file references first; add external providers later through adapters. Resolve secrets during apply, redact diffs and logs, and keep resolved values out of committed locks and plain manifests. Encrypt sensitive recovery snapshots or require an explicit no-backup policy. Plain hashes are insufficient protection for low-entropy secrets.</p>
+<h3>Beyond dotenv</h3><p>Add format-aware JSON/JSONC, YAML, TOML and INI patches; text templates; copies, directories and permissions; Git conditional includes; SSH Host sections; shell exports and PATH entries; editor settings and extensions. Preserve syntax using format-aware representations, and reject unsupported edits rather than silently stripping comments.</p>
+</section>
+<section id="delivery"><div class="eyebrow">05 / Delivery sequence</div><h2>Ship in layers with measurable exit gates.</h2>
+<p class="meta">Rough engineering effort: 16–27 engineer-weeks for the core phases below, before contingency, external-provider work, and ongoing platform maintenance. Re-estimate after the first two phases.</p>
+<article class="phase"><div class="num">00</div><div><h3>Stabilize the current branch <small>· 1–2 weeks</small></h3><p>Review local CLI, injection, bootstrap, concurrency and update changes. Introduce test-only state/home roots. Reserve built-in command names consistently and correct stale examples. Audit self-update detection, artifact validation, temporary files, version comparison and installation-channel behavior.</p><p><strong>Exit:</strong> isolated end-to-end tests cover help, build, update failure, injection restore and interruption. No test can access the real user's state or package managers.</p></div></article>
+<article class="phase"><div class="num">01</div><div><h3>State ownership and recovery <small>· 2–3 weeks</small></h3><p>Add configuration namespaces, target conflict checks, explicit legacy-state migration, snapshots, an operation journal and guarded restore. Preserve adopted-vs-owned semantics; do not infer ownership during migration.</p><p><strong>Depends on:</strong> 00. <strong>Exit:</strong> two configurations remain isolated; forced termination at every journal boundary is recoverable; restore preserves unrelated later edits.</p></div></article>
+<article class="phase"><div class="num">02</div><div><h3>Plan, diff and execution contracts <small>· 2–3 weeks</small></h3><p>Separate planning from lock writes and bootstrap mutations. Add plan/status/doctor, structured events, stable exit codes, frozen-lock builds, selection and no-remove mode. Bind saved plans to config and state fingerprints.</p><p><strong>Depends on:</strong> 01. <strong>Exit:</strong> plan produces zero filesystem/process mutations; stale plans fail with an explanation; secret-bearing differences are redacted.</p></div></article>
+<article class="phase"><div class="num">03</div><div><h3>Backend parity and scheduling <small>· 3–5 weeks</small></h3><p>Implement adapter capabilities and dependency scheduling, bulk inventory, cache invalidation, per-manager locks, retries for safe reads, timeouts, and cancellation. Build a contract suite for every supported backend.</p><p><strong>Depends on:</strong> 02. <strong>Exit:</strong> every backend implements the common workflow or a clear capability rejection; mutations cannot race within one manager; benchmark results are recorded.</p></div></article>
+<article class="phase"><div class="num">04</div><div><h3>Dotenv, merge and secrets <small>· 3–5 weeks</small></h3><p>Ship the dotenv parser and key ownership model, environment/file secret references, schema validation, preview redaction and secure recovery. Extend to JSON/JSONC first; add YAML/TOML/INI only after comment-preserving behavior is tested.</p><p><strong>Depends on:</strong> 01–02; can overlap 03 after contracts stabilize. <strong>Exit:</strong> round-trip fixtures preserve unowned bytes, generated examples contain no secrets, conflicts do not overwrite external edits.</p></div></article>
+<article class="phase"><div class="num">05</div><div><h3>Developer environment resources <small>· 3–5 weeks</small></h3><p>Add Git repositories, verified downloads and archives, templates, file/directory resources, SSH/Git configuration, task dependencies and service health checks. Apply explicit dependency edges to service restarts.</p><p><strong>Depends on:</strong> 03–04. <strong>Exit:</strong> an example application installs, receives its environment, starts, passes health checks, and converges on a second build.</p></div></article>
+<article class="phase"><div class="num">06</div><div><h3>Release and usability finish <small>· 2–4 weeks</small></h3><p>Add completions, run history, profile discovery, installation-channel updates, signed/checksummed release artifacts, migration guides and offline diagnostics. Publish realistic sample configurations and a tested support matrix.</p><p><strong>Depends on:</strong> previous release gates. <strong>Exit:</strong> clean-machine installs and upgrades pass on supported architectures; documentation examples run in CI; recovery limitations are explicit.</p></div></article>
+</section>
+<section id="commands"><div class="eyebrow">06 / Command design</div><h2>Small vocabulary, explicit effects.</h2>
+<div class="table-wrap"><table><thead><tr><th>Proposed command</th><th>Purpose</th><th>Effect</th></tr></thead><tbody>
+<tr><td><code>workstation</code> / <code>--help</code> / <code>--version</code></td><td>Help and version.</td><td>No configuration execution for help/version.</td></tr>
+<tr><td><code>workstation init</code></td><td>Create a starter.</td><td>Create new file only; never overwrite.</td></tr>
+<tr><td><code>workstation plan</code></td><td>Preview changes and limitations.</td><td>Read-only inspections; no bootstrap or lock writes.</td></tr>
+<tr><td><code>workstation build</code></td><td>Apply the desired configuration.</td><td>Verified, journaled changes.</td></tr>
+<tr><td><code>workstation status</code></td><td>Summarize state and drift.</td><td>Read-only inspections.</td></tr>
+<tr><td><code>workstation doctor</code></td><td>Diagnose environment and metadata issues.</td><td>Read-only by default; repair is a separate explicit operation.</td></tr>
+<tr><td><code>workstation lock update</code></td><td>Deliberately refresh selected pins.</td><td>Write lock only; report missing prerequisite managers.</td></tr>
+<tr><td><code>workstation history</code> / <code>recover RUN</code></td><td>Inspect outcomes and resume or compensate.</td><td>History reads; recovery previews supported changes before apply.</td></tr>
+<tr><td><code>workstation config show</code> / <code>validate</code></td><td>Explain resolved declarations.</td><td>Redacted output; no apply.</td></tr>
+<tr><td><code>workstation update</code></td><td>Update Workstation itself.</td><td>Respect native/global/local installation channel.</td></tr>
+<tr><td><code>workstation TASK -- ARGS</code></td><td>Run named tasks or aliases.</td><td>Explicit task commands; no unrelated resource bootstrap.</td></tr>
+</tbody></table></div>
+<p>Shared selectors: <code>--config</code>, <code>--machine</code>, <code>--profile</code>, <code>--only</code>, <code>--exclude</code>. Build controls: <code>--frozen-lockfile</code>, <code>--no-remove</code>. Output: <code>--json</code>, <code>--quiet</code>, <code>--verbose</code>. Define selection as a projection of the full plan so excluded resources are never treated as removed.</p>
+</section>
+<section id="quality"><div class="eyebrow">07 / Verification &amp; operational targets</div><h2>Measure correctness before speed.</h2>
+<div class="grid"><div><h3>Correctness gates</h3><ul><li>Second build: zero changes and stable generated bytes.</li><li>Plan/status: no mutation, including installers, lock updates and file writes.</li><li>Cross-config deletion: blocked in every regression case.</li><li>Interruption: recoverable state at each execution boundary.</li><li>Merge/injection: retain unrelated edits on apply and restore.</li><li>Secrets: no plaintext in logs, diffs or committed artifacts.</li></ul></div><div><h3>Performance targets to validate</h3><ul><li>Record baseline cold/warm wall time and spawned-process counts for 25, 100 and 250 resources.</li><li>Target at least 50% fewer metadata subprocesses for a representative 100-package bulk-query workload.</li><li>Target at least 30% lower warm read-phase time on the same machine and network conditions.</li><li>Keep bounded memory and process counts; cancellation stops new scheduling immediately.</li><li>Emit progress at least every five seconds during long phases without repeated per-query noise.</li></ul></div></div>
+<p>Targets are acceptance goals, not measured claims. Use unit/property tests for parsers and graph logic, adapter contract fixtures, Linux disposable environments, and dedicated macOS test runners. Interactive backends require a separately documented manual verification track. Test release upgrades against fixture servers and disposable executable copies.</p>
+<h3>Release discipline</h3><p>Review schema migrations and behavior changes before tagging. Attach checksums and provenance to native artifacts; validate architecture and expected version before replacement. Keep previous binaries for bounded recovery. Mark API changes and unsupported capabilities clearly, and validate examples as part of release CI.</p>
+</section>
+<section id="backlog"><div class="eyebrow">08 / Complete feature inventory</div><h2>Keep expansion connected to the foundation.</h2>
+<div class="table-wrap"><table><thead><tr><th>Track</th><th>Features</th><th>Sequence</th></tr></thead><tbody>
+<tr><td>Safety &amp; state</td><td>Scoped identity, conflict detection, migration, snapshots, journal, stale-plan checks, guarded removal, original-content recovery, resume.</td><td>00–02</td></tr>
+<tr><td>Observability</td><td>Diffs, explain reasons, status, doctor, JSON events, quiet/verbose output, elapsed time, log files, stable exit codes, history.</td><td>02 then 06</td></tr>
+<tr><td>Packages</td><td>Capability matrix, inventory, selected upgrades, frozen locks, bootstrap actions, provenance, conditional downgrade, offline diagnostics.</td><td>03</td></tr>
+<tr><td>Execution</td><td>Dependencies, cycles, concurrency controls, native batches, read caching, invalidation, manager locks, timeouts, safe retries, cancellation.</td><td>03</td></tr>
+<tr><td>Dotenv</td><td>Parse/merge, key deletion, quoting, multiline values, comment preservation, duplicate detection, private modes, schemas, examples, profiles.</td><td>04</td></tr>
+<tr><td>Secrets</td><td>Environment/file references, redaction, secure state, safe diffs, provider adapters, rotation-aware rebuilding.</td><td>04; external providers later</td></tr>
+<tr><td>Files</td><td>Text, structured patches, multiple injection blocks, explicit insertion anchors, templates, line endings, copies, directories, permission-only resources.</td><td>04–05</td></tr>
+<tr><td>Developer tools</td><td>Git settings and identities, SSH Host blocks, shell PATH/exports/aliases/functions, npm/pip/Cargo configuration, editor settings and extensions.</td><td>05</td></tr>
+<tr><td>Artifacts</td><td>Verified downloads, safe archive extraction, pinned Git checkouts, local builds with source fingerprints.</td><td>05</td></tr>
+<tr><td>Tasks</td><td>Dependencies, explicit shell execution, environment files, argument handling, working-directory validation, timeouts.</td><td>05</td></tr>
+<tr><td>Services</td><td>Status, scheduled jobs, dependency-aware restart, readiness probes, generated environment files.</td><td>05</td></tr>
+<tr><td>Portability</td><td>Machine profiles, architecture/distribution selectors, prerequisites, mounted-volume checks, optional config discovery.</td><td>03–06</td></tr>
+<tr><td>Distribution</td><td>Verified curl/wget install flow, version command, channel-aware self-update, completions, example projects, upgrade/migration documentation.</td><td>00 and 06</td></tr>
+<tr><td>Later extensions</td><td>Reviewable inventory import, certificate resources and separately declared trust changes, external secret providers, stable extension API.</td><td>After core acceptance gates</td></tr>
+</tbody></table></div>
+<h3>Decisions to settle during phase 00</h3><ul><li>Choose stable configuration IDs and a deliberate migration rule for existing global state.</li><li>Decide whether build keeps current automatic lock refresh or requires explicit refresh by default; always offer frozen execution.</li><li>Define one documented dotenv dialect and secret-backup policy.</li><li>Choose supported minimum OS/runtime versions and the maintained backend test matrix.</li><li>Choose whether recovery is an interactive preview or a plan artifact followed by explicit apply; never imply universal rollback.</li></ul>
+<div class="note"><strong>First milestone:</strong> a user can preview a scoped setup, understand the diff, apply it, interrupt it, recover it, and run it again with zero changes. Dotenv and richer resource types then inherit those guarantees.</div>
+</section>
+</main><footer>Workstation improvement roadmap · Planning artifact based on repository work and the requested direction. No feature implementation or release is performed by this document. Open locally in a browser; use the browser’s Print command for a PDF copy.</footer>
+</body>
+</html>

@@ -18,7 +18,7 @@ export class ProcessRunner implements Runner {
     options?: RunOptions,
   ): Promise<CommandResult> {
     const started = Date.now();
-    if (this.logging.progress || this.logging.verbose) {
+    if (this.logging.verbose) {
       process.stderr.write(`  $ ${[command, ...args].map((value) => /^[\w./:@=+-]+$/.test(value) ? value : JSON.stringify(value)).join(" ")}${options?.cwd ? ` (in ${options.cwd})` : ""}\n`);
     }
     const stream = this.logging.verbose || (this.logging.progress && options?.streamOutput);
@@ -38,11 +38,11 @@ export class ProcessRunner implements Runner {
       });
       child.stderr.on("data", (chunk: string) => {
         stderr += chunk;
-        if (stream || this.logging.progress) process.stderr.write(chunk);
+        if (stream) process.stderr.write(chunk);
       });
       child.once("error", reject);
       child.once("close", (exitCode) => {
-        if (this.logging.progress || this.logging.verbose) {
+        if (this.logging.verbose || (this.logging.progress && options?.streamOutput && exitCode !== 0)) {
           process.stderr.write(`  -> exit ${exitCode ?? 1} (${((Date.now() - started) / 1000).toFixed(1)}s)\n`);
         }
         resolve({ exitCode: exitCode ?? 1, stdout, stderr });

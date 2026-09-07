@@ -1,4 +1,6 @@
+import { isCommandSpec } from "./value-validation.js";
 import { isAbsolute, resolve } from "node:path";
+import { isBuiltinCommand } from "../commands.js";
 import type { ConfigDefinition, Context, TaskDefinition } from "../api/types.js";
 
 /** Validate tasks and aliases, resolving relative working directories against the entry point. */
@@ -9,14 +11,7 @@ export function resolveTasks(definition: ConfigDefinition, context: Context): {
   const aliases: Record<string, string> = Object.create(null);
   for (const [name, value] of Object.entries(definition.tasks ?? {})) {
     validateName(name);
-    if (!value || typeof value !== "object" || typeof value.command !== "string" || !value.command.trim() ||
-        (value.args !== undefined && (!Array.isArray(value.args) || !value.args.every((arg) => typeof arg === "string"))) ||
-        (value.cwd !== undefined && typeof value.cwd !== "string") ||
-        (value.description !== undefined && typeof value.description !== "string") ||
-        (value.environment !== undefined && (typeof value.environment !== "object" || value.environment === null ||
-          Array.isArray(value.environment) || !Object.values(value.environment).every((item) => typeof item === "string")))) {
-      throw new Error(`Invalid task: ${name}`);
-    }
+    validateTask(name, value);
     const cwd = value.cwd?.replace(/^~(?=\/|$)/, context.home) ?? context.configDir;
     tasks[name] = { ...value, cwd: isAbsolute(cwd) ? cwd : resolve(context.configDir, cwd) };
   }
@@ -47,5 +42,13 @@ export function resolveTaskName(name: string, tasks: Readonly<Record<string, Tas
 
 /** Keep task names distinct from flags and reserved CLI commands. */
 function validateName(name: string): void {
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]*$/.test(name) || name === "help" || name === "init") throw new Error(`Invalid or reserved task name: ${name}`);
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9:_-]*$/.test(name) || isBuiltinCommand(name)) throw new Error(`Invalid or reserved task name: ${name}`);
+}
+
+/** Validate task command data before resolving its working directory. */
+function validateTask(name: string, value: TaskDefinition): void {
+  if (!isCommandSpec(value) || !value.command.trim() ||
+    (value.description !== undefined && typeof value.description !== "string")) {
+    throw new Error(`Invalid task: ${name}`);
+  }
 }

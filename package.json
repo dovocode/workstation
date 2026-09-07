@@ -1,6 +1,6 @@
 {
   "name": "@dovocode/workstation",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A stateful, programmable workstation configuration reconciler",
   "type": "module",
   "bin": {
@@ -23,6 +23,12 @@
     "build": "tsup",
     "build:native": "tsup && node scripts/build-native.mjs",
     "check": "tsc --noEmit && eslint .",
+    "quality": "vitest run --coverage --coverage.reporter=json --coverage.reporter=text-summary && fallow --coverage coverage/coverage-final.json",
+    "test:coverage": "vitest run --coverage --coverage.reporter=json --coverage.reporter=text-summary",
+    "quality:audit": "fallow audit",
+    "quality:dead-code": "fallow dead-code",
+    "quality:dupes": "fallow dupes",
+    "quality:health": "fallow health",
     "test": "vitest run"
   },
   "dependencies": {
@@ -33,7 +39,9 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "26.4.1",
+    "@vitest/coverage-v8": "3.2.4",
     "eslint": "10.10.0",
+    "fallow": "3.22.0",
     "postject": "1.0.0-alpha.6",
     "tsup": "8.5.0",
     "typedoc": "0.28.20",

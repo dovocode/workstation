@@ -14,6 +14,11 @@ custom executables, and user or system services on macOS and Linux.
 6. [Tasks and aliases](tasks.md): named commands, argument forwarding, and shortcuts.
 7. [API and development](development.md): embedding helpers and generating documentation.
 
-The generated site's API section lists public functions, options, and types
-directly from source JSDoc. There are no public plan/apply/status subcommands:
-running Workstation executes the declared setup.
+8. [CLI reference](cli.md): commands, option placement, output and exit codes.
+9. [Architecture](architecture.md): boundaries, storage, invariants and extension workflow.
+10. [Environment tasks](environments.md): Docker, Docker Sandboxes and Microsandbox.
+
+The generated API reference comes from source JSDoc. Bare `workstation` shows help;
+`workstation build` applies configuration. The embedded `createWorkstation` API
+supports inline or file-based definitions. The HTML roadmap is a proposal, not a
+claim that every planned feature is implemented.

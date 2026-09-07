@@ -1,6 +1,6 @@
 import type { ResolvedPackageResource, Runner } from "../api/types.js";
 import { requireSuccess, type Inspection } from "./shared.js";
-import { runPackageCommand, type PackageCommand } from "./package-command.js";
+import { type PackageCommand } from "./package-command.js";
 
 const environment = { LC_ALL: "C" };
 
@@ -29,10 +29,6 @@ export async function inspectPacman(resource: ResolvedPackageResource, runner: R
   return { present: true, matches: resource.lockedVersion === undefined || resource.lockedVersion === installedVersion, installedVersion };
 }
 
-/** Install only the named package after checking that the sync database can satisfy its pin. */
-export async function installPacman(resource: ResolvedPackageResource, runner: Runner): Promise<void> {
-  await runPackageCommand(await preparePacman(resource, runner), runner);
-}
 
 /** Check a sync-database pin before preparing a batchable pacman transaction. */
 export async function preparePacman(resource: ResolvedPackageResource, runner: Runner, inspection?: Inspection): Promise<PackageCommand | undefined> {

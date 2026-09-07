@@ -1,5 +1,9 @@
 # API and documentation development
 
+Start with [architecture and maintenance](architecture.md) for module boundaries,
+extension workflows, ownership rules and test-isolation requirements. The
+[CLI reference](cli.md) documents invocation and exit-status contracts.
+
 All supported consumer imports come from `@dovocode/workstation`. The generated API
 reference covers builders, resource types, configuration loading, locks,
 manifest serialization, and the process runner.
@@ -43,6 +47,39 @@ covered by their enclosing function rather than becoming separate API pages.
 Run `corepack pnpm check`, `corepack pnpm test`, and `corepack pnpm run docs`
 before submitting documentation or API changes. Source lives under `src/api`, `src/config`, `src/resources`, `src/rendering`,
 `src/reconciliation`, and `src/persistence`.
+
+## Fallow code-quality checks
+
+The pinned `fallow` development dependency provides Rust-based repository analysis.
+Install dependencies with `corepack pnpm install`, then run:
+
+```sh
+corepack pnpm quality             # Fresh coverage, then the full Fallow gate
+corepack pnpm test:coverage       # Refresh coverage without running Fallow
+corepack pnpm quality:dead-code   # Unused exports and dependencies
+corepack pnpm quality:dupes       # Clone groups
+corepack pnpm quality:health      # Complexity and refactoring targets
+corepack pnpm quality:audit --base HEAD # Review local changes against HEAD
+```
+
+Use an appropriate fetched base ref for branch reviews. Fallow exits 1 for findings
+and 2 for execution errors. These checks complement, not replace, `check` and
+documentation validation. The full gate generates fresh Istanbul-compatible JSON
+coverage with Vitest's V8 provider, then passes it explicitly to Fallow for measured
+per-function risk scores. Run this gate before relying on standalone health or audit
+reports; cached coverage may refer to older source locations. No thresholds are
+relaxed and no blanket baseline hides findings. Detailed refactoring suggestions
+can still appear in a passing report; they are advisory, not failed rules.
+CI runs this full quality gate on Linux x64 in addition to the existing platform
+test/build matrix. Coverage reports remain local build artifacts, not source files.
+
+`.fallowrc.json` declares the library, CLI and build scripts as entry points.
+`postject` is the one dependency exception: `scripts/build-native.mjs` invokes its
+binary using a computed filesystem path. Fallow's local `.fallow/` cache is ignored.
+Before deleting a reported unused export, inspect its public API and test consumers
+with `corepack pnpm exec fallow dead-code --trace src/file.ts:symbol`. Do not run
+automatic fixes without reviewing their changes, especially on resource ownership
+and recovery code. See the [official Fallow guide](https://github.com/fallow-rs/fallow).
 
 ## RPM backend integration tests
 
