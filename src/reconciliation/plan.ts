@@ -40,7 +40,7 @@ function canUpdateAdoptedInPlace(resource: ResolvedConfig["resources"][number]):
   return (
     (resource.kind === "package" && ["brew-cask", "flatpak", "mas", "pacman"].includes(resource.manager)) ||
     (resource.kind === "generated-file" && ["overwrite", "inject", "merge"].includes(resource.ifExists)) ||
-    resource.kind === "custom-tool"
+    resource.kind === "custom-tool" || resource.kind === "symlink"
   );
 }
 
@@ -80,12 +80,13 @@ async function planDesired(id: string, resource: ResolvedResource, previous: Sta
   if (previous.fingerprint !== fingerprint(resource)) return planChanged(id, resource, previous, inspection);
   if (inspection.matches) return;
   if (inspection.conflict && !canRepairManagedFile(resource, previous)) throw new Error(`Managed resource ${id} drifted: ${inspection.conflict}`);
-  return { type: inspection.present ? "update" : "create", id, resource, previous, reason: driftReason(inspection) };
+  return { type: inspection.present ? "update" : "create", id, resource, previous, reason: driftReason(inspection, resource) };
 }
 
 /** Explain live drift consistently for new and already-managed resources. */
-function driftReason(inspection: Inspection): string {
+function driftReason(inspection: Inspection, resource: ResolvedResource): string {
   if (inspection.migration) return "migrate from mise to Homebrew";
+  if (inspection.present && resource.kind === "symlink") return "symlink points to a different source";
   return inspection.present ? "upgrade available" : "managed resource is missing";
 }
 
@@ -93,7 +94,7 @@ function driftReason(inspection: Inspection): string {
 function planUntracked(id: string, resource: ResolvedResource, inspection: Inspection): Action {
   if (inspection.matches) return { type: "adopt", id, resource, reason: "already present" };
   if (inspection.conflict) throw new Error(`Cannot manage ${id}: ${inspection.conflict}`);
-  if (inspection.present) return { type: "update", id, resource, reason: driftReason(inspection) };
+  if (inspection.present) return { type: "update", id, resource, reason: driftReason(inspection, resource) };
   return { type: "create", id, resource, reason: "not present" };
 }
 
@@ -118,6 +119,6 @@ async function planRemoval(id: string, previous: StateEntry, runner: Runner): Pr
 /** Detect live changes that forbid deletion when no original backup will be restored. */
 function changedBeforeRemoval(previous: StateEntry, inspection: Inspection): boolean {
   if (inspection.conflict) return true;
-  if (previous.resource.kind === "generated-file") return !inspection.matches;
+  if (previous.resource.kind === "generated-file" || previous.resource.kind === "symlink") return !inspection.matches;
   return previous.resource.kind === "custom-tool" && inspection.installedHash !== previous.installedHash;
 }

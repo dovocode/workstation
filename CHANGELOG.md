@@ -5,6 +5,13 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.2.2 — 2026-09-07
+
+- Automatically recreate symlinks pointing to a different source, including broken
+  links, while preserving adopted ownership and protecting regular files/directories.
+- Repair broken symlinks even when their normalized path matches the source, such
+  as links traversing a removed `mise/../` directory.
+
 ## 0.2.1 — 2026-09-07
 
 - Fix native config loading when runtime imports reach external Jiti or other native

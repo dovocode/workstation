@@ -78,7 +78,11 @@ symlink("dotfiles/common/git/gitconfig", "~/.gitconfig");
 ```
 
 Sources must exist. Targets use home-relative paths. Existing matching links
-are adopted; conflicting regular files or different links cause an error.
+are adopted; broken links or links pointing to a different source are
+recreated automatically. Pre-existing links remain adopted after replacement.
+Regular files and directories are never overwritten. Missing replacement sources
+leave existing links intact. Removing a declaration still refuses to delete an
+owned link redirected outside Workstation.
 Symlinks share live source content, so changing a linked source file does not
 require recreating the link. Existing-file overwrite policies apply to generated
 files, not the symlink helper.

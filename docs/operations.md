@@ -146,7 +146,7 @@ Workstation does not rewrite your mise configuration automatically.
 | Package manager not found | Install it and make it available on PATH |
 | Locked Homebrew version unavailable | Keep the installed pin or deliberately refresh its lock entry |
 | Cannot update adopted resource | The existing resource is not owned; explicitly migrate it before retrying |
-| Changed symlink/service/custom tool | Inspect the external modification before restoring or moving the conflicting resource |
+| Changed symlink during removal, service, or custom tool | Inspect the external modification before restoring or moving the conflicting resource |
 | State belongs to another machine | Use the original machine selector or a distinct state path |
 | Another run holds state.json.lock | Wait for that process; after a crash, confirm it stopped before removing the exact guard directory |
 | launchctl bootstrap failure | Check the GUI login domain and executable path |

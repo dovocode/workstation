@@ -1,9 +1,9 @@
-import { lstat, mkdir, readlink, symlink, unlink } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { lstat, mkdir, mkdtemp, readlink, rename, rmdir, stat, symlink, unlink } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import type { SymlinkResource } from "../api/types.js";
 import { isMissingFile, type Inspection } from "./shared.js";
 
-/** Compare a destination's symlink target with the resolved source without following the link. */
+/** Compare the source path and verify that a matching link actually resolves. */
 export async function inspectSymlink(resource: SymlinkResource): Promise<Inspection> {
   try {
     const stats = await lstat(resource.target);
@@ -16,11 +16,16 @@ export async function inspectSymlink(resource: SymlinkResource): Promise<Inspect
     }
     const target = await readlink(resource.target);
     const actual = resolve(dirname(resource.target), target);
-    const matches = actual === resource.source;
+    const matches = actual === resource.source && await stat(resource.target).then(
+      () => true,
+      (error: unknown) => {
+        if (isMissingFile(error)) return false;
+        throw error;
+      },
+    );
     return {
       present: true,
       matches,
-      ...(matches ? {} : { conflict: `${resource.target} points to ${actual}` }),
     };
   } catch (error) {
     if (isMissingFile(error)) return { present: false, matches: false };
@@ -28,7 +33,7 @@ export async function inspectSymlink(resource: SymlinkResource): Promise<Inspect
   }
 }
 
-/** Create parent directories and a missing link after checking the source and conflicts. */
+/** Create missing links or atomically replace different links, preserving non-link targets. */
 export async function installSymlink(resource: SymlinkResource): Promise<void> {
   const inspection = await inspectSymlink(resource);
   if (inspection.conflict) throw new Error(inspection.conflict);
@@ -38,7 +43,23 @@ export async function installSymlink(resource: SymlinkResource): Promise<void> {
     throw error;
   });
   await mkdir(dirname(resource.target), { recursive: true });
-  await symlink(resource.source, resource.target);
+  if (!inspection.present) {
+    await symlink(resource.source, resource.target);
+    return;
+  }
+  const temporary = await mkdtemp(join(dirname(resource.target), ".workstation-symlink-"));
+  const replacement = join(temporary, "link");
+  try {
+    await symlink(resource.source, replacement);
+    const current = await inspectSymlink(resource);
+    if (current.conflict) throw new Error(current.conflict);
+    await rename(replacement, resource.target);
+  } finally {
+    await unlink(replacement).catch((error: unknown) => {
+      if (!isMissingFile(error)) throw error;
+    });
+    await rmdir(temporary);
+  }
 }
 
 /** Unlink a managed symlink only when its destination still matches. */

@@ -57,6 +57,82 @@ function config(
 }
 
 describe("reconciliation ownership", () => {
+  it.each([false, true])("repairs a normalized matching path through a missing directory (managed: %s)", async (managed) => {
+    const files = await makeFixture();
+    const resource = { kind: "symlink" as const, source: files.source, target: files.target };
+    const runner = new UnusedRunner();
+    if (managed) {
+      await applyPlan(config(files, [resource]), runner);
+      await unlink(files.target);
+    } else {
+      await mkdir(join(files.root, "home"), { recursive: true });
+    }
+    await createSymlink(`${files.root}/missing/../source`, files.target);
+    await expect(readFile(files.target)).rejects.toMatchObject({ code: "ENOENT" });
+    expect((await applyPlan(config(files, [resource]), runner)).map((action) => action.type)).toEqual(["update"]);
+    expect(await readlink(files.target)).toBe(files.source);
+    expect(await readFile(files.target, "utf8")).toBe("managed\n");
+    expect(await applyPlan(config(files, [resource]), runner)).toEqual([]);
+  });
+
+  it.each([false, true])("recreates a different pre-existing link (broken: %s) without taking ownership", async (broken) => {
+    const files = await makeFixture();
+    const oldSource = join(files.root, "old-source");
+    if (!broken) await writeFile(oldSource, "old content");
+    await mkdir(join(files.root, "home"), { recursive: true });
+    await createSymlink(oldSource, files.target);
+    const resource = { kind: "symlink" as const, source: files.source, target: files.target };
+    const runner = new UnusedRunner();
+    expect((await applyPlan(config(files, [resource]), runner)).map((action) => action.type)).toEqual(["update"]);
+    expect(await readlink(files.target)).toBe(files.source);
+    expect(await applyPlan(config(files, [resource]), runner)).toEqual([]);
+    expect((await applyPlan(config(files, []), runner)).map((action) => action.type)).toEqual(["forget"]);
+    expect(await readlink(files.target)).toBe(files.source);
+    if (!broken) expect(await readFile(oldSource, "utf8")).toBe("old content");
+  });
+
+  it.each([false, true])("updates an existing link after its configured source changes (owned: %s)", async (owned) => {
+    const files = await makeFixture();
+    if (!owned) {
+      await mkdir(join(files.root, "home"), { recursive: true });
+      await createSymlink(files.source, files.target);
+    }
+    const resource = { kind: "symlink" as const, source: files.source, target: files.target };
+    const runner = new UnusedRunner();
+    await applyPlan(config(files, [resource]), runner);
+    const newSource = join(files.root, "new-source");
+    await writeFile(newSource, "replacement");
+    await applyPlan(config(files, [{ ...resource, source: newSource }]), runner);
+    expect(await readlink(files.target)).toBe(newSource);
+    expect((await applyPlan(config(files, []), runner)).map((action) => action.type)).toEqual([owned ? "remove" : "forget"]);
+  });
+
+  it("repairs external link drift but refuses to delete that drift on declaration removal", async () => {
+    const files = await makeFixture();
+    const resource = { kind: "symlink" as const, source: files.source, target: files.target };
+    const runner = new UnusedRunner();
+    await applyPlan(config(files, [resource]), runner);
+    await unlink(files.target);
+    await createSymlink(join(files.root, "missing-old-source"), files.target);
+    await expect(applyPlan(config(files, []), runner)).rejects.toThrow("Refusing to remove changed resource");
+    await applyPlan(config(files, [resource]), runner);
+    expect(await readlink(files.target)).toBe(files.source);
+  });
+
+  it("keeps an equivalent relative link unchanged and protects existing directories", async () => {
+    const files = await makeFixture();
+    await mkdir(join(files.root, "home"), { recursive: true });
+    await createSymlink("../source", files.target);
+    const resource = { kind: "symlink" as const, source: files.source, target: files.target };
+    const runner = new UnusedRunner();
+    await applyPlan(config(files, [resource]), runner);
+    expect(await readlink(files.target)).toBe("../source");
+    await unlink(files.target);
+    await mkdir(files.target);
+    await expect(applyPlan(config(files, [resource]), runner)).rejects.toThrow("not a symbolic link");
+    expect((await lstat(files.target)).isDirectory()).toBe(true);
+  });
+
   it("keeps the old mise version and state when installing its replacement fails", async () => {
     const files = await makeFixture();
     const resource = { kind: "package" as const, manager: "mise" as const, name: "node", version: "lts", lockedVersion: "22.0.0" };

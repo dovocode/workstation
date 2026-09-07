@@ -189,6 +189,7 @@ async function reconcile(
 /** Decide whether a replacement requires removing the previously owned resource first. */
 function shouldRemoveBeforeUpdate(action: Action): boolean {
   if (!action.previous?.owned) return false;
+  if (action.previous.resource.kind === "symlink" && action.resource.kind === "symlink") return false;
   if (action.previous.resource.kind === "generated-file") {
     return action.resource.kind !== "generated-file";
   }
