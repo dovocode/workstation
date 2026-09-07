@@ -83,6 +83,11 @@ and recovery code. See the [official Fallow guide](https://github.com/fallow-rs/
 
 ## Native config-import regression
 
+`node scripts/test-standalone-build.mjs` checks a native build with an empty PATH,
+temporary home and no dependencies or package manifest. It verifies generated
+content and repeat-run convergence; only temporary fixture state is reconciled.
+CI runs it after building each native platform binary.
+
 After `corepack pnpm build:native`, run `node scripts/test-native-imports.mjs`.
 It creates and removes an isolated project, imports the built library by package
 name, and lists tasks through both CLI distributions. No workstation state is

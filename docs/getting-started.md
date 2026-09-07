@@ -4,6 +4,11 @@
 
 - macOS or Linux. The native executable does not require Node.js, npm, Corepack,
   or pnpm. The JavaScript CLI requires Node.js 26.8.1 or later.
+- Built-in imports from `@dovocode/workstation` work without `pnpm install`:
+  the CLI provides its bundled API when no project installation resolves.
+  A resolvable project installation takes precedence, allowing an explicitly
+  pinned library version. Third-party imports must be installed in the config
+  project using its package manager; Workstation does not download them for you.
 - Workstation bootstraps mise when a mise resource or Node-based task needs it.
   It also bootstraps Homebrew when a Homebrew formula or cask is declared.
   Newly installed tools are available in the same run; no shell restart is needed.
@@ -206,7 +211,13 @@ Use `workstation init --config setup/workstation.config.ts` for a custom path;
 missing parent directories are created. Existing files and symlinks are never
 overwritten. Initialization does not install dependencies, execute configuration,
 or create a lock, manifest, or ownership state. The starter uses a type-only
-import; make the package available in your project for editor types and helpers.
+import. Installing the package locally is optional for editor types or a pinned
+library version; runtime built-in helpers are already available from the CLI.
+
+A native `workstation build` does not install Node or pnpm merely to load your
+TypeScript config, even if it declares a pnpm task. They are needed only when
+you explicitly declare those tools, invoke a Node/pnpm task, or install external
+JavaScript dependencies. Custom-tool build commands still need their own tools.
 
 The starter includes empty shared and machine-specific resources plus a harmless
 `hello` task and `hi` alias. Add resources using a default export like this:

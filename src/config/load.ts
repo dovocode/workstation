@@ -23,6 +23,13 @@ import type {
 
 const DEFAULT_CONFIG_FILE = "workstation.config.ts";
 
+/** Use the bundled API only when normal project resolution finds no installation. */
+function createConfigLoader(configPath: string, bundledApi: Readonly<Record<string, unknown>> | undefined) {
+  const loader = createJiti(configPath);
+  if (!bundledApi || loader.esmResolve("@dovocode/workstation", { try: true })) return loader;
+  return createJiti(configPath, { virtualModules: { "@dovocode/workstation": bundledApi } });
+}
+
 /** Resolve an explicit entry path, or find workstation.config.ts in the current directory. */
 export async function findConfig(explicit?: string): Promise<string> {
   if (explicit) return resolve(explicit);
@@ -35,10 +42,14 @@ export async function findConfig(explicit?: string): Promise<string> {
   }
 }
 
-/** Load an absolute TypeScript entry path, evaluate fragments, and resolve paths without applying resources. */
+/** Load an absolute TypeScript entry path without applying resources.
+ * The CLI supplies its bundled public API as a fallback when the project has no
+ * installed Workstation package. Third-party imports are never auto-installed.
+ */
 export async function loadConfig(
   configPath: string,
   machineOverride?: string,
+  bundledApi?: Readonly<Record<string, unknown>>,
 ): Promise<ResolvedConfig> {
   const nativePlatform = readPlatform();
   if (nativePlatform !== "darwin" && nativePlatform !== "linux") {
@@ -52,7 +63,7 @@ export async function loadConfig(
     home: homedir(),
     configDir: dirname(configPath),
   };
-  const jiti = createJiti(configPath);
+  const jiti = createConfigLoader(configPath, bundledApi);
   const imported: unknown = await jiti.import(configPath, { default: true });
   return resolveConfig(imported as ConfigInput, context, configPath);
 }

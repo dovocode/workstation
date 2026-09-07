@@ -23,6 +23,13 @@ consumer API. Importing the library must never execute the CLI or exit the host.
 
 ## Execution contracts
 
+The CLI passes its public API to the config loader as a virtual-module fallback
+for `@dovocode/workstation`. A resolvable project package takes precedence.
+This keeps the loader independent of the public entry point (no circular import),
+avoids materializing a fake package on disk, and leaves third-party resolution
+unchanged. Direct library callers retain normal project resolution unless they
+explicitly supply the optional bundled API to `loadConfig`.
+
 CLI build loads configuration, bootstraps prerequisites, resolves the lock, writes
 and reads the manifest, then acquires the apply guard. Planning, validation,
 snapshotting and resource mutation occur under that guard. Lock and manifest writes

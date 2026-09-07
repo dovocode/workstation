@@ -5,6 +5,13 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.3.0 — 2026-09-07
+
+- Allow built-in configuration helpers without installing the Workstation package:
+  the CLI supplies its bundled API only when no local package resolves. Preserve
+  installed-version precedence and require explicit installation of third-party imports.
+- Verify standalone native builds and convergence without Node or pnpm on PATH.
+
 ## 0.2.2 — 2026-09-07
 
 - Automatically recreate symlinks pointing to a different source, including broken

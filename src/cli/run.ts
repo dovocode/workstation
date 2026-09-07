@@ -1,4 +1,5 @@
 import { parseArguments, type Options } from "./arguments.js";
+import * as bundledApi from "../index.js";
 import { findConfig, loadConfig } from "../config/load.js";
 import { manifestPath, readManifest, writeManifest } from "../persistence/manifest.js";
 import { applyPlan } from "../reconciliation/apply.js";
@@ -35,12 +36,12 @@ export async function runCli(args: readonly string[]): Promise<void> {
     const path = await initConfig(options.config);
     console.log(`Created ${path}`);
     console.log("Edit the configuration, then run workstation build with the same --config path if provided.");
-    console.log("No tools installed or setup applied. Make @dovocode/workstation available in your project for editor types and helper imports.");
+    console.log("No tools installed or setup applied. Built-in helpers work without dependencies; install @dovocode/workstation only for local editor types or a pinned library version.");
     return;
   }
   const sourcePath = await findConfig(options.config);
   if (!options.listTasks && !options.task) console.log(`Loading configuration: ${sourcePath}`);
-  const sourceConfig = await loadConfig(sourcePath, options.machine);
+  const sourceConfig = await loadConfig(sourcePath, options.machine, bundledApi);
   const runner = new ProcessRunner({ progress: !options.listTasks, verbose: options.verbose });
   if (options.task === "lock") {
     await refreshLock(options, sourcePath, sourceConfig, runner);

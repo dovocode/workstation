@@ -15,6 +15,9 @@ See [setup and installation instructions](docs/getting-started.md).
 ## Install the native executable
 
 The native executable needs no preinstalled Node.js, pnpm, mise, or Homebrew.
+Built-in config imports from `@dovocode/workstation` work without running
+`pnpm install`; the CLI supplies its bundled API when no local package resolves.
+Third-party config packages remain explicit project dependencies.
 These commands install the latest release into `~/.local/bin` on macOS or Linux.
 
 With curl:

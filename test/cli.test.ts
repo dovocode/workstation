@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   write: vi.fn(), read: vi.fn(),
 }));
 vi.mock("../src/config/load.js", () => ({ findConfig: mocks.find, loadConfig: mocks.load }));
+vi.mock("../src/index.js", () => ({ bundledApiMarker: true }));
 vi.mock("../src/bootstrap.js", () => ({ ensurePrerequisites: mocks.bootstrap }));
 vi.mock("../src/self-update.js", () => ({ selfUpdate: mocks.update }));
 vi.mock("../src/config/init.js", () => ({ initConfig: mocks.init }));
