@@ -3,6 +3,7 @@ export const commands = {
   help: { usage: "help", description: "Show command help" },
   init: { usage: "init", description: "Create a starter configuration without overwriting" },
   build: { usage: "build", description: "Reconcile the workstation" },
+  upgrade: { usage: "upgrade [IDs]", description: "Refresh package pins and reconcile the workstation" },
   plan: { usage: "plan", description: "Preview reconciliation without writing locks or state" },
   status: { usage: "status", description: "Inspect drift against recorded state and pins" },
   doctor: { usage: "doctor", description: "Check executables and explain backend capabilities" },

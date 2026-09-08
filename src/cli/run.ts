@@ -159,7 +159,9 @@ async function showPlan(options: Options, sourcePath: string, sourceConfig: Reso
 /** Resolve and serialize declarations before applying the validated manifest. */
 async function buildWorkstation(options: Options, sourcePath: string, sourceConfig: ResolvedConfig, runner: Runner): Promise<void> {
   console.log(`Resolving package versions for ${sourceConfig.context.machine} (${sourceConfig.resources.length} resources)...`);
-  const locked = await lockConfig(sourcePath, sourceConfig, runner, { frozen: options.frozen });
+  const locked = await lockConfig(sourcePath, sourceConfig, runner, options.upgrade
+    ? { refresh: options.upgradeIds.length ? options.upgradeIds : true }
+    : { frozen: options.frozen });
   console.log(`Package lock ${locked.changed ? "updated" : "unchanged"}.${options.verbose ? ` ${locked.path}` : ""}`);
   const outputPath = manifestPath(locked.config);
   await writeManifest(outputPath, locked.config);

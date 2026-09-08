@@ -6,6 +6,8 @@ export interface Options {
   readonly build: boolean;
   readonly init: boolean;
   readonly update: boolean;
+  readonly upgrade: boolean;
+  readonly upgradeIds: readonly string[];
   readonly verbose: boolean;
   readonly task?: string;
   readonly taskArgs: readonly string[];
@@ -15,8 +17,8 @@ export interface Options {
 }
 
 type MutableOptions = { -readonly [K in keyof Options]: Options[K] };
-type CommandFlag = "plan" | "build" | "init" | "update";
-const commandFlags = new Set<string>(["plan", "build", "init", "update"]);
+type CommandFlag = "plan" | "build" | "init" | "update" | "upgrade";
+const commandFlags = new Set<string>(["plan", "build", "init", "update", "upgrade"]);
 const booleanFlags = new Map<string, "frozen" | "noRemove" | "verbose" | "listTasks">([
   ["--frozen-lockfile", "frozen"], ["--no-remove", "noRemove"],
   ["--verbose", "verbose"], ["-v", "verbose"], ["--list-tasks", "listTasks"],
@@ -24,7 +26,7 @@ const booleanFlags = new Map<string, "frozen" | "noRemove" | "verbose" | "listTa
 
 /** Parse flags without I/O; stop parsing at a task to preserve its literal arguments. */
 export function parseArguments(args: readonly string[], display: { readonly help: () => never; readonly version: () => never }): Options {
-  const options: MutableOptions = { plan: false, frozen: false, noRemove: false, build: false, init: false, update: false, verbose: false, listTasks: false, taskArgs: [] };
+  const options: MutableOptions = { plan: false, frozen: false, noRemove: false, build: false, init: false, update: false, upgrade: false, upgradeIds: [], verbose: false, listTasks: false, taskArgs: [] };
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
     if (argument === "--version") display.version();
@@ -34,6 +36,7 @@ export function parseArguments(args: readonly string[], display: { readonly help
       options[argument === "--config" ? "config" : "machine"] = requireValue(args, ++index, argument);
       continue;
     }
+    if (consumeUpgradeId(options, argument)) continue;
     consumeTask(options, argument, args.slice(index + 1));
     break;
   }
@@ -60,10 +63,11 @@ function rejectOptions(options: Options, keys: readonly (keyof Options)[], messa
 /** Enforce command-specific constraints after all global options have been parsed. */
 function validateInvocation(options: Options): void {
   if (options.listTasks && options.task) throw new Error("--list-tasks cannot be combined with a task name");
-  if (options.plan) rejectOptions(options, ["build", "init", "update", "task", "listTasks"], "plan cannot be combined with another command");
-  if ((options.frozen || options.noRemove) && !options.build && !options.plan) throw new Error("Build options require build or plan");
+  if (options.plan) rejectOptions(options, ["build", "init", "update", "upgrade", "task", "listTasks"], "plan cannot be combined with another command");
+  if (options.upgrade) rejectOptions(options, ["build", "init", "update", "plan", "task", "listTasks", "frozen"], "upgrade cannot be combined with another command or --frozen-lockfile");
+  if ((options.frozen || options.noRemove) && !options.build && !options.plan && !options.upgrade) throw new Error("Build options require build, plan or upgrade");
   validateExclusiveCommands(options);
-  if (!["build", "plan", "init", "update", "task", "listTasks"].some((key) => Boolean(options[key as keyof Options]))) throw new Error("Specify build to reconcile the workstation");
+  if (!["build", "plan", "init", "update", "upgrade", "task", "listTasks"].some((key) => Boolean(options[key as keyof Options]))) throw new Error("Specify build to reconcile the workstation");
 }
 
 /** Validate commands whose accepted global options differ from build and plan. */
@@ -85,4 +89,11 @@ function consumeTask(options: MutableOptions, argument: string, args: readonly s
   if (!argument || argument.startsWith("-")) throw new Error(`Unknown argument: ${argument}`);
   options.task = argument;
   options.taskArgs = args[0] === "--" ? args.slice(1) : args;
+}
+
+/** Collect package selections while leaving ordinary task parsing unchanged. */
+function consumeUpgradeId(options: MutableOptions, argument: string): boolean {
+  if (!options.upgrade || !argument.startsWith("package:")) return false;
+  options.upgradeIds = [...options.upgradeIds, argument];
+  return true;
 }

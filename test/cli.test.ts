@@ -83,3 +83,26 @@ it.each([["status", "extra"], ["doctor", "extra"], ["history", "extra"], ["rollb
     expect(mocks.apply).not.toHaveBeenCalled();
   },
 );
+
+it.each([
+  { ids: [], refresh: true },
+  { ids: ["package:mise:node", "package:brew:jq"], refresh: ["package:mise:node", "package:brew:jq"] },
+])("refreshes $refresh and applies the resolved manifest", async ({ ids, refresh }) => {
+  const resolved = { ...config, stateFile: "/unused/resolved-state.json" };
+  mocks.lock.mockResolvedValueOnce({ config: resolved, changed: true, path: "/unused/workstation.lock" });
+  mocks.read.mockResolvedValueOnce(resolved);
+  await runCli(["upgrade", ...ids, "--no-remove"]);
+  expect(mocks.bootstrap).toHaveBeenCalledOnce();
+  expect(mocks.lock).toHaveBeenCalledExactlyOnceWith("/unused/config.ts", config, expect.anything(), { refresh });
+  expect(mocks.write).toHaveBeenCalledWith("/unused/manifest.toml", resolved);
+  expect(mocks.apply).toHaveBeenCalledWith(resolved, expect.anything(), expect.any(Function), expect.any(Function), { noRemove: true });
+  expect(mocks.update).not.toHaveBeenCalled();
+  expect(mocks.task).not.toHaveBeenCalled();
+});
+
+it("does not write a manifest or apply when upgrade resolution fails", async () => {
+  mocks.lock.mockRejectedValueOnce(new Error("Version resolution failed"));
+  await expect(runCli(["upgrade"])).rejects.toThrow("Version resolution failed");
+  expect(mocks.write).not.toHaveBeenCalled();
+  expect(mocks.apply).not.toHaveBeenCalled();
+});

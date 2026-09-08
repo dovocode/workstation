@@ -21,3 +21,18 @@ it("keeps help and reserved task names aligned with the command registry", () =>
   }
   expect(isBuiltinCommand("toString")).toBe(false);
 });
+
+it("parses upgrade selections and flags in either position", () => {
+  expect(parseArguments(["--config", "/tmp/config.ts", "upgrade", "package:mise:node", "--no-remove", "package:brew:jq", "--machine", "laptop", "-v"], display)).toMatchObject({
+    upgrade: true, upgradeIds: ["package:mise:node", "package:brew:jq"],
+    config: "/tmp/config.ts", machine: "laptop", noRemove: true, verbose: true,
+  });
+});
+
+it.each([
+  ["upgrade", "--frozen-lockfile"], ["upgrade", "build"], ["plan", "upgrade"],
+  ["upgrade", "init"], ["update", "upgrade"], ["upgrade", "--list-tasks"],
+  ["upgrade", "hello"], ["upgrade", "--invalid"], ["upgrade", "upgrade"],
+])("rejects incompatible upgrade invocation %j", (...args) => {
+  expect(() => parseArguments(args, display)).toThrow();
+});

@@ -1,4 +1,5 @@
 import { chmod, rename, rm, writeFile } from "node:fs/promises";
+import { resolveJavaScriptUpdate } from "./self-update-installation.js";
 import { realpathSync } from "node:fs";
 import packageMetadata from "../package.json" with { type: "json" };
 import type { Runner } from "./api/types.js";
@@ -10,15 +11,17 @@ interface LatestRelease {
   readonly assets?: readonly { readonly name?: unknown; readonly browser_download_url?: unknown }[];
 }
 
-/** Update the current native executable, or the globally installed npm CLI. */
+/** Update the resolved native executable or a verified global JavaScript installation. */
 export async function selfUpdate(runner: Runner): Promise<void> {
   if (!isNativeExecutable()) {
-    console.log("Updating the JavaScript CLI with npm...");
-    await requireSuccess(runner, "npm", ["install", "--global", "@dovocode/workstation@latest"]);
-    console.log("Workstation was updated through npm.");
+    const installation = await resolveJavaScriptUpdate(runner);
+    console.log(`Updating Workstation at ${installation.location} through ${installation.command}...`);
+    await requireSuccess(runner, installation.command, installation.args);
+    console.log(`Workstation was updated at ${installation.location} through ${installation.command}.`);
     return;
   }
 
+  const executable = realpathSync(process.execPath);
   const release = await fetchLatestRelease();
   const latest = requireString(release.tag_name, "latest release tag").replace(/^v/, "");
   if (latest === packageMetadata.version) {
@@ -29,16 +32,16 @@ export async function selfUpdate(runner: Runner): Promise<void> {
   const assetName = nativeAssetName(process.platform, process.arch);
   const asset = release.assets?.find((candidate) => candidate.name === assetName);
   const downloadUrl = requireString(asset?.browser_download_url, `download URL for ${assetName}`);
-  console.log(`Updating Workstation ${packageMetadata.version} to ${latest}...`);
+  console.log(`Updating Workstation ${packageMetadata.version} to ${latest} at ${executable}...`);
   const response = await fetch(downloadUrl, { headers: { "User-Agent": "dovocode-workstation" } });
   if (!response.ok) throw new Error(`Could not download ${assetName}: HTTP ${response.status}`);
 
-  const temporary = `${process.execPath}.update-${process.pid}`;
+  const temporary = `${executable}.update-${process.pid}`;
   try {
     await writeFile(temporary, new Uint8Array(await response.arrayBuffer()), { mode: 0o755 });
     await chmod(temporary, 0o755);
     await requireSuccess(runner, temporary, ["--help"], false);
-    await rename(temporary, process.execPath);
+    await rename(temporary, executable);
   } catch (error) {
     await rm(temporary, { force: true });
     throw error;

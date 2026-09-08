@@ -81,8 +81,24 @@ workstation update
 ```
 
 For a native installation this downloads and validates the latest matching
-release binary before atomically replacing the current executable. For the
-JavaScript CLI it runs `npm install --global @dovocode/workstation@latest`.
+release binary before atomically replacing the resolved executable, preserving
+symlinks. This works for the curl/wget flow above and manually placed or renamed
+binaries at any path, provided their directory is writable. For example:
+
+```sh
+"$HOME/.local/bin/workstation" update
+"/custom/path/workstation" update
+```
+
+Each command updates only the executable it invokes, even if another Workstation
+installation is on PATH. No package manager is required for native updates.
+
+For a verified global npm installation, the update explicitly targets its
+existing prefix. For pnpm, the global inventory must match the running CLI before
+`pnpm update --global --latest @dovocode/workstation` runs.
+Local dependencies, source checkouts, linked packages, and unrecognized installations
+stop with instructions to update through their owning project or package manager.
+The updater never falls back to creating a global npm installation.
 
 macOS binaries are ad-hoc signed but not notarized. If Gatekeeper blocks the
 download, review the release and then remove the quarantine attribute explicitly:
@@ -250,7 +266,7 @@ Generated files overwrite by default and retain an original backup in local stat
 | `workstation` | Show command help |
 | `workstation build` | Reconcile the workstation |
 | `workstation init` | Create a starter configuration without applying it |
-| `workstation update` | Update the native executable or global npm installation |
+| `workstation update` | Update the running native executable or verified global npm/pnpm installation |
 | `workstation init --config setup/workstation.config.ts` | Create a starter at a custom path |
 | `workstation build --config /path/workstation.config.ts` | Reconcile using another entry point |
 | `workstation build --machine studio` | Reconcile with a machine-name override |

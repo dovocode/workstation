@@ -103,6 +103,7 @@ export default defineConfig({
 workstation                 # Show help
 workstation build           # Reconcile the declared setup
 workstation update          # Update Workstation itself
+workstation upgrade         # Refresh package pins and apply updates
 workstation build --verbose # Include raw inspection and version-query output
 workstation --list-tasks
 workstation t -- --watch    # Run only the named task
@@ -123,7 +124,17 @@ with up to four concurrent reads; mutations retain their dependency ordering.
 
 `workstation update` checks the latest GitHub Release. A native installation
 downloads the matching platform binary, verifies that it starts, and atomically
-replaces itself. The JavaScript CLI updates the global npm package instead.
+replaces the resolved executable path, preserving symlinks. This includes the
+curl/wget installation above and binaries manually placed or renamed anywhere else.
+Run `/custom/path/workstation update` to update that specific copy; no PATH entry
+or fixed installation directory is required. The executable's directory must be
+writable by the user running the update.
+For JavaScript installations, it verifies the running CLI's location first:
+npm updates use an explicit `--prefix` for the existing global installation;
+pnpm updates use `pnpm update --global --latest @dovocode/workstation` only when
+the global inventory matches the running CLI. Local dependencies, source checkouts,
+linked packages, and unrecognized installations stop with instructions to use their
+owning project or package manager. There is no fallback to a global npm install.
 
 `workstation build` performs the complete lock, manifest, plan, and reconciliation
 flow. Running `workstation` without a command displays help.
@@ -220,6 +231,20 @@ Exactly pinned mise updates are also supported by rollback. Both versions must b
 recorded; the newer pin must still match, and the prior version must be installed
 or resolvable to the exact same version. Other managers remain unsupported for
 snapshot rollback. This restores installations, not application data or activation.
+
+Upgrade configured packages and reconcile the workstation in one command:
+
+```sh
+workstation upgrade
+# Refresh only selected package pins, then reconcile:
+workstation upgrade package:mise:node package:brew:jq
+```
+
+Version selectors still apply; exact versions remain pinned. Unselected unchanged
+pins are retained. Like `build`, this reconciles the full configuration, including
+files and removals; use `--no-remove` to reject plans containing removals.
+Supports `--config PATH`, `--machine NAME`, and `--verbose`.
+`--frozen-lockfile` is incompatible with upgrading.
 
 Refresh locks without installing with `workstation lock update`, or select resources:
 `workstation lock update package:mise:node package:brew:jq`. Then apply with

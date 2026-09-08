@@ -5,6 +5,17 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.4.0 — 2026-09-08
+
+- Target the running installation during self-update: resolve native symlinks,
+  preserve npm prefixes, verify pnpm global package paths, and reject local,
+  linked, or unrecognized installations instead of blindly installing with npm.
+  Cover curl/wget installs and manually placed or renamed native binaries at
+  arbitrary paths, including symlink chains and failed-download validation.
+
+- Add `workstation upgrade [IDs]` to refresh all or selected package pins and
+  reconcile the workstation in one command.
+
 ## 0.3.0 — 2026-09-07
 
 - Allow built-in configuration helpers without installing the Workstation package:
