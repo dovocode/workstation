@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isConfigValue } from "../config/value-validation.js";
+import { resolveAfterApply } from "../config/hooks.js";
 import { dirname, resolve } from "node:path";
 import { parse, stringify, type TomlTableWithoutBigInt } from "smol-toml";
 import { requireTable, requireString } from "./validation.js";
@@ -37,6 +38,7 @@ export async function writeManifest(path: string, config: ResolvedConfig): Promi
       config_dir: config.context.configDir,
     },
     resources: config.resources.map(toTomlResource),
+    ...(config.afterApply?.length ? { after_apply: config.afterApply.map((command) => ({ ...command })) } : {}),
   };
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   const temporary = `${path}.${process.pid}.tmp`;
@@ -56,7 +58,8 @@ export async function readManifest(path: string): Promise<ResolvedConfig> {
   const resources = document.resources.map((resource, index) =>
     parseResource(requireTable(resource, `resources[${index}]`)),
   );
-  return { context, resources, stateFile };
+  const afterApply = resolveAfterApply(document.after_apply, context);
+  return { context, resources, stateFile, ...(afterApply.length ? { afterApply } : {}) };
 }
 
 /** Encode a resolved resource using the manifest's field names and JSON value payload. */

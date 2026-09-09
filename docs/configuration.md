@@ -79,3 +79,10 @@ Use `linux: "dnf"`, `linux: "yum"`, or `linux: "pacman"` to select explicitly.
 Flatpak is an additional app backend, not a system-manager detection candidate.
 Use `linux(...)` for Flatpak/pacman declarations and `darwin(...)` for MAS.
 The state belongs to one machine selector and rejects a different selector.
+
+## Commands after reconciliation
+
+`afterApply` accepts an array of commands declared with `task(...)`. They run
+in order after successful `build` and `upgrade` commands, including no-change
+runs. Imported fragments append hooks rather than replacing them. See
+[post-apply scripts](tasks.md#post-apply-scripts) for execution and failure behavior.

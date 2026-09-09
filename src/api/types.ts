@@ -132,6 +132,8 @@ export type ResourceInput = Resource | readonly ResourceInput[] | false | null |
 
 /** A composable configuration fragment. Prefer the exported helpers to constructing resources manually. */
 export interface ConfigDefinition {
+  /** Commands run sequentially after successful build/upgrade, including no-change runs. Fragments append in order. */
+  readonly afterApply?: readonly TaskDefinition[];
   /** Named commands executed explicitly with workstation <task>. */
   readonly tasks?: Readonly<Record<string, TaskDefinition>>;
   /** Alternate task names; alias chains are supported and cycles rejected. */
@@ -160,6 +162,8 @@ export type ConfigFactory = (context: Context) => ConfigInput;
 export type WorkstationConfig = ConfigInput;
 
 export interface ResolvedConfig {
+  /** Validated post-apply commands with absolute working directories. */
+  readonly afterApply?: readonly TaskDefinition[];
   readonly tasks?: Readonly<Record<string, TaskDefinition>>;
   readonly aliases?: Readonly<Record<string, string>>;
   readonly context: Context;

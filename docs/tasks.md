@@ -9,9 +9,9 @@ import { defineConfig, task } from "@dovocode/workstation";
 export default defineConfig({
   tasks: {
     test: task("pnpm", ["test"], { description: "Run project tests" }),
-    build: task("pnpm", ["build"], { cwd: "app" }),
+    "build-app": task("pnpm", ["build"], { cwd: "app" }),
   },
-  aliases: { t: "test", b: "build" },
+  aliases: { t: "test", b: "build-app" },
 });
 ```
 
@@ -19,18 +19,51 @@ export default defineConfig({
 workstation --list-tasks
 workstation test
 workstation t -- --watch
-workstation --machine studio build
+workstation --machine studio build-app
 ```
 
 A task invocation does not install resources or write the lock, manifest, or
 ownership state. It evaluates the configuration and executes only the selected
-command. Without a task name, Workstation reconciles the setup as usual.
+command. Run `workstation build` to reconcile the setup.
 
 Task commands run directly without shell interpolation. Extra arguments are
 appended unchanged. For shell pipelines, explicitly declare a shell command
 such as `task("bash", ["-lc", "first-command && second-command"])`.
 Output is collected and printed when the command finishes; its exit code is
 returned by the CLI. These tasks are not a streaming interactive terminal.
+
+## Post-apply scripts
+
+Use `afterApply` for commands that must run after `workstation build` or
+`workstation upgrade` successfully reconciles resources:
+
+```ts
+import { defineConfig, task } from "@dovocode/workstation";
+
+export default defineConfig({
+  afterApply: [
+    task("bash", ["scripts/activate-keyhold.sh"], {
+      description: "Activate the installed Keyhold agent",
+    }),
+  ],
+});
+```
+
+Hooks use the same command options as tasks: literal arguments, a working
+directory relative to the configuration entry point (defaulting to that
+directory), and environment overrides. Use an explicit shell for shell syntax.
+Hooks from imported and platform/machine fragments append in declaration order.
+They are validated before applying resources and saved in the resolved manifest.
+
+Hooks run sequentially and stream output, including on successful runs with no
+resource changes. Write them to be safe to repeat. The first failure stops later
+hooks and makes the command fail; already-applied resources remain in place.
+Hooks do not run if reconciliation fails, or during `plan`, tasks, diagnostics,
+lock updates, or rollback. The embedded client's `build()` also runs them.
+
+Keep source-based builds in `customTool` so source changes control rebuilding.
+Use a post-apply script for follow-up work such as activating the installed
+binary, without compiling it a second time.
 
 Working directories default to the entry point's directory; relative `cwd`
 values resolve there and `~` expands to home. `environment` overrides inherited

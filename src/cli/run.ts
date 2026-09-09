@@ -7,6 +7,7 @@ import { ProcessRunner } from "../resources/runner.js";
 import { lockConfig } from "../persistence/lock.js";
 import type { Action, ResolvedConfig, Runner } from "../api/types.js";
 import { runTask } from "../resources/tasks.js";
+import { runAfterApply } from "../resources/hooks.js";
 import { initConfig } from "../config/init.js";
 import { ensurePrerequisites } from "../bootstrap.js";
 import { selfUpdate } from "../self-update.js";
@@ -173,6 +174,7 @@ async function buildWorkstation(options: Options, sourcePath: string, sourceConf
     if (!options.verbose && /^\s+(Inspect|Done):|^\s+Inspect removed declaration:/.test(message)) return;
     console.log(message);
   }, { noRemove: options.noRemove });
+  await runAfterApply(config, runner, (message) => console.log(message));
   console.log(
     actions.length === 0
       ? "Workstation is already converged."

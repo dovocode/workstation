@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   status: vi.fn(async () => []), doctor: vi.fn(async () => []),
   history: vi.fn(async () => []), rollback: vi.fn(async () => []),
   write: vi.fn(), read: vi.fn(),
+  afterApply: vi.fn(),
 }));
 vi.mock("../src/config/load.js", () => ({ findConfig: mocks.find, loadConfig: mocks.load }));
 vi.mock("../src/index.js", () => ({ bundledApiMarker: true }));
@@ -27,6 +28,7 @@ vi.mock("../src/reconciliation/apply.js", () => ({ applyPlan: mocks.apply }));
 vi.mock("../src/reconciliation/rollback.js", () => ({ listHistory: mocks.history, rollback: mocks.rollback }));
 vi.mock("../src/diagnostics.js", () => ({ diagnose: mocks.doctor, inspectStatus: mocks.status }));
 vi.mock("../src/resources/tasks.js", () => ({ runTask: mocks.task }));
+vi.mock("../src/resources/hooks.js", () => ({ runAfterApply: mocks.afterApply }));
 vi.mock("../src/resources/runner.js", () => ({ ProcessRunner: class { } }));
 import { runCli } from "../src/cli/run.js";
 
@@ -57,6 +59,7 @@ it.each([["plan"], ["status"], ["doctor"], ["history"], ["--list-tasks"], ["lock
     await runCli(args);
     expect(mocks.bootstrap).not.toHaveBeenCalled();
     expect(mocks.apply).not.toHaveBeenCalled();
+    expect(mocks.afterApply).not.toHaveBeenCalled();
   },
 );
 
@@ -67,12 +70,15 @@ it("builds only the re-read manifest and forwards frozen and removal controls", 
   expect(mocks.read).toHaveBeenCalledOnce();
   expect(mocks.lock).toHaveBeenCalledWith("/unused/config.ts", config, expect.anything(), { frozen: true });
   expect(mocks.apply).toHaveBeenCalledWith(config, expect.anything(), expect.any(Function), expect.any(Function), { noRemove: true });
+  expect(mocks.afterApply).toHaveBeenCalledWith(config, expect.anything(), expect.any(Function));
+  expect(mocks.afterApply.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.apply.mock.invocationCallOrder[0]!);
 });
 
 it("preserves task arguments and native failure status", async () => {
   await runCli(["hello", "--", "--help", "$(literal)"]);
   expect(mocks.task).toHaveBeenCalledWith(config, "hello", ["--help", "$(literal)"], expect.anything());
   expect(process.exitCode).toBe(7);
+  expect(mocks.afterApply).not.toHaveBeenCalled();
 });
 
 it.each([["status", "extra"], ["doctor", "extra"], ["history", "extra"], ["rollback"], ["rollback", "123-456", "--invalid"], ["lock", "invalid"]])(
@@ -96,6 +102,7 @@ it.each([
   expect(mocks.lock).toHaveBeenCalledExactlyOnceWith("/unused/config.ts", config, expect.anything(), { refresh });
   expect(mocks.write).toHaveBeenCalledWith("/unused/manifest.toml", resolved);
   expect(mocks.apply).toHaveBeenCalledWith(resolved, expect.anything(), expect.any(Function), expect.any(Function), { noRemove: true });
+  expect(mocks.afterApply).toHaveBeenCalledWith(resolved, expect.anything(), expect.any(Function));
   expect(mocks.update).not.toHaveBeenCalled();
   expect(mocks.task).not.toHaveBeenCalled();
 });
@@ -105,4 +112,16 @@ it("does not write a manifest or apply when upgrade resolution fails", async () 
   await expect(runCli(["upgrade"])).rejects.toThrow("Version resolution failed");
   expect(mocks.write).not.toHaveBeenCalled();
   expect(mocks.apply).not.toHaveBeenCalled();
+});
+
+it.each(["build", "upgrade"])("skips hooks when %s reconciliation fails", async (command) => {
+  mocks.apply.mockRejectedValueOnce(new Error("apply failed"));
+  await expect(runCli([command])).rejects.toThrow("apply failed");
+  expect(mocks.afterApply).not.toHaveBeenCalled();
+});
+
+it("reports hook failures without claiming success", async () => {
+  mocks.afterApply.mockRejectedValueOnce(new Error("hook failed"));
+  await expect(runCli(["build"])).rejects.toThrow("hook failed");
+  expect(console.log).not.toHaveBeenCalledWith("Workstation is already converged.");
 });

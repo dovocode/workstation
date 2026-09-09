@@ -10,6 +10,7 @@ import { listHistory, rollback } from "../reconciliation/rollback.js";
 import { runTask } from "../resources/tasks.js";
 import { ProcessRunner } from "../resources/runner.js";
 import { ensurePrerequisites } from "../bootstrap.js";
+import { runAfterApply } from "../resources/hooks.js";
 import type { Action, ConfigInput, Context, Runner } from "./types.js";
 
 export interface WorkstationOptions {
@@ -57,7 +58,9 @@ export function createWorkstation(options: WorkstationOptions = {}) {
       if (settings.bootstrap) await ensurePrerequisites(config, runner);
       const locked = await lockConfig(configPath, config, runner, { ...(settings.frozen !== undefined ? { frozen: settings.frozen } : {}) });
       await writeManifest(manifestPath(locked.config), locked.config);
-      return applyPlan(locked.config, runner, options.onAction, options.onProgress, { ...(settings.noRemove !== undefined ? { noRemove: settings.noRemove } : {}) });
+      const actions = await applyPlan(locked.config, runner, options.onAction, options.onProgress, { ...(settings.noRemove !== undefined ? { noRemove: settings.noRemove } : {}) });
+      await runAfterApply(locked.config, runner, options.onProgress);
+      return actions;
     },
     /** Refresh all pins or selected package resource IDs without installing packages. */
     async updateLock(ids?: readonly string[]) {

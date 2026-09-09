@@ -8,6 +8,7 @@ import { hashSource } from "./source-hash.js";
 import { validateResource } from "./validation.js";
 import { createJiti } from "jiti/static";
 import { resolveTasks } from "./tasks.js";
+import { resolveAfterApply } from "./hooks.js";
 import { detectLinuxManager } from "./system-manager.js";
 import { isPackageName } from "./package-options.js";
 import type {
@@ -75,6 +76,7 @@ export async function resolveConfig(input: ConfigInput, context: Context, config
     throw new Error(`${configPath} did not produce any configuration`);
   }
   const definition = mergeDefinitions(definitions);
+  const afterApply = definitions.flatMap((fragment) => resolveAfterApply(fragment.afterApply, context));
   const inputs = definitions.flatMap((fragment) => [
     fragment.resources,
     fragment.machines?.[context.machine],
@@ -86,6 +88,7 @@ export async function resolveConfig(input: ConfigInput, context: Context, config
 
   return {
     context,
+    ...(afterApply.length ? { afterApply } : {}),
     ...resolveTasks(definition, context),
     resources,
     stateFile: expandPath(
