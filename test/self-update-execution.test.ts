@@ -8,6 +8,7 @@ const files = vi.hoisted(() => ({
 }));
 vi.mock("node:fs/promises", () => files);
 const installation = vi.hoisted(() => vi.fn());
+const sea = vi.hoisted(() => vi.fn());
 vi.mock("../src/self-update-installation.js", () => ({ resolveJavaScriptUpdate: installation }));
 import { nativeAssetName, selfUpdate } from "../src/self-update.js";
 
@@ -15,6 +16,8 @@ const originalArgv = [...process.argv];
 const runner = { run: vi.fn() };
 beforeEach(() => {
   vi.resetAllMocks();
+  sea.mockReturnValue(true);
+  vi.spyOn(process, "getBuiltinModule").mockReturnValue({ ...process.getBuiltinModule("node:sea"), isSea: sea });
   installation.mockResolvedValue({ command: "npm", args: ["install", "--global", "--prefix", "/custom/node", "@dovocode/workstation@latest"], location: "/custom/node/lib/node_modules/@dovocode/workstation" });
   runner.run.mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" });
   vi.spyOn(console, "log").mockImplementation(() => { });
@@ -27,6 +30,7 @@ afterEach(() => {
 });
 
 it("uses a runner for JavaScript updates and propagates installer failures", async () => {
+  sea.mockReturnValue(false);
   process.argv[1] = "/not-the-native-executable.js";
   await selfUpdate(runner);
   expect(runner.run).toHaveBeenCalledWith("npm", ["install", "--global", "--prefix", "/custom/node", "@dovocode/workstation@latest"], { streamOutput: true });
@@ -60,6 +64,7 @@ it("verifies a downloaded executable before replacement and cleans up on verific
 });
 
 it("stops unsupported installations before downloads or mutations", async () => {
+  sea.mockReturnValue(false);
   process.argv[1] = "/project/dist/cli.js";
   installation.mockRejectedValueOnce(new Error("Cannot safely self-update"));
   await expect(selfUpdate(runner)).rejects.toThrow("Cannot safely self-update");
@@ -69,6 +74,7 @@ it("stops unsupported installations before downloads or mutations", async () => 
 });
 
 it("uses the verified pnpm channel without falling back to npm on failure", async () => {
+  sea.mockReturnValue(false);
   process.argv[1] = "/pnpm/global/node_modules/@dovocode/workstation/dist/cli.js";
   installation.mockResolvedValueOnce({ command: "pnpm", args: ["update", "--global", "--latest", "@dovocode/workstation"], location: "/pnpm/global" });
   runner.run.mockResolvedValueOnce({ exitCode: 1, stdout: "", stderr: "registry unavailable" });
@@ -97,4 +103,13 @@ it("replaces the native symlink target rather than overwriting the link", async 
     Object.defineProperty(process, "execPath", { value: originalExecPath });
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+it("detects native updates independently of the PATH invocation name", async () => {
+  process.argv[1] = "workstation";
+  vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ tag_name: `v${metadata.version}` })));
+  await selfUpdate(runner);
+  expect(installation).not.toHaveBeenCalled();
+  expect(fetch).toHaveBeenCalledOnce();
+  expect(runner.run).not.toHaveBeenCalled();
 });

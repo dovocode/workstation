@@ -13,7 +13,8 @@ interface LatestRelease {
 
 /** Update the resolved native executable or a verified global JavaScript installation. */
 export async function selfUpdate(runner: Runner): Promise<void> {
-  if (!isNativeExecutable()) {
+  // Keep the required node: prefix intact when bundling this prefix-only builtin.
+  if (!process.getBuiltinModule("node:sea").isSea()) {
     const installation = await resolveJavaScriptUpdate(runner);
     console.log(`Updating Workstation at ${installation.location} through ${installation.command}...`);
     await requireSuccess(runner, installation.command, installation.args);
@@ -47,16 +48,6 @@ export async function selfUpdate(runner: Runner): Promise<void> {
     throw error;
   }
   console.log(`Workstation was updated to ${latest}.`);
-}
-
-/** Distinguish a Node SEA from a JavaScript CLI without relying on node:sea inside the embedded runtime. */
-export function isNativeExecutable(argv1 = process.argv[1], execPath = process.execPath): boolean {
-  if (!argv1) return false;
-  try {
-    return realpathSync(argv1) === realpathSync(execPath);
-  } catch {
-    return argv1 === execPath;
-  }
 }
 
 /** Map Node platform names and architectures to published release asset names. */

@@ -55,6 +55,8 @@ jobs:
         run: node scripts/test-standalone-build.mjs
       - name: Verify runtime config imports in the native executable
         run: node scripts/test-native-imports.mjs
+      - name: Verify native self-update through PATH
+        run: node scripts/test-native-update.mjs
       - run: pnpm run docs
       - name: Smoke-test JavaScript and native CLIs
         run: |

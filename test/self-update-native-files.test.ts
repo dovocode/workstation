@@ -12,6 +12,7 @@ const replacementBinary = "#!/bin/sh\n[ \"$1\" = \"--help\" ] || exit 1\nprintf 
 let root: string;
 
 beforeEach(async () => {
+  vi.spyOn(process, "getBuiltinModule").mockReturnValue({ ...process.getBuiltinModule("node:sea"), isSea: () => true });
   root = await realpath(await mkdtemp(join(tmpdir(), "workstation-native-files-")));
   vi.spyOn(console, "log").mockImplementation(() => {});
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isNativeExecutable, nativeAssetName } from "../src/self-update.js";
+import { nativeAssetName } from "../src/self-update.js";
 
 describe("self update", () => {
   it("selects each published native asset", () => {
@@ -12,10 +12,5 @@ describe("self update", () => {
   it("rejects platforms and architectures without release artifacts", () => {
     expect(() => nativeAssetName("win32", "x64")).toThrow("unsupported on win32");
     expect(() => nativeAssetName("linux", "ia32")).toThrow("unsupported on ia32");
-  });
-
-  it("distinguishes native and JavaScript entry points", () => {
-    expect(isNativeExecutable("/bin/workstation", "/bin/workstation")).toBe(true);
-    expect(isNativeExecutable("/project/dist/cli.js", "/usr/bin/node")).toBe(false);
   });
 });
