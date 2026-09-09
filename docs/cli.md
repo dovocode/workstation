@@ -6,6 +6,7 @@
 | `workstation --version` | Package version |
 | `workstation init` | Create starter without overwriting |
 | `workstation build` | Resolve pins and reconcile |
+| `workstation upgrade [IDs...]` | Refresh package pins and reconcile, including declared npm tools |
 | `workstation plan` | Preview without Workstation persistence writes |
 | `workstation status` | Inspect recorded pins and drift |
 | `workstation doctor` | Check executables and explain backend limits |
@@ -30,3 +31,16 @@ is not yet implemented. Use `--verbose` for command traces and detailed inspecti
 
 See [architecture](architecture.md) for implementation boundaries and
 [environment tasks](environments.md) for Docker and sandbox integrations.
+
+`upgrade` includes npm tools declared with `tools.mise`, such as
+`"npm:@example/cli": "latest"` or `"npm:t3[allow_builds=node-pty]": "nightly"`.
+It resolves npm tags against the registry, updates their concrete lock versions,
+and installs the new versions through mise. A plain `build` retains existing
+pins. To upgrade just one npm tool:
+
+```sh
+workstation upgrade package:mise:npm:@example/cli
+```
+
+Only declared packages are managed; unrelated global npm installations and
+project `package.json` dependencies are outside this command's scope.
