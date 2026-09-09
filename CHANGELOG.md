@@ -5,6 +5,12 @@ Unreleased, then move them into a dated version section when preparing a release
 
 ## Unreleased
 
+## 0.4.1 — 2026-09-09
+
+- Resolve npm dist-tags such as `nightly` and `next` through npm registry metadata
+  before locking an exact version for mise, including scoped packages and
+  registry authentication. Bootstrap Node.js/npm when needed by the native CLI.
+
 ## 0.4.0 — 2026-09-08
 
 - Target the running installation during self-update: resolve native symlinks,

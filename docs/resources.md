@@ -5,7 +5,7 @@
 ```ts
 import { tools } from "@dovocode/workstation";
 
-tools.mise({ node: "lts", go: "latest" });
+tools.mise({ node: "lts", go: "latest", "npm:t3": "nightly" });
 tools.brew(["git", "jq"]);
 tools.brewCask(["ghostty"], { greedy: true, force: true });
 tools.apt(["git", "jq"]);
@@ -24,6 +24,13 @@ APT, DNF, YUM, then pacman on PATH on Linux. Set `managers: { linux: "dnf" }`,
 the chosen distribution's repositories; Workstation does not translate names.
 Only mise accepts version selectors in declarations. `force` affects a cask
 upgrade command; it does not independently trigger an upgrade.
+
+Npm dist-tags such as `latest`, `next`, and `nightly` are resolved with
+`npm view <package>@<tag> version --json`, honoring npm registry and authentication
+configuration. The lock records the exact returned version, and mise installs
+that version. Scoped npm package names are supported. Node.js and npm are
+bootstrapped through mise when needed for tag resolution, including native CLI
+invocations. Numeric version selectors and non-npm tools keep mise resolution.
 
 Compatible packages automatically install, upgrade, and uninstall in native
 batches, with per-package verification and ownership tracking. No extra helper

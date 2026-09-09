@@ -3,6 +3,7 @@ import { requireSuccess } from "./shared.js";
 import type { ResolvedResource, Runner } from "../api/types.js";
 import { resolveRpmVersion } from "./rpm.js";
 import { resolvePacmanVersion } from "./pacman.js";
+import { npmDistTagSpec, resolveNpmDistTag } from "./npm.js";
 import { resolveFlatpakVersion } from "./flatpak.js";
 
 /** Resolve package selectors; return no pin for non-packages and rolling latest casks. */
@@ -13,6 +14,8 @@ export async function resolvePackageVersion(
   if (resource.kind !== "package") return undefined;
   switch (resource.manager) {
     case "mise": {
+      const npmSpec = npmDistTagSpec(resource);
+      if (npmSpec) return await resolveNpmDistTag(npmSpec, runner);
       const spec = `${resource.name}@${resource.version ?? "latest"}`;
       const result = await requireSuccess(runner, "mise", ["latest", spec]);
       const version = result.stdout.trim().split(/\s+/).at(-1);

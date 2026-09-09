@@ -17,6 +17,49 @@ class RecordingRunner implements Runner {
 }
 
 describe("package backends", () => {
+  it.each([
+    ["npm:t3", "nightly", "t3@nightly"],
+    ["npm:@example/cli", "next", "@example/cli@next"],
+    ["npm:t3[prerelease=true]", "nightly", "t3@nightly"],
+    ["npm:t3", undefined, "t3@latest"],
+  ])("resolves %s tags through npm and installs the concrete mise version", async (name, version, spec) => {
+    const pinned = "0.0.41-nightly.20260909.1439";
+    const runner = new RecordingRunner([
+      { exitCode: 0, stdout: JSON.stringify(pinned), stderr: "" },
+      { exitCode: 1, stdout: "", stderr: "not installed" },
+      { exitCode: 0, stdout: "", stderr: "" },
+      { exitCode: 0, stdout: `/tmp/mise/installs/t3/${pinned}\n`, stderr: "" },
+    ]);
+    const resource = { kind: "package" as const, manager: "mise" as const, name, ...(version ? { version } : {}) };
+    const lockedVersion = await resolvePackageVersion(resource, runner);
+    expect(lockedVersion).toBe(pinned);
+    if (!lockedVersion) throw new Error("Expected an exact npm version");
+    await expect(installResource({ ...resource, lockedVersion }, runner)).resolves.toMatchObject({ matches: true, installedVersion: pinned });
+    expect(runner.calls).toEqual([
+      { command: "npm", args: ["view", spec, "version", "--json"] },
+      { command: "mise", args: ["where", `${name}@${pinned}`] },
+      { command: "mise", args: ["install", `${name}@${pinned}`] },
+      { command: "mise", args: ["where", `${name}@${pinned}`] },
+    ]);
+  });
+
+  it.each(["", "not-json", "null", "{}", '["1.0.0"]', '"nightly"', '"1.0.0 extra"'])("rejects invalid npm tag metadata: %s", async (stdout) => {
+    await expect(resolvePackageVersion({ kind: "package", manager: "mise", name: "npm:t3", version: "nightly" },
+      new RecordingRunner([{ exitCode: 0, stdout, stderr: "" }]))).rejects.toThrow("npm view t3@nightly did not report");
+  });
+
+  it("propagates npm registry failures without falling back to a different version", async () => {
+    const runner = new RecordingRunner([{ exitCode: 1, stdout: "", stderr: "E404 No match found for version nightly" }]);
+    await expect(resolvePackageVersion({ kind: "package", manager: "mise", name: "npm:t3", version: "nightly" }, runner)).rejects.toThrow("E404");
+    expect(runner.calls).toHaveLength(1);
+  });
+
+  it.each([["node", "lts"], ["npm:t3", "0.0.40"], ["npm:t3", "^0.0.40"]])("keeps %s@%s on mise resolution", async (name, version) => {
+    const runner = new RecordingRunner([{ exitCode: 0, stdout: "1.2.3\n", stderr: "" }]);
+    expect(await resolvePackageVersion({ kind: "package", manager: "mise", name, version }, runner)).toBe("1.2.3");
+    expect(runner.calls).toEqual([{ command: "mise", args: ["latest", `${name}@${version}`] }]);
+  });
+
   it("upgrades locked auto-updating casks without refreshing validated metadata", async () => {
     const present = { exitCode: 0, stdout: "ghostty", stderr: "" };
     const info = (installed: string): CommandResult => ({

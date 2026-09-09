@@ -1,5 +1,6 @@
 import { access } from "node:fs/promises";
 import { delimiter, join } from "node:path";
+import { npmDistTagSpec } from "./resources/npm.js";
 import { resolveTaskName } from "./config/tasks.js";
 import type { Platform, ResolvedConfig, Runner } from "./api/types.js";
 
@@ -19,7 +20,8 @@ export async function ensurePrerequisites(
     resource.kind === "package" ? [resource.manager] : []));
   const taskCommand = taskName === undefined ? undefined : selectedTaskCommand(config, taskName);
   const needsBrew = managers.has("brew") || managers.has("brew-cask");
-  const needsNode = taskCommand === "node" || taskCommand === "npm" || taskCommand === "npx" || taskCommand === "pnpm";
+  const needsNpm = config.resources.some((resource) => npmDistTagSpec(resource) !== undefined);
+  const needsNode = needsNpm || taskCommand === "node" || taskCommand === "npm" || taskCommand === "npx" || taskCommand === "pnpm";
   const needsPnpm = taskCommand === "pnpm";
   const needsMise = managers.has("mise") || needsNode;
 
@@ -54,10 +56,11 @@ export async function ensurePrerequisites(
 
   /** Install Node only when required and verify it becomes available. */
   async function ensureNode(): Promise<void> {
-    if (needsNode && !await commandExists("node")) {
-      runner.report?.(`Node.js ${NODE_VERSION} is required by task ${taskName}; installing it with mise...`);
+    if (needsNode && (!await commandExists("node") || (needsNpm && !await commandExists("npm")))) {
+      runner.report?.(`Node.js ${NODE_VERSION} is required by ${needsNpm ? "npm package tag resolution" : `task ${taskName}`}; installing it with mise...`);
       await requireSuccess(runner, "mise", ["use", "--global", `node@${NODE_VERSION}`], "Node.js installation");
       if (!await commandExists("node")) throw new Error("Node.js installed but node was not found on PATH");
+      if (needsNpm && !await commandExists("npm")) throw new Error("Node.js installed but npm was not found on PATH");
     }
   }
 

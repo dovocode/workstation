@@ -25,6 +25,22 @@ function recordingRunner(calls: Array<{ command: string; args: readonly string[]
 }
 
 describe("prerequisite bootstrap", () => {
+  it.each([false, true])("bootstraps npm for dist-tag resolution (existing Node: %s)", async (existingNode) => {
+    const calls: Array<{ command: string; args: readonly string[] }> = [];
+    let installed = false;
+    const runner = recordingRunner(calls);
+    const run = runner.run.bind(runner);
+    runner.run = async (...args) => { const result = await run(...args); installed = true; return result; };
+    await ensurePrerequisites(config("linux", [{ kind: "package", manager: "mise", name: "npm:t3", version: "nightly" }]), runner,
+      undefined, async (command) => command === "mise" || (command === "node" && existingNode) || installed);
+    expect(calls).toEqual([{ command: "mise", args: ["use", "--global", "node@26.8.1"] }]);
+  });
+
+  it("reports a missing npm executable after Node installation", async () => {
+    await expect(ensurePrerequisites(config("linux", [{ kind: "package", manager: "mise", name: "npm:t3", version: "nightly" }]),
+      recordingRunner([]), undefined, async (command) => command !== "npm")).rejects.toThrow("npm was not found");
+  });
+
   it("finds existing executables on the default search path without running them", async () => {
     const root = await mkdtemp(join(tmpdir(), "workstation-path-"));
     try {
