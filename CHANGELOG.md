@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.6.2 — 2026-09-11
+
+- Allow upgrades of adopted APT packages after refreshing their pins, while preserving their protection from automatic uninstall when removed from configuration.
+
 ## 0.6.1 — 2026-09-11
 
 - Verify Homebrew tap trust using structured tap metadata, fixing repeated setup failures for trusted custom tap URLs such as omlx.

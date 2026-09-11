@@ -122,6 +122,26 @@ describe.each(managers)("%s native batches", (manager) => {
 });
 
 describe("batch safety", () => {
+  it("upgrades adopted APT packages after refreshing pins without taking removal ownership", async () => {
+    const f = await fixture("apt");
+    for (const resource of f.resources) f.installed.set(resource.name, f.oldVersion);
+    const previousConfig = { ...f.config, resources: f.resources.map(resource => ({ ...resource, lockedVersion: f.oldVersion })) };
+    await applyPlan(previousConfig, f.runner);
+    expect(f.mutations).toEqual([]);
+
+    await applyPlan(f.config, f.runner);
+    expect(f.mutations).toHaveLength(1);
+    expect([...f.installed.values()]).toEqual([f.version, f.version]);
+    const state = await readState(f.config.stateFile, "test");
+    expect(Object.values(state.resources).every(entry => !entry.owned && entry.installedVersion === f.version)).toBe(true);
+    expect(await applyPlan(f.config, f.runner)).toEqual([]);
+
+    await applyPlan({ ...f.config, resources: [] }, f.runner);
+    expect(f.mutations).toHaveLength(1);
+    expect(f.installed.size).toBe(2);
+    expect((await readState(f.config.stateFile, "test")).resources).toEqual({});
+  });
+
   it("saves successful partial installs and retries only missing targets", async () => {
     const f = await fixture("apt");
     f.fail(true);

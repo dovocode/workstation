@@ -33,7 +33,7 @@ export async function createPlan(config: ResolvedConfig, runner: Runner, onProgr
 /** Identify resource policies that permit updating adopted resources without taking removal ownership. */
 function canUpdateAdoptedInPlace(resource: ResolvedConfig["resources"][number]): boolean {
   return (
-    (resource.kind === "package" && ["brew-cask", "flatpak", "mas", "pacman"].includes(resource.manager)) ||
+    (resource.kind === "package" && ["apt", "brew-cask", "flatpak", "mas", "pacman"].includes(resource.manager)) ||
     (resource.kind === "generated-file" && ["overwrite", "inject", "merge"].includes(resource.ifExists)) ||
     resource.kind === "provision" || resource.kind === "custom-tool" || resource.kind === "symlink"
   );
