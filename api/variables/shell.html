@@ -1,0 +1,385 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>shell | Workstation API - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation API"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation API - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">shell</a></li></ul>
+<h1>Variable shell<code class="tsd-tag">Const</code></h1></div>
+<div class="tsd-signature"><span class="tsd-kind-variable">shell</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span><br/>    <span class="tsd-kind-property">condition</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span><br/>        <span class="tsd-kind-call-signature">and</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">commandExists</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">directory</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">empty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">executable</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">file</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">nonEmpty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">not</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">condition</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">or</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">alias</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">assign</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">capture</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">command</span><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">args</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Pick</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;stderr&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">concat</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">eval</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">export</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">home</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">keepPathFirst</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">prependPath</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">raw</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">source</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">ifExists</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">unset</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">names</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">variable</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">when</span><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">condition</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">statements</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol"> = ...</span></div>
+<div class="tsd-comment tsd-typography"><p>Build shell statements without hand-written quoting. Helpers describe code; they do not execute commands.</p>
+</div>
+<div class="tsd-type-declaration">
+<h4>Type Declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter">
+<h5 id="condition"><span class="tsd-kind-property">condition</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{</span><br/>    <span class="tsd-kind-call-signature">and</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">commandExists</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">directory</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">empty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">executable</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">file</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">nonEmpty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">not</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">condition</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-kind-call-signature">or</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></h5>
+<div class="tsd-comment tsd-typography"><p>Construct conditions evaluated when the shell starts.</p>
+</div>
+<ul class="tsd-parameters">
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">and</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">and</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Combine conditions with shell AND.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">commandExists</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">commandExists</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a command is available on PATH.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">command</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">directory</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">directory</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a path is a directory.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">path</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">empty</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">empty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a value is empty.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">value</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">executable</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">executable</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a path is executable.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">path</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">file</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">file</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a path is a regular file.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">path</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">nonEmpty</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">nonEmpty</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Test whether a value is non-empty.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">value</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">not</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">not</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">condition</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Negate a condition.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">condition</span>: <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-method">or</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link"><span class="tsd-kind-call-signature">or</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Combine conditions with shell OR.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">conditions</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></h4></div></li></ul></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="alias"><span class="tsd-kind-method">alias</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="alias-1"><span class="tsd-kind-call-signature">alias</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#alias-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Define an alias; its command text is interpreted when the alias runs.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">name</span>: <span class="tsd-signature-type">string</span></span></li>
+<li><span><span class="tsd-kind-parameter">command</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="assign"><span class="tsd-kind-method">assign</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="assign-1"><span class="tsd-kind-call-signature">assign</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#assign-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Set a shell variable without exporting it.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">name</span>: <span class="tsd-signature-type">string</span></span></li>
+<li><span><span class="tsd-kind-parameter">value</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="capture"><span class="tsd-kind-method">capture</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="capture-1"><span class="tsd-kind-call-signature">capture</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><a href="#capture-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Use a command's stdout as a value via command substitution.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">command</span>: <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="command"><span class="tsd-kind-method">command</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="command-1"><span class="tsd-kind-call-signature">command</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">args</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Pick</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;stderr&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><a href="#command-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Describe a command and its arguments. Use <code>capture</code> for its output or <code>eval</code> for initialization code.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">command</span>: <span class="tsd-signature-type">string</span></span></li>
+<li><span><span class="tsd-kind-parameter">args</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></span></li>
+<li><span><span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-type">Pick</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;stderr&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = {}</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="concat"><span class="tsd-kind-method">concat</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="concat-1"><span class="tsd-kind-call-signature">concat</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><a href="#concat-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Join literals and expressions into one shell value.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="eval"><span class="tsd-kind-method">eval</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="eval-1"><span class="tsd-kind-call-signature">eval</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">command</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#eval-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Evaluate shell code printed by a command.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">command</span>: <a href="../interfaces/ShellCommand.html" class="tsd-signature-type tsd-kind-interface">ShellCommand</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">shell.</span><span class="hl-1">eval</span><span class="hl-0">(shell.</span><span class="hl-1">command</span><span class="hl-0">(</span><span class="hl-2">&quot;mise&quot;</span><span class="hl-0">, [</span><span class="hl-2">&quot;activate&quot;</span><span class="hl-0">, </span><span class="hl-2">&quot;zsh&quot;</span><span class="hl-0">]))</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="export"><span class="tsd-kind-method">export</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="export-1"><span class="tsd-kind-call-signature">export</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#export-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Set and export an environment variable.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">name</span>: <span class="tsd-signature-type">string</span></span></li>
+<li><span><span class="tsd-kind-parameter">value</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="home"><span class="tsd-kind-method">home</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="home-1"><span class="tsd-kind-call-signature">home</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><a href="#home-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Expand a path under the shell's HOME at runtime.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">path</span>: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a></h4>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-1">Example<a href="#example-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">shell.</span><span class="hl-1">home</span><span class="hl-0">(</span><span class="hl-2">&quot;.local/bin&quot;</span><span class="hl-0">)</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="keeppathfirst"><span class="tsd-kind-method">keepPathFirst</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="keeppathfirst-1"><span class="tsd-kind-call-signature">keepPathFirst</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#keeppathfirst-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Keep wrapper paths first after interactive environment hooks without duplicating hooks.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="prependpath"><span class="tsd-kind-method">prependPath</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="prependpath-1"><span class="tsd-kind-call-signature">prependPath</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#prependpath-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Prepend paths while retaining the current PATH.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">values</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-2">Example<a href="#example-2" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">shell.</span><span class="hl-1">prependPath</span><span class="hl-0">(shell.</span><span class="hl-1">home</span><span class="hl-0">(</span><span class="hl-2">&quot;.local/bin&quot;</span><span class="hl-0">))</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="raw"><span class="tsd-kind-method">raw</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="raw-1"><span class="tsd-kind-call-signature">raw</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#raw-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Insert literal shell code without validation or quoting. Prefer typed helpers for ordinary statements.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">code</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="source"><span class="tsd-kind-method">source</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="source-1"><span class="tsd-kind-call-signature">source</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">path</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">ifExists</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#source-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Source another shell file. With <code>ifExists: true</code>, source only when readable.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">path</span>: <a href="../types/ShellValue.html" class="tsd-signature-type tsd-kind-type-alias">ShellValue</a></span></li>
+<li><span><span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">ifExists</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol"> = {}</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="unset"><span class="tsd-kind-method">unset</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="unset-1"><span class="tsd-kind-call-signature">unset</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">names</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#unset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Remove one or more shell variables.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">names</span>: <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="variable"><span class="tsd-kind-method">variable</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="variable-1"><span class="tsd-kind-call-signature">variable</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a><a href="#variable-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Reference a shell variable at runtime.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">name</span>: <span class="tsd-signature-type">string</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellExpression.html" class="tsd-signature-type tsd-kind-type-alias">ShellExpression</a></h4>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example-3">Example<a href="#example-3" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="ts"><span class="hl-0">shell.</span><span class="hl-1">export</span><span class="hl-0">(</span><span class="hl-2">&quot;VISUAL&quot;</span><span class="hl-0">, shell.</span><span class="hl-1">variable</span><span class="hl-0">(</span><span class="hl-2">&quot;EDITOR&quot;</span><span class="hl-0">))</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div></div></li></ul></li>
+<li class="tsd-parameter">
+<h5 id="when"><span class="tsd-kind-method">when</span><span class="tsd-signature-symbol">:</span> function</h5>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="when-1"><span class="tsd-kind-call-signature">when</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">condition</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">statements</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><a href="#when-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Generate a shell-time conditional containing one or more statements.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">condition</span>: <a href="../types/ShellCondition.html" class="tsd-signature-type tsd-kind-type-alias">ShellCondition</a></span></li>
+<li><span><span class="tsd-kind-parameter">statements</span>: <span class="tsd-signature-keyword">readonly</span> <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a><span class="tsd-signature-symbol">[]</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/ShellStatement.html" class="tsd-signature-type tsd-kind-type-alias">ShellStatement</a></h4></div></li></ul></li></ul></div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../index.html">Workstation API - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

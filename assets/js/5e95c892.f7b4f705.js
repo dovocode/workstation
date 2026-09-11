@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_dovocode_workstation_docs=self.webpackChunk_dovocode_workstation_docs||[]).push([[647],{8946(e,o,s){s.r(o),s.d(o,{default:()=>u});s(3706);var r=s(3372),c=s(825),d=s(9774),t=s(9401),a=s(3677),n=s(1058);function u(e){return(0,n.jsx)(d.e3,{className:(0,r.A)(c.G.wrapper.docsPages),children:(0,n.jsx)(a.A,{children:(0,t.v)(e.route.routes)})})}}}]);
