@@ -146,6 +146,15 @@ See [managed setup, shell activation and interruption recovery](docs/managed-set
 
 ## Documentation
 
+Read the **[documentation website](https://dovocode.github.io/workstation/)**, or
+start with the [Workstation handbook](docs/README.md), including a feature index
+and guides for both the CLI and TypeScript API.
+
+- [First-run tutorial](docs/tutorial.md): a complete configuration you can try without installing packages.
+- [Everyday workflows](docs/workflows.md): multiple machines, upgrades, migrations, removal, and rollback.
+- [Files](docs/files.md), [shells](docs/shells.md), and [provisioning recipes](docs/provisioning.md): practical examples and policy choices.
+- [Embedded API](docs/embedding.md): integration, custom runners, and isolated tests.
+- [Troubleshooting](docs/troubleshooting.md): symptoms, diagnostics, and recovery steps.
 - [Docker, Docker Sandboxes, and Microsandbox task integration](docs/environments.md)
 
 ### Use inside a TypeScript codebase
@@ -280,8 +289,9 @@ As with other file resources, declare each target only once.
 - [Configuration and machines](docs/configuration.md)
 - [Locks and recovery](docs/operations.md)
 
-Run `corepack pnpm run docs` and open `dist/docs/index.html` for the generated
-API reference and guides. `corepack pnpm check` and `corepack pnpm test` validate
+Run `pnpm docs:dev` for the Docusaurus handbook with live reload. Use
+`pnpm run docs` and `pnpm --filter @dovocode/workstation-docs serve` to preview
+the production site, local search, and generated API reference. `corepack pnpm check` and `corepack pnpm test` validate
 the package without applying a workstation configuration.
 
 ## Native binaries
@@ -291,6 +301,7 @@ without Node.js, npm, Corepack, or pnpm; selected Node-based tasks bootstrap the
 pinned runtime through mise. Download
 the binary for your platform and make it available as `workstation` on PATH.
 The commands above automate those steps. macOS builds are ad-hoc signed, not notarized.
-The config's package import must still resolve in its project.
+Built-in config imports use the bundled API when no local package resolves;
+third-party imports require explicit project dependencies.
 
 To build locally: `corepack pnpm build:native`. Outputs are under `dist/bin/`.

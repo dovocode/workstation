@@ -8,3 +8,6 @@ dist/
 .env.*
 workstation.config.ts
 workstation.lock
+
+website/.docusaurus/
+website/static/api/

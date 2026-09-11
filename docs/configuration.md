@@ -1,3 +1,8 @@
+---
+title: "Configuration and machine splits"
+sidebar_label: "Machines, paths & composition"
+---
+
 # Configuration and machine splits
 
 ## Composition
@@ -86,3 +91,59 @@ The state belongs to one machine selector and rejects a different selector.
 in order after successful `build` and `upgrade` commands, including no-change
 runs. Imported fragments append hooks rather than replacing them. See
 [post-apply scripts](tasks.md#post-apply-scripts) for execution and failure behavior.
+
+## Dependencies and resource IDs
+
+Resources accept `dependsOn` to name prerequisites. Dependencies affect apply
+ordering and keep dependent packages out of the same native batch. Generated
+services and checked provision operations react when dependencies change.
+Unknown IDs and cycles fail before build mutation.
+
+```ts
+import { configure, defineConfig, files, systemdService, linux } from "@dovocode/workstation";
+
+export default defineConfig(linux(configure(({ home }) => ({ resources: [
+  files.json("~/.config/example/settings.json", { port: 3000 }),
+  systemdService("example", {
+    program: "/usr/local/bin/example",
+    args: ["--config", `${home}/.config/example/settings.json`],
+    dependsOn: [`file:${home}/.config/example/settings.json`],
+  }),
+] }))));
+```
+
+This template assumes the example executable is installed. Package and file IDs
+can be read from a plan, status, or `resourceId` on resolved resources.
+
+| Resource | Resolved ID example |
+| --- | --- |
+| mise tool | `package:mise:node` |
+| Scoped npm tool via mise | `package:mise:npm:@example/cli` |
+| Homebrew formula/cask | `package:brew:jq` / `package:brew-cask:ghostty` |
+| Flatpak | `package:flatpak:user:org.mozilla.firefox:stable` |
+| Mac App Store app | `package:mas:497799835` |
+| Generated file, symlink, custom tool, provision copy | `file:/absolute/target/path` |
+| LaunchAgent | `launch-agent:dev.example.worker` |
+| systemd unit | `systemd-service:user:example.service` |
+| Other provision operation | `provision:vendor-repository` |
+
+`tools.system` resolves to the actual backend before identity is calculated.
+Flatpak remote is declaration metadata, while scope and branch are part of the ID.
+Copy provisions use the destination ID, not `provision:<name>`.
+
+## Stable identities for new setups
+
+```ts
+import { defineConfig } from "@dovocode/workstation";
+
+export default defineConfig({
+  id: "personal-workstation",
+  resources: [],
+});
+```
+
+An `id` accepts letters, numbers, underscores, dots, and hyphens and replaces the
+entry-point path as the input to default state namespacing. Machine selection
+still separates state. An explicit `stateFile` takes precedence. Adding or changing
+an ID on an existing setup changes its default state location; preserve the old
+state explicitly before moving a managed configuration. See [migration](workflows.md#move-or-rename-a-configuration).

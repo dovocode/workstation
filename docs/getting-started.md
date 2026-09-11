@@ -1,3 +1,8 @@
+---
+title: "Getting started"
+sidebar_label: "Installation"
+---
+
 # Getting started
 
 ## Prerequisites
@@ -222,6 +227,9 @@ node dist/cli.js --help
 
 ## Your first configuration
 
+Follow the [complete first-run tutorial](tutorial.md) for a file-only setup,
+verification, tasks, and removal. The example below adds package management.
+
 Run `workstation init` to create `workstation.config.ts` in the current directory.
 Use `workstation init --config setup/workstation.config.ts` for a custom path;
 missing parent directories are created. Existing files and symlinks are never
@@ -252,7 +260,7 @@ export default defineConfig({
 Then reconcile it:
 
 ```sh
-corepack pnpm workstation build
+workstation build
 ```
 
 This resolves package versions into `workstation.lock`, writes a private
@@ -287,5 +295,5 @@ corepack pnpm build:native
 
 The Node SEA build writes an executable for the current platform/architecture
 under `dist/bin/`. It embeds Node and CLI dependencies.
-Keep @dovocode/workstation available for `import ... from "@dovocode/workstation"` in
-your configuration. The GitHub Actions workflow builds macOS and Linux artifacts for x64 and arm64 on native runners.
+The executable supplies built-in `@dovocode/workstation` imports when no local
+package resolves. Third-party imports still need project dependencies. The GitHub Actions workflow builds macOS and Linux artifacts for x64 and arm64 on native runners.

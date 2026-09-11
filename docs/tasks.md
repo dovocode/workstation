@@ -1,3 +1,8 @@
+---
+title: "Custom tasks and aliases"
+sidebar_label: "Tasks, aliases & hooks"
+---
+
 # Custom tasks and aliases
 
 Declare tasks alongside resources, using the same imported fragments and
@@ -29,8 +34,9 @@ command. Run `workstation build` to reconcile the setup.
 Task commands run directly without shell interpolation. Extra arguments are
 appended unchanged. For shell pipelines, explicitly declare a shell command
 such as `task("bash", ["-lc", "first-command && second-command"])`.
-Output is collected and printed when the command finishes; its exit code is
-returned by the CLI. These tasks are not a streaming interactive terminal.
+CLI task output streams live and is also captured; its exit code is returned
+by the CLI. Stdin is inherited, but stdout/stderr are pipes and no PTY is allocated.
+Programs requiring a full interactive terminal may behave differently.
 
 ## Post-apply scripts
 
@@ -71,6 +77,39 @@ environment entries. Later fragments override task names. Aliases can chain;
 cycles, missing targets, and task/alias name collisions are rejected.
 
 Place Workstation's own flags before the task name. All arguments after it
-belong to the task; one optional `--` separator is removed. `help` and `init` are reserved.
+belong to the task; one optional `--` separator is removed. All built-in command
+names are reserved, including `help`, `init`, `build`,
+`upgrade`, `plan`, `status`, `doctor`, `history`, `rollback`, `lock`, and `update`.
 Task aliases are CLI shortcuts, not executable symlinks or shell aliases; use
 the symlink and shell helpers for those separately.
+
+## Runtime bootstrap and embedded tasks
+
+A selected CLI task whose command is `node`, `npm`, `npx`, or `pnpm` prepares its
+pinned runtime through mise (Node.js 26.8.1 and, for pnpm, pnpm 12.3.4). Merely
+declaring the task does not install those runtimes during a file-only build.
+Other task executables must already be available. Embedded `client.task()` and
+`runTask()` do not perform this CLI bootstrap; provide prerequisites explicitly.
+
+## Working directory and environment example
+
+```ts
+import { defineConfig, task } from "@dovocode/workstation";
+
+export default defineConfig({
+  tasks: {
+    test: task("pnpm", ["test"], {
+      cwd: "projects/app",
+      environment: { NODE_ENV: "test" },
+      description: "Test the app from its project directory",
+    }),
+  },
+  aliases: { t: "test", quick: "t" },
+});
+```
+
+`projects/app` is relative to the configuration entry point. Run
+`workstation --config /path/setup.ts quick -- --watch` to append `--watch` to
+`pnpm test`. A task argument named `--config` belongs to the task when it appears
+after the task name. Environment values override inherited entries only for that
+process; no `.env` file is loaded automatically.

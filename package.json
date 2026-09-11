@@ -18,18 +18,21 @@
     "dist/*.map"
   ],
   "scripts": {
-    "docs": "node scripts/check-docs.mjs && typedoc --options typedoc.json --treatWarningsAsErrors",
+    "docs": "pnpm docs:api && pnpm --filter @dovocode/workstation-docs build && node scripts/finalize-docs.mjs",
     "docs:check": "node scripts/check-docs.mjs",
+    "docs:publish": "pnpm run docs && node scripts/publish-docs.mjs",
     "build": "tsup",
     "build:native": "tsup && node scripts/build-native.mjs",
-    "check": "tsc --noEmit && eslint .",
+    "check": "tsc --noEmit && eslint . && pnpm --filter @dovocode/workstation-docs check",
     "quality": "vitest run --coverage --coverage.reporter=json --coverage.reporter=text-summary && fallow --coverage coverage/coverage-final.json",
     "test:coverage": "vitest run --coverage --coverage.reporter=json --coverage.reporter=text-summary",
     "quality:audit": "fallow audit",
     "quality:dead-code": "fallow dead-code",
     "quality:dupes": "fallow dupes",
     "quality:health": "fallow health",
-    "test": "vitest run"
+    "test": "vitest run",
+    "docs:api": "node scripts/check-docs.mjs && typedoc --options typedoc.json --treatWarningsAsErrors",
+    "docs:dev": "pnpm --filter @dovocode/workstation-docs start"
   },
   "dependencies": {
     "jiti": "2.7.0",
