@@ -29,7 +29,7 @@ it("reconciles tap origin and explicit trust, then becomes a no-op", async () =>
     if (command === "git") return { exitCode: 0, stdout: "https://example.test/tools.git\n", stderr: "" };
     if (args[0] === "tap" && args.length > 1) tapped = true;
     if (args[0] === "trust" && args.length > 1) trusted = true;
-    const output: Record<string, string> = { "--repository": "/tap", tap: tapped ? "vendor/tools\n" : "", trust: trusted ? "vendor/tools\n" : "" };
+    const output: Record<string, string> = { "--repository": "/tap", tap: tapped ? "vendor/tools\n" : "", trust: trusted ? "https://example.test/tools\n" : "", "tap-info": JSON.stringify([{ name: "vendor/tools", trusted }]) };
     expect(Object.keys(output)).toContain(args[0]);
     return { exitCode: 0, stdout: String(output[args[0] ?? ""]), stderr: "" };
   } };
@@ -95,4 +95,17 @@ it("reports an installed vendor version mismatch", async () => {
   const runner: Runner = { async run() { return { exitCode: 0, stdout: "1.0\n", stderr: "" }; } };
   const result = await inspectProvision(provision("installer", { type: "macos-installer", url: "https://example.test/app.pkg", teamId: "ABCDEFGHIJ", installedPath: join(root, "Example.app"), version: "2.0" }), runner);
   expect(result).toMatchObject({ present: true, matches: false, installedVersion: "1.0" });
+});
+
+it.each([true, false])("reads custom tap trust from Homebrew metadata: %s", async trusted => {
+  const runner: Runner = { async run(_command, args) {
+    if (args[0] === "tap") return { exitCode: 0, stdout: "jundot/omlx\n", stderr: "" };
+    expect(args).toEqual(["tap-info", "--json", "jundot/omlx"]);
+    return { exitCode: 0, stdout: JSON.stringify([{ name: "jundot/omlx", trusted }]), stderr: "" };
+  } };
+  expect(await inspectProvision(provision("tap", { type: "brew-tap", tap: "jundot/omlx", trust: true }), runner)).toMatchObject({ present: true, matches: trusted });
+});
+it.each(["not json", "[]", '[{"name":"other/tap","trusted":true}]', '[{"name":"jundot/omlx","trusted":"true"}]'])("rejects invalid tap trust metadata: %s", async stdout => {
+  const runner: Runner = { async run(_command, args) { return { exitCode: 0, stdout: args[0] === "tap" ? "jundot/omlx\n" : stdout, stderr: "" }; } };
+  await expect(inspectProvision(provision("tap", { type: "brew-tap", tap: "jundot/omlx", trust: true }), runner)).rejects.toThrow();
 });

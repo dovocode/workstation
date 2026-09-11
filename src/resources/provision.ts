@@ -189,7 +189,13 @@ async function inspectTap(op: Op<"brew-tap">, runner: Runner): Promise<Inspectio
         if (remote.stdout.trim().replace(/\.git$/, "") !== op.url.replace(/\.git$/, "")) throw new Error(`Tap ${op.tap} has an unexpected origin`);
       }
       if (!op.trust) return observed(true);
-      return observed((await requireSuccess(runner, "brew", ["trust"])).stdout.split(/\s+/).includes(op.tap), true);
+      const result = await requireSuccess(runner, "brew", ["tap-info", "--json", op.tap]);
+      const info: unknown = JSON.parse(result.stdout);
+      const entry: unknown = Array.isArray(info) && info.length === 1 ? info[0] : undefined;
+      if (typeof entry !== "object" || entry === null || !("name" in entry) || entry.name !== op.tap || !("trusted" in entry) || typeof entry.trusted !== "boolean") {
+        throw new Error(`Homebrew did not report trust status for ${op.tap}`);
+      }
+      return observed(entry.trusted, true);
 }
 
 /** Inspect the apt-repository backend without mutation. */

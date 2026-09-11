@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.6.1 — 2026-09-11
+
+- Verify Homebrew tap trust using structured tap metadata, fixing repeated setup failures for trusted custom tap URLs such as omlx.
+
 ## 0.6.0 — 2026-09-11
 
 - Refresh selected APT/Homebrew metadata before upgrade pin resolution; stop on refresh failures.
