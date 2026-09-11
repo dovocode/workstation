@@ -1,10 +1,9 @@
 ---
 title: "Architecture and maintenance"
+sidebar_label: "Architecture"
 ---
 
 # Architecture and maintenance
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 This documents the implementation. The HTML roadmap describes future work.
 `src/index.ts` is the public import boundary; internal source paths are not a stable

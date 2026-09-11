@@ -1,10 +1,9 @@
 ---
 title: "Getting started"
+sidebar_label: "Installation"
 ---
 
 # Getting started
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## Prerequisites
 

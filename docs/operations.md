@@ -1,10 +1,9 @@
 ---
 title: "Locks, ownership, and recovery"
+sidebar_label: "Locks, ownership & rollback"
 ---
 
 # Locks, ownership, and recovery
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## Storage and responsibilities
 

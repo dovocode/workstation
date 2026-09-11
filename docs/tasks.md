@@ -1,10 +1,9 @@
 ---
 title: "Custom tasks and aliases"
+sidebar_label: "Tasks, aliases & hooks"
 ---
 
 # Custom tasks and aliases
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Declare tasks alongside resources, using the same imported fragments and
 platform/machine conditions:

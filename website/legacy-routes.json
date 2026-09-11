@@ -1,0 +1,21 @@
+{
+  "documents/README.html": "",
+  "documents/Architecture_and_maintenance.html": "architecture/",
+  "documents/CLI_reference.html": "cli/",
+  "documents/Configuration_and_machine_splits.html": "configuration/",
+  "documents/API_and_documentation_development.html": "development/",
+  "documents/Docker,_Docker_Sandboxes,_and_Microsandbox.html": "environments/",
+  "documents/Getting_started.html": "getting-started/",
+  "documents/Managed_setup_and_recovery.html": "managed-setup/",
+  "documents/Locks,_ownership,_and_recovery.html": "operations/",
+  "documents/Resource_declarations.html": "resources/",
+  "documents/Services.html": "services/",
+  "documents/Custom_tasks_and_aliases.html": "tasks/",
+  "documents/Your_first_working_configuration.html": "tutorial/",
+  "documents/Everyday_workflows.html": "workflows/",
+  "documents/Files,_dotfiles,_and_existing_content.html": "files/",
+  "documents/Shell_configuration_and_runtime_activation.html": "shells/",
+  "documents/Provisioning_recipes.html": "provisioning/",
+  "documents/Embed_Workstation_in_TypeScript.html": "embedding/",
+  "documents/Troubleshooting.html": "troubleshooting/"
+}

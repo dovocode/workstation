@@ -1,10 +1,9 @@
 ---
 title: "Your first working configuration"
+sidebar_label: "Your first configuration"
 ---
 
 # Your first working configuration
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 This walkthrough uses only generated files and one explicit task. It needs an
 installed `workstation` executable and macOS or Linux; it installs no packages.

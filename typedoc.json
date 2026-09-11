@@ -1,20 +1,17 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "Workstation",
+  "name": "Workstation API",
   "entryPoints": [
     "src/index.ts"
   ],
-  "out": "dist/docs",
-  "readme": "docs/README.md",
-  "projectDocuments": [
-    "docs/*.md"
-  ],
+  "out": "website/static/api",
+  "readme": "none",
   "excludePrivate": true,
   "excludeInternal": true,
   "disableSources": true,
   "customCss": "docs/assets/theme.css",
   "favicon": "docs/assets/favicon.svg",
-  "hostedBaseUrl": "https://dovocode.github.io/workstation/",
+  "hostedBaseUrl": "https://dovocode.github.io/workstation/api/",
   "navigationLinks": {
     "Handbook": "https://dovocode.github.io/workstation/",
     "GitHub": "https://github.com/dovocode/workstation",

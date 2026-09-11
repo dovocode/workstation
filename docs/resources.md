@@ -1,10 +1,14 @@
 ---
-title: "Resource declarations"
+title: "Packages and runtimes"
+sidebar_label: Packages & runtimes
 ---
 
-# Resource declarations
+# Packages and runtimes
 
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
+Install a package when the native backend can own its lifecycle. Use mise for
+versioned runtimes and supported developer tools; use the OS manager for distro
+packages and application backends for desktop apps. A single setup can use several
+backends, but each declared package has one manager and ownership identity.
 
 ## Packages
 
@@ -105,166 +109,47 @@ in ownership state. Previously installed apps are adopted and retained if their
 declaration is removed; owned apps use `mas uninstall <id>` on removal.
 See the [mas documentation](https://github.com/mas-cli/mas) for account requirements.
 
-## Symlinks
 
-```ts
-import { symlink } from "@dovocode/workstation";
+## A practical package lifecycle
 
-symlink("dotfiles/common/git/gitconfig", "~/.gitconfig");
-```
+1. Add a package to the relevant platform fragment.
+2. Run `plan` if the required manager/repository already exists, then `build`.
+3. Confirm the resource with `status` and the tool's own version command.
+4. Review and commit the resulting lock alongside the declaration.
+5. Use `upgrade package:MANAGER:NAME` when you intend to refresh its pin.
+6. Remove its declaration and review a plan when you no longer want it managed.
 
-Sources must exist. Targets use home-relative paths. Existing matching links
-are adopted; broken links or links pointing to a different source are
-recreated automatically. Pre-existing links remain adopted after replacement.
-Regular files and directories are never overwritten. Missing replacement sources
-leave existing links intact. Removing a declaration still refuses to delete an
-owned link redirected outside Workstation.
-Symlinks share live source content, so changing a linked source file does not
-require recreating the link. Existing-file overwrite policies apply to generated
-files, not the symlink helper.
+A fresh first build can bootstrap mise/Homebrew, but not every optional backend.
+A pinned install does not automatically activate a runtime in your terminal.
+Pair mise declarations with [generated activation](shells.md).
 
-## Generated configuration files
+If an installed package is adopted, removal normally leaves it installed. Some
+backends permit adopted updates without taking removal ownership; others reject
+updates that require an explicit migration. Read the reported plan before changing
+ownership. [Operations](operations.md) explains pin availability and removal limits.
 
-Use `files.toml`, `files.yaml`, `files.json`, or `files.jsonc` with ordinary
-typed JavaScript values:
+## Other resource types
 
-```ts
-import { files } from "@dovocode/workstation";
+### Symlinks
 
-files.toml("~/.config/example/config.toml", { server: { port: 3000 } });
-files.yaml("~/.config/example/config.yaml", { enabled: true });
-files.json("~/.config/example/config.json", { enabled: true });
-files.jsonc(
-  "~/.config/example/config.jsonc",
-  { enabled: true },
-  { mode: 0o600 },
-);
-```
+Use [tracked dotfiles](files.md#link-tracked-dotfiles) for live source links.
 
-`ifExists` is `overwrite` by default: an unmanaged regular file or symlink is
-backed up in private state and restored if the resource is later removed.
-`update` rejects unmanaged differences while updating owned files, and `ignore`
-preserves any existing file.
+### Generated configuration files
 
-## JSONC with comments
+Choose a [file policy](files.md#pick-the-existing-file-policy) before replacing
+an existing document or adopting app-managed settings.
 
-Use `jsonc` commands when comments and line order are part of the configuration:
+### JSONC with comments
 
-```ts
-import { files, jsonc } from "@dovocode/workstation";
+Use the [JSONC document builder](files.md#jsonc-with-comments) for ordered comments
+and nested objects/arrays.
 
-files.jsonc("~/.config/editor/settings.jsonc", jsonc.concat(
-  jsonc.comment("Shared editor settings"),
-  jsonc.object([
-    jsonc.comment("Appearance"),
-    jsonc.property("theme", "dark"),
-    jsonc.blank(),
-    jsonc.comment("Editor behavior"),
-    jsonc.property("editor", jsonc.object([
-      jsonc.property("font_size", 14),
-      jsonc.property("format_on_save", true),
-    ])),
-    jsonc.property("extensions", jsonc.array([
-      jsonc.comment("Required on both machines"),
-      jsonc.value("typescript"),
-    ])),
-  ]),
-));
-```
+### Custom tools
 
-`concat` joins commands by lines and requires one root value. `object` accepts
-properties; `array` accepts values. Both support comments, blank lines, and
-nested groups. `false`, `null`, and `undefined` groups are ignored; use
-`jsonc.value(null)` for a JSON null value. Ordinary objects and arrays also work
-as property values. Quoting, indentation, and commas are automatic.
+Follow the [custom executable tutorial](custom-tools.md) for source hashing,
+staged builds, compiler dependencies, and drift detection.
 
-These commands build text; they do not execute shell commands. Comments are
-preserved through locking, manifest serialization, and reconciliation.
-The usual overwrite/backup policy applies. Existing comments are replaced by
-the declared document rather than merged.
+### Shell configuration
 
-## Custom tools
-
-Custom source trees can build an executable without invoking a shell:
-
-```ts
-import { customTool } from "@dovocode/workstation";
-
-customTool("keyhold", {
-  source: "tools/keyhold",
-  target: "~/.local/bin/keyhold",
-  build: {
-    command: "mise",
-    args: [
-      "exec", "--", "go", "build", "-C", "{source}",
-      "-trimpath", "-o", "{output}", ".",
-    ],
-  },
-});
-```
-
-`{source}`, `{output}`, and `{target}` placeholders are expanded in arguments,
-the optional working directory, and environment values. Workstation hashes the
-source tree, rebuilds after source changes, installs atomically with executable
-permissions, detects later binary changes, and only removes the exact artifact
-it installed.
-
-## Shell configuration
-
-Zsh and Bash files are independent resources generated from the same typed
-shell AST:
-
-```ts
-import { bash, shell, zsh } from "@dovocode/workstation";
-
-zsh.zprofile([
-  shell.prependPath(shell.home(".local/bin")),
-  shell.export(
-    "SSH_AUTH_SOCK",
-    shell.home("Library/Caches/keyhold/agent.sock"),
-  ),
-  shell.when(shell.condition.commandExists("mise"), [
-    shell.eval(shell.command("mise", ["activate", "zsh", "--shims"])),
-  ]),
-  shell.source(shell.home(".orbstack/shell/init.zsh"), { ifExists: true }),
-]);
-
-zsh.zshenv([shell.export("EDITOR", "zed --wait")]);
-zsh.zshrc([
-  shell.alias("ll", "eza -lah --git"),
-  zsh.setopt("SHARE_HISTORY", "AUTO_CD"),
-]);
-
-bash.bashProfile([shell.prependPath(shell.home(".local/bin"))]);
-bash.bashrc([shell.alias("ll", "eza -lah --git")]);
-bash.profile([shell.export("EDITOR", "code --wait")]);
-```
-
-The AST supports literals, variables, home-relative paths, concatenation,
-command substitution, exports, assignments, PATH changes, aliases, guarded
-conditions, command evaluation, sourcing, and nested Boolean conditions.
-`shell.raw(...)` is the explicit escape hatch. Zsh-only `setopt` nodes cannot be
-rendered into Bash. Shell files use the same overwrite/restore default and
-optional update or ignore policies as other generated files.
-
-## More recipes
-
-- [Files and existing-content policies](files.md): dotenv merge, injection, private modes, and migration.
-- [Shells and activation](shells.md): startup-file selection, exact mise pins, PATH hooks, and rendering.
-- [Provision operations](provisioning.md): repositories, retained copies, vendor installers, and health checks.
-- [Services](services.md): generated units and dependency-driven restarts.
-
-### Keep custom builds reproducible
-
-The build command must write an executable to `{output}`. `{target}` is the final
-installation path, not the staging output to write. Commands are direct argument
-vectors; shell substitutions do not run unless you explicitly invoke a shell.
-The command executable itself does not receive placeholder expansion.
-
-Keep build outputs, caches, and mutable dependencies outside the source tree where
-possible. Source hashing includes every directory entry and file's contents, plus
-symlink targets; it does not apply `.gitignore` exclusions. A build that writes
-into its own source can trigger another rebuild on the next run. Use explicit
-package dependencies for required compilers and inspect unexpected artifact drift
-before replacing it. Custom tools are for one output executable; multi-file app
-installations fit a package backend or verified provision operation better.
+Follow [shells and activation](shells.md) to select startup files, render typed
+statements, and keep installed runtime versions aligned with active ones.

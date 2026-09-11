@@ -1,10 +1,9 @@
 ---
 title: "Docker, Docker Sandboxes, and Microsandbox"
+sidebar_label: "Containers & sandboxes"
 ---
 
 # Docker, Docker Sandboxes, and Microsandbox
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Workstation provides typed lifecycle **task helpers** for Docker containers,
 Compose projects, Docker Sandboxes (`sbx`), and Microsandbox (`msb`). These helpers

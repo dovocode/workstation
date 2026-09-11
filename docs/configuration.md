@@ -1,10 +1,9 @@
 ---
 title: "Configuration and machine splits"
+sidebar_label: "Machines, paths & composition"
 ---
 
 # Configuration and machine splits
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## Composition
 

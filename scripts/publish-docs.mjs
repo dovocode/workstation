@@ -17,7 +17,7 @@ function git(args, cwd = root) {
 }
 
 // Require the expected static build before preparing any remote changes.
-await Promise.all(["index.html", ".nojekyll", "assets/custom.css", "assets/search.js"].map(file => readFile(join(output, file))));
+await Promise.all(["index.html", ".nojekyll", "api/index.html", "tutorial/index.html"].map(file => readFile(join(output, file))));
 const branch = git(["ls-remote", repository, "refs/heads/gh-pages"]);
 const directory = await mkdtemp(join(tmpdir(), "workstation-pages-"));
 try {

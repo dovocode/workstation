@@ -289,8 +289,9 @@ As with other file resources, declare each target only once.
 - [Configuration and machines](docs/configuration.md)
 - [Locks and recovery](docs/operations.md)
 
-Run `corepack pnpm run docs` and open `dist/docs/index.html` for the generated
-API reference and guides. `corepack pnpm check` and `corepack pnpm test` validate
+Run `pnpm docs:dev` for the Docusaurus handbook with live reload. Use
+`pnpm run docs` and `pnpm --filter @dovocode/workstation-docs serve` to preview
+the production site, local search, and generated API reference. `corepack pnpm check` and `corepack pnpm test` validate
 the package without applying a workstation configuration.
 
 ## Native binaries

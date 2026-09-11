@@ -1,10 +1,9 @@
 ---
 title: "Services"
+sidebar_label: "Background services"
 ---
 
 # Services
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## macOS LaunchAgents
 

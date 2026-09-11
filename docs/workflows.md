@@ -1,10 +1,9 @@
 ---
 title: "Everyday workflows"
+sidebar_label: "Everyday workflows"
 ---
 
 # Everyday workflows
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Run commands from the setup directory unless they include `--config`. Inspect a
 plan before applying a changed declaration whenever prerequisites already exist.

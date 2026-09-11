@@ -1,2 +1,6 @@
+packages:
+  - website
+
 allowBuilds:
+  core-js: false # Postinstall only displays a funding banner; no build output.
   esbuild: true

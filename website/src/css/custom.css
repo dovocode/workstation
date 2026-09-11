@@ -1,0 +1,54 @@
+:root {
+  --ifm-color-primary: #087747;
+  --ifm-color-primary-dark: #076b40;
+  --ifm-color-primary-darker: #07653c;
+  --ifm-color-primary-darkest: #065332;
+  --ifm-color-primary-light: #09834e;
+  --ifm-color-primary-lighter: #098952;
+  --ifm-color-primary-lightest: #0a9b5c;
+  --ifm-background-color: #fcfdfc;
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ifm-font-family-monospace: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --ifm-heading-color: #18372a;
+  --ifm-font-color-base: #30483b;
+  --ifm-line-height-base: 1.75;
+  --ifm-code-font-size: 90%;
+  --ifm-global-radius: 0.65rem;
+  --ifm-navbar-shadow: 0 1px 0 #dfe8e2;
+  --ifm-toc-border-color: #dfe8e2;
+  --doc-sidebar-width: 290px;
+  --docusaurus-highlighted-code-line-bg: #08774712;
+}
+[data-theme="dark"] {
+  --ifm-color-primary: #73dfaa;
+  --ifm-color-primary-dark: #53d897;
+  --ifm-color-primary-darker: #43d58d;
+  --ifm-color-primary-darkest: #28bd74;
+  --ifm-color-primary-light: #93e6bd;
+  --ifm-color-primary-lighter: #a3e9c7;
+  --ifm-color-primary-lightest: #d3f4e4;
+  --ifm-background-color: #111b17;
+  --ifm-background-surface-color: #18271f;
+  --ifm-heading-color: #eef7f1;
+  --ifm-font-color-base: #cfdfd5;
+  --ifm-navbar-shadow: 0 1px 0 #304b3b;
+  --ifm-toc-border-color: #304b3b;
+  --docusaurus-highlighted-code-line-bg: #73dfaa18;
+}
+.navbar__title { letter-spacing: -0.035em; font-size: 1.25rem; }
+.navbar__logo { margin-right: 0.65rem; }
+.markdown h1 { font-size: clamp(2.1rem, 4vw, 3rem); letter-spacing: -0.045em; line-height: 1.15; }
+.markdown h2 { letter-spacing: -0.025em; margin-top: 2.7rem; padding-top: 0.25rem; }
+.markdown h3 { letter-spacing: -0.015em; }
+.markdown > p:first-of-type { font-size: 1.12rem; }
+.markdown table { font-size: 0.94rem; }
+.markdown th { background: var(--ifm-background-surface-color); }
+.markdown a { text-underline-offset: 3px; }
+.menu__link { font-size: 0.93rem; line-height: 1.45; border-radius: 0.35rem; padding-block: 0.5rem; }
+.menu__list-item-collapsible > .menu__link { font-weight: 700; }
+.pagination-nav__link { border-color: var(--ifm-toc-border-color); padding: 1.25rem; }
+.table-of-contents { line-height: 1.55; }
+.theme-code-block { border: 1px solid var(--ifm-toc-border-color); box-shadow: none; }
+.footer { --ifm-footer-background-color: #102b1e; }
+@media (min-width: 997px) { .main-wrapper .container { padding-top: 2.5rem; padding-bottom: 3rem; } }
+@media (max-width: 576px) { .markdown h1 { font-size: 2.1rem; } .markdown table { font-size: 0.85rem; } }

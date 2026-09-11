@@ -1,0 +1,24 @@
+{
+  "name": "@dovocode/workstation-docs",
+  "private": true,
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build --out-dir ../dist/docs",
+    "serve": "docusaurus serve --dir ../dist/docs",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "@docusaurus/theme-common": "3.10.2",
+    "@easyops-cn/docusaurus-search-local": "0.55.3",
+    "@mdx-js/react": "3.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@docusaurus/types": "3.10.2",
+    "@docusaurus/plugin-content-docs": "3.10.2",
+    "typescript": "5.9.2"
+  }
+}

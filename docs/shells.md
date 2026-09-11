@@ -1,10 +1,9 @@
 ---
 title: "Shell configuration and runtime activation"
+sidebar_label: "Shells & activation"
 ---
 
 # Shell configuration and runtime activation
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Shell helpers render startup files; the generated code runs when your shell reads
 them. Workstation syntax-checks candidate files before replacement. The corresponding

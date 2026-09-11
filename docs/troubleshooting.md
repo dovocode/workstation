@@ -4,8 +4,6 @@ title: "Troubleshooting"
 
 # Troubleshooting
 
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
-
 Start with the exact configuration and machine selector used by the failing run:
 
 ```sh

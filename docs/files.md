@@ -1,10 +1,9 @@
 ---
 title: "Files, dotfiles, and existing content"
+sidebar_label: "Files & dotfiles"
 ---
 
 # Files, dotfiles, and existing content
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Use a generated file when TypeScript should describe its contents. Use a symlink
 when a tracked source file should remain the live file. Use a provision seed when
@@ -28,8 +27,45 @@ export default defineConfig({ resources: [
 
 Values are serializable data, not functions or class instances. TOML cannot
 represent `null`. For comments and controlled ordering in JSONC, use the
-[JSONC document builder](resources.md#jsonc-with-comments). Existing JSONC comments
+[JSONC document builder](#jsonc-with-comments). Existing JSONC comments
 are replaced by the declared document, not merged into it.
+
+## JSONC with comments
+
+Use `jsonc` commands when comments and line order are part of the configuration:
+
+```ts
+import { files, jsonc } from "@dovocode/workstation";
+
+files.jsonc("~/.config/editor/settings.jsonc", jsonc.concat(
+  jsonc.comment("Shared editor settings"),
+  jsonc.object([
+    jsonc.comment("Appearance"),
+    jsonc.property("theme", "dark"),
+    jsonc.blank(),
+    jsonc.comment("Editor behavior"),
+    jsonc.property("editor", jsonc.object([
+      jsonc.property("font_size", 14),
+      jsonc.property("format_on_save", true),
+    ])),
+    jsonc.property("extensions", jsonc.array([
+      jsonc.comment("Required on both machines"),
+      jsonc.value("typescript"),
+    ])),
+  ]),
+));
+```
+
+`concat` joins commands by lines and requires one root value. `object` accepts
+properties; `array` accepts values. Both support comments, blank lines, and
+nested groups. `false`, `null`, and `undefined` groups are ignored; use
+`jsonc.value(null)` for a JSON null value. Ordinary objects and arrays also work
+as property values. Quoting, indentation, and commas are automatic.
+
+These commands build text; they do not execute shell commands. Comments are
+preserved through locking, manifest serialization, and reconciliation.
+The usual overwrite/backup policy applies. Existing comments are replaced by
+the declared document rather than merged.
 
 ## Pick the existing-file policy
 

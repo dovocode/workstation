@@ -1,10 +1,9 @@
 ---
 title: "CLI reference"
+sidebar_label: "CLI commands"
 ---
 
 # CLI reference
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 | Invocation | Behavior |
 | --- | --- |

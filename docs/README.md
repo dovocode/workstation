@@ -1,66 +1,111 @@
-# Workstation handbook
+---
+title: Your workstation, defined in TypeScript
+slug: /
+sidebar_label: Start here
+---
 
-Declare your setup in TypeScript, preview the changes, and reconcile it with
-`workstation build`. Workstation manages macOS and Linux packages, configuration,
-shells, custom executables, services, and verified setup operations. Named tasks
-cover commands you want to run explicitly.
+Workstation turns a TypeScript configuration into a working macOS or Linux setup:
+development runtimes, command-line tools, desktop applications, configuration
+files, shell startup, and background services. Keep the inputs in Git, review the
+changes, and run `workstation build` whenever the machine needs to match them.
 
-## Start here
+## Start with a working setup
 
-1. [Install Workstation](getting-started.md) and verify `workstation --help`.
-2. [Build your first configuration](tutorial.md) with a complete, file-only example.
-3. [Choose your next workflow](workflows.md): add a machine, upgrade packages,
-   migrate dotfiles, remove resources, or recover a failed run.
-4. Use the [CLI reference](cli.md) for exact commands and the
-   [troubleshooting guide](troubleshooting.md) when a check fails.
+**New to Workstation?** Follow these guides in order. Each introduces the next
+piece only after you have something working.
 
-## Find a feature
+| Step | What you will learn | What you will have afterward |
+| --- | --- | --- |
+| **1. [Understand the model](concepts.md)** | Declarations, pins, ownership, and reconciliation | Know what a build will change and what it will preserve |
+| **2. [Install Workstation](getting-started.md)** | Native executable, required managers, and configuration loading | A working `workstation` command |
+| **3. [Build your first configuration](tutorial.md)** | Preview, create, update, run a task, and remove | A verified file-only setup you can safely explore |
+| **4. [Build a developer workstation](developer-workstation.md)** | Combine packages, activation, dotfiles, platform differences, and tasks | A useful configuration you can adapt to your own machines |
 
-| I want to… | Guide |
-| --- | --- |
-| Install a native binary, build from source, or update the CLI | [Getting started](getting-started.md) |
-| Share configuration across machines and platforms | [Configuration and paths](configuration.md) |
-| Install runtimes, command-line tools, desktop apps, or npm tools | [Packages and backend capabilities](resources.md#packages) |
-| Link dotfiles or build a local executable | [Resource declarations](resources.md) |
-| Generate JSON, JSONC, YAML, TOML, or private dotenv files | [Files and existing-content policies](files.md) |
-| Generate Bash/Zsh profiles and activate locked mise versions | [Shell configuration](shells.md) |
-| Add repositories, seed settings, install vendor packages, or repair tools | [Provisioning recipes](provisioning.md) |
-| Start a background process and restart it after dependencies change | [Services](services.md) |
-| Run project commands, aliases, or post-apply scripts | [Tasks](tasks.md) |
-| Run Docker, Compose, Docker Sandboxes, or Microsandbox tasks | [Environment tasks](environments.md) |
-| Review pins, ownership, removal, snapshots, or rollback | [Operations](operations.md) |
-| Understand bootstrap, journals, guards, and configuration claims | [Managed setup](managed-setup.md) |
-| Call Workstation from TypeScript or supply a custom runner | [Embedded API](embedding.md) |
-| Extend, test, document, or release the package | [Development](development.md) and [architecture](architecture.md) |
+The native executable includes its runtime. You can use built-in configuration
+helpers without installing Node.js or creating a JavaScript project first.
+Install the package locally when you want editor types or a pinned library version.
 
-## What a build does
+## What does a configuration look like?
 
-A build loads the selected configuration, prepares required supported managers
-and repositories, resolves package pins, and compares declarations with both the
-machine and its saved ownership state. It applies ordered changes, verifies
-results, checkpoints state, and runs declared post-apply hooks. Repeating a build
-converges resources; hooks still run on successful no-change builds.
+```ts
+import { defineConfig, files, task, tools } from "@dovocode/workstation";
 
-`plan` inspects without writing Workstation state or installing prerequisites.
-`status` checks recorded pins. `upgrade` refreshes package pins and applies the
-whole configuration. `update` updates the Workstation executable itself.
+const versions = { node: "lts", pnpm: "12.3.4" };
 
-Keep configuration and `workstation.lock` in version control. Keep ownership state,
-original-file backups, journals, and snapshots private and preserve them for
-recovery. A lock records versions; it cannot restore arbitrary application data.
-
-## Read online or browse offline
-
-Read the [published handbook and API reference](https://dovocode.github.io/workstation/).
-To generate the same site locally, install the pinned dependencies and generate the handbook
-and public API reference:
-
-```sh
-pnpm install --frozen-lockfile
-pnpm run docs
+export default defineConfig({
+  resources: [
+    tools.mise(versions),
+    files.mise("~/.config/mise/config.toml", versions),
+    files.json("~/.config/example/settings.json", { theme: "dark" }),
+  ],
+  tasks: {
+    hello: task("echo", ["Your setup is ready"], {
+      description: "An explicit command, separate from reconciliation",
+    }),
+  },
+});
 ```
 
-Open `dist/docs/index.html`. The generated reference lists every public helper,
-option, and type exported by the package. The Markdown guides also work directly
-in GitHub. The repository’s `docs/improvement-roadmap.html` describes proposals;
-the handbook describes implemented behavior.
+This declares tools to install, a mise file that selects their exact locked
+versions, a generated settings file, and a named command. A declaration describes
+the desired result. It does not install anything merely because you imported it.
+
+```sh
+workstation build   # Prepare supported managers, resolve pins, apply the setup
+workstation status  # Check recorded declarations against the machine
+workstation hello   # Run only the explicit task
+```
+
+If the managers already exist, run `workstation plan` before a build to inspect
+proposed changes. Generated files overwrite differing content by default and save
+the original for restoration. Review existing files before adapting this example;
+[choose a file policy](files.md#pick-the-existing-file-policy) when you only want
+to manage a section or selected keys.
+
+## Make it your own
+
+Start with the change you actually want to make:
+
+| Goal | Read next |
+| --- | --- |
+| Use one setup across your laptop and desktop | [Configuration, machines, and paths](configuration.md) |
+| Choose the right abstraction for automation | [Design your setup](designing-your-setup.md) |
+| Install runtimes, CLI tools, and desktop applications | [Packages and runtimes](resources.md) |
+| Generate settings or bring dotfiles under management | [Files and existing content](files.md) |
+| Make installed tools available in new terminals | [Shells and activation](shells.md) |
+| Build your own executable from local source | [Custom tools](custom-tools.md) |
+| Keep a background process running | [Services](services.md) |
+| Configure repositories, seed app settings, and repair installations | [Provisioning](provisioning.md) |
+
+## Use it every day
+
+A build is not just a one-time installer. Run it after an intentional configuration
+change or to reconcile a machine that has drifted. Keep your package pins stable
+until you choose to refresh them.
+
+- **[Everyday workflows](workflows.md):** add a machine, upgrade selected packages,
+  migrate dotfiles, move your checkout, and remove old declarations.
+- **[Ownership and recovery](operations.md):** understand what is adopted, what is
+  removed, where originals live, and when snapshot rollback is possible.
+- **[Troubleshooting](troubleshooting.md):** interpret diagnostics and recover without
+  losing the state needed to restore your original files.
+
+## Go further
+
+Use [tasks and aliases](tasks.md) for explicit project commands and
+[post-apply hooks](tasks.md#post-apply-scripts) for repeatable follow-up work.
+Use [Docker and sandbox tasks](environments.md) to control separate environments,
+or [embed the client](embedding.md) in your own TypeScript application.
+
+The [CLI reference](cli.md) provides exact command and option behavior.
+The [generated API reference](https://dovocode.github.io/workstation/api/) lists
+public helpers and types. Read [architecture](architecture.md) and
+[development](development.md) when extending Workstation itself.
+
+## Know the boundary
+
+Workstation manages declared resources. It does not capture an entire machine,
+back up application databases, purchase App Store software, or automatically
+revert every package-manager transaction. Keep configuration and locks in Git;
+keep ownership state and original-file backups private. Authentication and
+application initialization remain explicit operations.

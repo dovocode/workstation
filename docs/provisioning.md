@@ -1,10 +1,9 @@
 ---
 title: "Provisioning recipes"
+sidebar_label: "Provisioning & health checks"
 ---
 
 # Provisioning recipes
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 `provision(name, operation, dependsOn?)` declares a setup operation that is inspected,
 repaired if necessary, and verified before success is recorded. Put these declarations

@@ -1,10 +1,9 @@
 ---
 title: "Embed Workstation in TypeScript"
+sidebar_label: "Embed in TypeScript"
 ---
 
 # Embed Workstation in TypeScript
-
-[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Import the public API from `@dovocode/workstation`; internal source modules are
 not a supported integration surface. The JavaScript package requires its declared
