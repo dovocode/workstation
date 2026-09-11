@@ -1,0 +1,246 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Resource declarations | Workstation - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">Resource declarations</a></li></ul></div>
+<div class="tsd-panel tsd-typography"><h1 id="resource-declarations" class="tsd-anchor-link">Resource declarations<a href="#resource-declarations" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p><a href="../">Handbook</a> · <a href="CLI_reference.html">CLI reference</a> · <a href="Troubleshooting.html">Troubleshooting</a></p>
+<h2 id="packages" class="tsd-anchor-link">Packages<a href="#packages" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { tools } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">tools.</span><span class="hl-0">mise</span><span class="hl-1">({ node: </span><span class="hl-2">&quot;lts&quot;</span><span class="hl-1">, go: </span><span class="hl-2">&quot;latest&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;npm:t3&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;nightly&quot;</span><span class="hl-1"> });</span><br/><span class="hl-1">tools.</span><span class="hl-0">brew</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">brewCask</span><span class="hl-1">([</span><span class="hl-2">&quot;ghostty&quot;</span><span class="hl-1">], { greedy: </span><span class="hl-3">true</span><span class="hl-1">, force: </span><span class="hl-3">true</span><span class="hl-1"> });</span><br/><span class="hl-1">tools.</span><span class="hl-0">apt</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">dnf</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">yum</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">pacman</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">flatpak</span><span class="hl-1">([</span><span class="hl-2">&quot;org.mozilla.firefox&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">mas</span><span class="hl-1">([</span><span class="hl-3">497799835</span><span class="hl-1">]); </span><span class="hl-6">// Xcode; acquire it in the App Store first</span><br/><span class="hl-1">tools.</span><span class="hl-0">system</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">]);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Put declarations in a configuration's <code>resources</code> array. <code>system</code> selects the
+configured platform backend, defaulting to Homebrew on macOS and detecting
+APT, DNF, YUM, then pacman on PATH on Linux. Set <code>managers: { linux: &quot;dnf&quot; }</code>,
+<code>managers: { linux: &quot;yum&quot; }</code>, or <code>managers: { linux: &quot;pacman&quot; }</code> to choose explicitly. Package names must match
+the chosen distribution's repositories; Workstation does not translate names.
+Only mise accepts version selectors in declarations. <code>force</code> affects a cask
+upgrade command; it does not independently trigger an upgrade.</p>
+<p>Npm dist-tags such as <code>latest</code>, <code>next</code>, and <code>nightly</code> are resolved with
+<code>npm view &lt;package&gt;@&lt;tag&gt; version --json</code>, honoring npm registry and authentication
+configuration. The lock records the exact returned version, and mise installs
+that version. Scoped npm package names are supported. Node.js and npm are
+bootstrapped through mise when needed for tag resolution, including native CLI
+invocations. Numeric version selectors and non-npm tools keep mise resolution.</p>
+<p>Compatible packages automatically install, upgrade, and uninstall in native
+batches, with per-package verification and ownership tracking. No extra helper
+or flag is required; see <a href="Locks,_ownership,_and_recovery.html#native-package-batches">batch behavior and recovery</a>.</p>
+<h3 id="backend-capabilities" class="tsd-anchor-link">Backend capabilities<a href="#backend-capabilities" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Pin behavior</th>
+<th>Bootstrap during build</th>
+<th>Important limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mise</td>
+<td>Exact resolved version</td>
+<td>Yes</td>
+<td>Snapshot rollback needs the old exact version available</td>
+</tr>
+<tr>
+<td>Homebrew formula</td>
+<td>Available tap version</td>
+<td>Yes</td>
+<td>Arbitrary historical downgrades unsupported</td>
+</tr>
+<tr>
+<td>Homebrew cask</td>
+<td>Available cask version; some remain unpinned</td>
+<td>Yes</td>
+<td><code>greedy</code> affects explicit upgrades; no snapshot rollback</td>
+</tr>
+<tr>
+<td>APT</td>
+<td>Exact available repository version</td>
+<td>No</td>
+<td>Repository must retain the pin</td>
+</tr>
+<tr>
+<td>DNF / YUM</td>
+<td>Exact RPM version including epoch/release/architecture</td>
+<td>No</td>
+<td>Available-version downgrade supported; no snapshot rollback</td>
+</tr>
+<tr>
+<td>pacman</td>
+<td>Available sync-database version</td>
+<td>No</td>
+<td>No AUR, archive downloads, or automatic full upgrade</td>
+</tr>
+<tr>
+<td>Flatpak</td>
+<td>OSTree commit</td>
+<td>No</td>
+<td>Fresh install needs the remote's current commit to match</td>
+</tr>
+<tr>
+<td>MAS</td>
+<td>No version pin</td>
+<td>No</td>
+<td>Account must already have acquired the app</td>
+</tr>
+</tbody>
+</table>
+<p><code>packageCapabilities</code> exports the corresponding machine-readable information.
+Frozen builds validate recorded declarations/pins, but cannot give MAS or
+unpinned casks historical-version support. <code>tools.system</code> chooses a backend;
+it does not translate distribution-specific package names.</p>
+<p>Use <a href="Everyday_workflows.html#upgrade-packages-or-refresh-only-the-lock">upgrade workflows</a>
+for all or selected pins. Add repositories through <a href="Provisioning_recipes.html">provisioning</a>
+before depending on their packages. Optional backend CLIs must exist before
+version resolution; a package declaration alone does not bootstrap Flatpak or mas.</p>
+<h3 id="flatpak-applications-linux" class="tsd-anchor-link">Flatpak applications (Linux)<a href="#flatpak-applications-linux" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>tools.flatpak</code> accepts exact application IDs, not search terms. Defaults are
+user scope, the <code>flathub</code> remote, and the <code>stable</code> branch:</p>
+<pre><code class="ts"><span class="hl-1">tools.</span><span class="hl-0">flatpak</span><span class="hl-1">([</span><span class="hl-2">&quot;org.mozilla.firefox&quot;</span><span class="hl-1">]);</span><br/><span class="hl-1">tools.</span><span class="hl-0">flatpak</span><span class="hl-1">([</span><span class="hl-2">&quot;org.example.App&quot;</span><span class="hl-1">], {</span><br/><span class="hl-1">  scope: </span><span class="hl-2">&quot;system&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  remote: </span><span class="hl-2">&quot;testing&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  branch: </span><span class="hl-2">&quot;beta&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The remote must already exist in the chosen installation. User installs do not
+use sudo; system mutations do. Scope and branch have separate ownership identities.
+An app from a different remote is a conflict, requiring an explicit migration.
+Removal retains application data and does not request removal of unused runtimes.</p>
+<h3 id="pacman-packages-arch-linux" class="tsd-anchor-link">pacman packages (Arch Linux)<a href="#pacman-packages-arch-linux" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>tools.pacman</code> accepts repository package names. AUR helpers, package groups,
+and archived package downloads are not included. Queries use the existing sync
+database. Run your normal <code>sudo pacman -Syu</code> before applying Workstation;
+Workstation does not run <code>-Sy</code> or perform a full system upgrade automatically.</p>
+<h3 id="mac-app-store-applications-macos" class="tsd-anchor-link">Mac App Store applications (macOS)<a href="#mac-app-store-applications-macos" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>tools.mas</code> accepts numeric app IDs as numbers or decimal strings. Find IDs
+with <code>mas search</code> or <code>mas list</code>. Workstation uses <code>mas install</code> for missing apps
+and <code>mas upgrade &lt;id&gt;</code> for outdated ones; it never calls <code>mas get</code>/<code>purchase</code>.
+Acquire free or paid apps in the App Store first and sign in with the matching
+Apple Account. Installed app detection depends on Spotlight indexing.</p>
+<p>MAS declarations follow available updates and have no version pin: the store
+cannot supply an arbitrary historical version. Installed versions are recorded
+in ownership state. Previously installed apps are adopted and retained if their
+declaration is removed; owned apps use <code>mas uninstall &lt;id&gt;</code> on removal.
+See the <a href="https://github.com/mas-cli/mas" target="_blank" class="external">mas documentation</a> for account requirements.</p>
+<h2 id="symlinks" class="tsd-anchor-link">Symlinks<a href="#symlinks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { symlink } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-0">symlink</span><span class="hl-1">(</span><span class="hl-2">&quot;dotfiles/common/git/gitconfig&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;~/.gitconfig&quot;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Sources must exist. Targets use home-relative paths. Existing matching links
+are adopted; broken links or links pointing to a different source are
+recreated automatically. Pre-existing links remain adopted after replacement.
+Regular files and directories are never overwritten. Missing replacement sources
+leave existing links intact. Removing a declaration still refuses to delete an
+owned link redirected outside Workstation.
+Symlinks share live source content, so changing a linked source file does not
+require recreating the link. Existing-file overwrite policies apply to generated
+files, not the symlink helper.</p>
+<h2 id="generated-configuration-files" class="tsd-anchor-link">Generated configuration files<a href="#generated-configuration-files" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Use <code>files.toml</code>, <code>files.yaml</code>, <code>files.json</code>, or <code>files.jsonc</code> with ordinary
+typed JavaScript values:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">files.</span><span class="hl-0">toml</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/config.toml&quot;</span><span class="hl-1">, { server: { port: </span><span class="hl-3">3000</span><span class="hl-1"> } });</span><br/><span class="hl-1">files.</span><span class="hl-0">yaml</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/config.yaml&quot;</span><span class="hl-1">, { enabled: </span><span class="hl-3">true</span><span class="hl-1"> });</span><br/><span class="hl-1">files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/config.json&quot;</span><span class="hl-1">, { enabled: </span><span class="hl-3">true</span><span class="hl-1"> });</span><br/><span class="hl-1">files.</span><span class="hl-0">jsonc</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-2">&quot;~/.config/example/config.jsonc&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  { enabled: </span><span class="hl-3">true</span><span class="hl-1"> },</span><br/><span class="hl-1">  { mode: </span><span class="hl-3">0o600</span><span class="hl-1"> },</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>ifExists</code> is <code>overwrite</code> by default: an unmanaged regular file or symlink is
+backed up in private state and restored if the resource is later removed.
+<code>update</code> rejects unmanaged differences while updating owned files, and <code>ignore</code>
+preserves any existing file.</p>
+<h2 id="jsonc-with-comments" class="tsd-anchor-link">JSONC with comments<a href="#jsonc-with-comments" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Use <code>jsonc</code> commands when comments and line order are part of the configuration:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { files, jsonc } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">files.</span><span class="hl-0">jsonc</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/editor/settings.jsonc&quot;</span><span class="hl-1">, jsonc.</span><span class="hl-0">concat</span><span class="hl-1">(</span><br/><span class="hl-1">  jsonc.</span><span class="hl-0">comment</span><span class="hl-1">(</span><span class="hl-2">&quot;Shared editor settings&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">  jsonc.</span><span class="hl-0">object</span><span class="hl-1">([</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">comment</span><span class="hl-1">(</span><span class="hl-2">&quot;Appearance&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">property</span><span class="hl-1">(</span><span class="hl-2">&quot;theme&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;dark&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">blank</span><span class="hl-1">(),</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">comment</span><span class="hl-1">(</span><span class="hl-2">&quot;Editor behavior&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">property</span><span class="hl-1">(</span><span class="hl-2">&quot;editor&quot;</span><span class="hl-1">, jsonc.</span><span class="hl-0">object</span><span class="hl-1">([</span><br/><span class="hl-1">      jsonc.</span><span class="hl-0">property</span><span class="hl-1">(</span><span class="hl-2">&quot;font_size&quot;</span><span class="hl-1">, </span><span class="hl-3">14</span><span class="hl-1">),</span><br/><span class="hl-1">      jsonc.</span><span class="hl-0">property</span><span class="hl-1">(</span><span class="hl-2">&quot;format_on_save&quot;</span><span class="hl-1">, </span><span class="hl-3">true</span><span class="hl-1">),</span><br/><span class="hl-1">    ])),</span><br/><span class="hl-1">    jsonc.</span><span class="hl-0">property</span><span class="hl-1">(</span><span class="hl-2">&quot;extensions&quot;</span><span class="hl-1">, jsonc.</span><span class="hl-0">array</span><span class="hl-1">([</span><br/><span class="hl-1">      jsonc.</span><span class="hl-0">comment</span><span class="hl-1">(</span><span class="hl-2">&quot;Required on both machines&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">      jsonc.</span><span class="hl-0">value</span><span class="hl-1">(</span><span class="hl-2">&quot;typescript&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">    ])),</span><br/><span class="hl-1">  ]),</span><br/><span class="hl-1">));</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>concat</code> joins commands by lines and requires one root value. <code>object</code> accepts
+properties; <code>array</code> accepts values. Both support comments, blank lines, and
+nested groups. <code>false</code>, <code>null</code>, and <code>undefined</code> groups are ignored; use
+<code>jsonc.value(null)</code> for a JSON null value. Ordinary objects and arrays also work
+as property values. Quoting, indentation, and commas are automatic.</p>
+<p>These commands build text; they do not execute shell commands. Comments are
+preserved through locking, manifest serialization, and reconciliation.
+The usual overwrite/backup policy applies. Existing comments are replaced by
+the declared document rather than merged.</p>
+<h2 id="custom-tools" class="tsd-anchor-link">Custom tools<a href="#custom-tools" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Custom source trees can build an executable without invoking a shell:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { customTool } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-0">customTool</span><span class="hl-1">(</span><span class="hl-2">&quot;keyhold&quot;</span><span class="hl-1">, {</span><br/><span class="hl-1">  source: </span><span class="hl-2">&quot;tools/keyhold&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  target: </span><span class="hl-2">&quot;~/.local/bin/keyhold&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  build: {</span><br/><span class="hl-1">    command: </span><span class="hl-2">&quot;mise&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    args: [</span><br/><span class="hl-1">      </span><span class="hl-2">&quot;exec&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;--&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;go&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;build&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;-C&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;{source}&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      </span><span class="hl-2">&quot;-trimpath&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;-o&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;{output}&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;.&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    ],</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>{source}</code>, <code>{output}</code>, and <code>{target}</code> placeholders are expanded in arguments,
+the optional working directory, and environment values. Workstation hashes the
+source tree, rebuilds after source changes, installs atomically with executable
+permissions, detects later binary changes, and only removes the exact artifact
+it installed.</p>
+<h2 id="shell-configuration" class="tsd-anchor-link">Shell configuration<a href="#shell-configuration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Zsh and Bash files are independent resources generated from the same typed
+shell AST:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { bash, shell, zsh } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">zsh.</span><span class="hl-0">zprofile</span><span class="hl-1">([</span><br/><span class="hl-1">  shell.</span><span class="hl-0">prependPath</span><span class="hl-1">(shell.</span><span class="hl-0">home</span><span class="hl-1">(</span><span class="hl-2">&quot;.local/bin&quot;</span><span class="hl-1">)),</span><br/><span class="hl-1">  shell.</span><span class="hl-0">export</span><span class="hl-1">(</span><br/><span class="hl-1">    </span><span class="hl-2">&quot;SSH_AUTH_SOCK&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    shell.</span><span class="hl-0">home</span><span class="hl-1">(</span><span class="hl-2">&quot;Library/Caches/keyhold/agent.sock&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">  ),</span><br/><span class="hl-1">  shell.</span><span class="hl-0">when</span><span class="hl-1">(shell.condition.</span><span class="hl-0">commandExists</span><span class="hl-1">(</span><span class="hl-2">&quot;mise&quot;</span><span class="hl-1">), [</span><br/><span class="hl-1">    shell.</span><span class="hl-0">eval</span><span class="hl-1">(shell.</span><span class="hl-0">command</span><span class="hl-1">(</span><span class="hl-2">&quot;mise&quot;</span><span class="hl-1">, [</span><span class="hl-2">&quot;activate&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;zsh&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;--shims&quot;</span><span class="hl-1">])),</span><br/><span class="hl-1">  ]),</span><br/><span class="hl-1">  shell.</span><span class="hl-0">source</span><span class="hl-1">(shell.</span><span class="hl-0">home</span><span class="hl-1">(</span><span class="hl-2">&quot;.orbstack/shell/init.zsh&quot;</span><span class="hl-1">), { ifExists: </span><span class="hl-3">true</span><span class="hl-1"> }),</span><br/><span class="hl-1">]);</span><br/><br/><span class="hl-1">zsh.</span><span class="hl-0">zshenv</span><span class="hl-1">([shell.</span><span class="hl-0">export</span><span class="hl-1">(</span><span class="hl-2">&quot;EDITOR&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;zed --wait&quot;</span><span class="hl-1">)]);</span><br/><span class="hl-1">zsh.</span><span class="hl-0">zshrc</span><span class="hl-1">([</span><br/><span class="hl-1">  shell.</span><span class="hl-0">alias</span><span class="hl-1">(</span><span class="hl-2">&quot;ll&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;eza -lah --git&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">  zsh.</span><span class="hl-0">setopt</span><span class="hl-1">(</span><span class="hl-2">&quot;SHARE_HISTORY&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;AUTO_CD&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">]);</span><br/><br/><span class="hl-1">bash.</span><span class="hl-0">bashProfile</span><span class="hl-1">([shell.</span><span class="hl-0">prependPath</span><span class="hl-1">(shell.</span><span class="hl-0">home</span><span class="hl-1">(</span><span class="hl-2">&quot;.local/bin&quot;</span><span class="hl-1">))]);</span><br/><span class="hl-1">bash.</span><span class="hl-0">bashrc</span><span class="hl-1">([shell.</span><span class="hl-0">alias</span><span class="hl-1">(</span><span class="hl-2">&quot;ll&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;eza -lah --git&quot;</span><span class="hl-1">)]);</span><br/><span class="hl-1">bash.</span><span class="hl-0">profile</span><span class="hl-1">([shell.</span><span class="hl-0">export</span><span class="hl-1">(</span><span class="hl-2">&quot;EDITOR&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;code --wait&quot;</span><span class="hl-1">)]);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The AST supports literals, variables, home-relative paths, concatenation,
+command substitution, exports, assignments, PATH changes, aliases, guarded
+conditions, command evaluation, sourcing, and nested Boolean conditions.
+<code>shell.raw(...)</code> is the explicit escape hatch. Zsh-only <code>setopt</code> nodes cannot be
+rendered into Bash. Shell files use the same overwrite/restore default and
+optional update or ignore policies as other generated files.</p>
+<h2 id="more-recipes" class="tsd-anchor-link">More recipes<a href="#more-recipes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><a href="Files,_dotfiles,_and_existing_content.html">Files and existing-content policies</a>: dotenv merge, injection, private modes, and migration.</li>
+<li><a href="Shell_configuration_and_runtime_activation.html">Shells and activation</a>: startup-file selection, exact mise pins, PATH hooks, and rendering.</li>
+<li><a href="Provisioning_recipes.html">Provision operations</a>: repositories, retained copies, vendor installers, and health checks.</li>
+<li><a href="Services.html">Services</a>: generated units and dependency-driven restarts.</li>
+</ul>
+<h3 id="keep-custom-builds-reproducible" class="tsd-anchor-link">Keep custom builds reproducible<a href="#keep-custom-builds-reproducible" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>The build command must write an executable to <code>{output}</code>. <code>{target}</code> is the final
+installation path, not the staging output to write. Commands are direct argument
+vectors; shell substitutions do not run unless you explicitly invoke a shell.
+The command executable itself does not receive placeholder expansion.</p>
+<p>Keep build outputs, caches, and mutable dependencies outside the source tree where
+possible. Source hashing includes every directory entry and file's contents, plus
+symlink targets; it does not apply <code>.gitignore</code> exclusions. A build that writes
+into its own source can trigger another rebuild on the next run. Use explicit
+package dependencies for required compilers and inspect unexpected artifact drift
+before replacing it. Custom tools are for one output executable; multi-file app
+installations fit a package backend or verified provision operation better.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#resource-declarations"><span>Resource declarations</span></a>
+<ul>
+<li><a href="#packages"><span>Packages</span></a></li>
+<li>
+<ul>
+<li><a href="#backend-capabilities"><span>Backend capabilities</span></a></li>
+<li><a href="#flatpak-applications-linux"><span>Flatpak applications (<wbr/>Linux)</span></a></li>
+<li><a href="#pacman-packages-arch-linux"><span>pacman packages (<wbr/>Arch <wbr/>Linux)</span></a></li>
+<li><a href="#mac-app-store-applications-macos"><span>Mac <wbr/>App <wbr/>Store applications (mac<wbr/>OS)</span></a></li></ul></li>
+<li><a href="#symlinks"><span>Symlinks</span></a></li>
+<li><a href="#generated-configuration-files"><span>Generated configuration files</span></a></li>
+<li><a href="#jsonc-with-comments"><span>JSONC with comments</span></a></li>
+<li><a href="#custom-tools"><span>Custom tools</span></a></li>
+<li><a href="#shell-configuration"><span>Shell configuration</span></a></li>
+<li><a href="#more-recipes"><span>More recipes</span></a></li>
+<li>
+<ul>
+<li><a href="#keep-custom-builds-reproducible"><span>Keep custom builds reproducible</span></a></li></ul></li></ul></div></details></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../modules.html">Workstation - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

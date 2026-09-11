@@ -1,0 +1,154 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Files, dotfiles, and existing content | Workstation - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">Files, dotfiles, and existing content</a></li></ul></div>
+<div class="tsd-panel tsd-typography"><h1 id="files-dotfiles-and-existing-content" class="tsd-anchor-link">Files, dotfiles, and existing content<a href="#files-dotfiles-and-existing-content" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p><a href="../">Handbook</a> · <a href="CLI_reference.html">CLI reference</a> · <a href="Troubleshooting.html">Troubleshooting</a></p>
+<p>Use a generated file when TypeScript should describe its contents. Use a symlink
+when a tracked source file should remain the live file. Use a provision seed when
+an application should take over editing after initial setup.</p>
+<p>All relative targets resolve under the executing user's home. Source paths resolve
+from the configuration entry point. Each resolved target has one resource identity;
+declaring it twice replaces the earlier declaration rather than combining policies.</p>
+<h2 id="generate-a-complete-document" class="tsd-anchor-link">Generate a complete document<a href="#generate-a-complete-document" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({ resources: [</span><br/><span class="hl-1">  files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/settings.json&quot;</span><span class="hl-1">, { theme: </span><span class="hl-2">&quot;dark&quot;</span><span class="hl-1">, tabs: </span><span class="hl-3">2</span><span class="hl-1"> }),</span><br/><span class="hl-1">  files.</span><span class="hl-0">yaml</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/settings.yaml&quot;</span><span class="hl-1">, { server: { port: </span><span class="hl-3">3000</span><span class="hl-1"> } }),</span><br/><span class="hl-1">  files.</span><span class="hl-0">toml</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/settings.toml&quot;</span><span class="hl-1">, { server: { port: </span><span class="hl-3">3000</span><span class="hl-1"> } }),</span><br/><span class="hl-1">] });</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Values are serializable data, not functions or class instances. TOML cannot
+represent <code>null</code>. For comments and controlled ordering in JSONC, use the
+<a href="Resource_declarations.html#jsonc-with-comments">JSONC document builder</a>. Existing JSONC comments
+are replaced by the declared document, not merged into it.</p>
+<h2 id="pick-the-existing-file-policy" class="tsd-anchor-link">Pick the existing-file policy<a href="#pick-the-existing-file-policy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Existing target</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>overwrite</code> (default)</td>
+<td>Save original and replace differing content</td>
+<td>Entire configuration owned by the declaration</td>
+</tr>
+<tr>
+<td><code>update</code></td>
+<td>Reject unmanaged differences; update owned content</td>
+<td>Deliberate opt-in before taking over existing files</td>
+</tr>
+<tr>
+<td><code>ignore</code></td>
+<td>Preserve existing content</td>
+<td>Create a default only when absent</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td>Manage selected dotenv keys</td>
+<td>Shared <code>.env</code> with unrelated local values</td>
+</tr>
+<tr>
+<td><code>inject</code></td>
+<td>Replace a unique marked region</td>
+<td>Shared shell or application file</td>
+</tr>
+</tbody>
+</table>
+<p>Use <code>files.dotenv</code> for merge and <code>files.inject</code> for injection. These policies are
+format-specific, not arbitrary deep-merge options for JSON/YAML/TOML.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/private.json&quot;</span><span class="hl-1">, { account: </span><span class="hl-2">&quot;development&quot;</span><span class="hl-1"> }, {</span><br/><span class="hl-1">  mode: </span><span class="hl-3">0o600</span><span class="hl-1">,</span><br/><span class="hl-1">  ifExists: </span><span class="hl-2">&quot;update&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Ordinary generated files default to <code>0o644</code>; dotenv defaults to <code>0o600</code>. An
+unmanaged file already matching content and permissions is adopted. Overwritten
+originals are stored in local state and restored on eligible removal. Directories
+are not ordinary replacement targets. See <a href="Locks,_ownership,_and_recovery.html#adoption-and-removal">ownership</a>.</p>
+<h2 id="merge-a-development-dotenv-file" class="tsd-anchor-link">Merge a development dotenv file<a href="#merge-a-development-dotenv-file" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">files.</span><span class="hl-0">dotenv</span><span class="hl-1">(</span><span class="hl-2">&quot;~/projects/app/.env&quot;</span><span class="hl-1">, {</span><br/><span class="hl-1">  APP_ENV: </span><span class="hl-2">&quot;development&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  PORT: </span><span class="hl-2">&quot;3000&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  MESSAGE: </span><span class="hl-2">&quot;Hello world&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>If the file already has <code>LOCAL_TOKEN=...</code>, that undeclared key is preserved.
+Declared keys receive literal values: dollar signs and shell syntax are not
+expanded or executed. Keep values as single-line strings without single quotes
+or NUL. Unsupported quoting and duplicate keys are rejected. Comments, unrelated
+lines, inline comments, and LF/CRLF endings are preserved by merge.</p>
+<p>When you remove the resource, Workstation restores its declared keys from the
+original backup and preserves unrelated edits. Externally changed managed keys
+block restoration. A newly created dotenv file remains after managed keys are
+removed. Omitting a key from the desired values leaves existing content untouched;
+it is not a general key-deletion API.</p>
+<p>For complete-file replacement, explicitly set <code>ifExists: &quot;overwrite&quot;</code>. Inspect
+that policy change carefully. Secret-provider integration and encrypted backups
+are not implemented: generated values can appear in state, manifests, and history.
+Do not put real credentials in committed examples or assume file mode encrypts them.</p>
+<h2 id="manage-one-region-of-an-existing-file" class="tsd-anchor-link">Manage one region of an existing file<a href="#manage-one-region-of-an-existing-file" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>First add a single pair of markers to the target file:</p>
+<pre><code class="sh"><span class="hl-6"># BEGIN WORKSTATION</span><br/><span class="hl-6"># END WORKSTATION</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Then declare the content between them:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-1">files.</span><span class="hl-0">inject</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.zshrc&quot;</span><span class="hl-1">, </span><span class="hl-2">&#39;</span><span class="hl-3">\n</span><span class="hl-2">export EDITOR=&quot;code --wait&quot;</span><span class="hl-3">\n</span><span class="hl-2">&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">  start: </span><span class="hl-2">&quot;# BEGIN WORKSTATION&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  end: </span><span class="hl-2">&quot;# END WORKSTATION&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Include leading/trailing newlines in the content as needed. Markers must already
+exist exactly once, in the right order. Missing, repeated, or reversed markers
+fail before writing. Surrounding text and permissions stay intact; a fourth
+argument can set <code>{ mode: 0o600 }</code> explicitly.</p>
+<p>Removal restores the original region while preserving edits outside it. Changes
+inside the managed region can block restoration. Do not also declare <code>zsh.zshrc</code>
+for this target: both would have the same identity, and the later declaration wins.</p>
+<h2 id="link-tracked-dotfiles" class="tsd-anchor-link">Link tracked dotfiles<a href="#link-tracked-dotfiles" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { symlink } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-0">symlink</span><span class="hl-1">(</span><span class="hl-2">&quot;dotfiles/gitconfig&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;~/.gitconfig&quot;</span><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Keep <code>dotfiles/gitconfig</code> beside the entry point's other source files. It must
+exist before configuration can be applied. A matching existing symlink is adopted;
+a different or broken symlink can be replaced. Regular files and directories are
+not overwritten. Move an existing regular file aside explicitly if you want to
+replace it with a link.</p>
+<p>Editing the source immediately changes what programs see through the symlink.
+An owned link later redirected outside Workstation is not silently deleted during
+removal. Missing replacement sources leave the current target intact.</p>
+<h2 id="copy-files-an-application-will-edit" class="tsd-anchor-link">Copy files an application will edit<a href="#copy-files-an-application-will-edit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Use <a href="Provisioning_recipes.html#copy-or-seed-application-settings">copy/seed provisioning</a> for
+mutable settings, binary file copies, or a deliberate symlink-to-file migration.
+Provision copies remain on disk when their declarations are removed. This differs
+from generated-file removal and restoration and is useful for application-owned data.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#files-dotfiles-and-existing-content"><span>Files, dotfiles, and existing content</span></a>
+<ul>
+<li><a href="#generate-a-complete-document"><span>Generate a complete document</span></a></li>
+<li><a href="#pick-the-existing-file-policy"><span>Pick the existing-<wbr/>file policy</span></a></li>
+<li><a href="#merge-a-development-dotenv-file"><span>Merge a development dotenv file</span></a></li>
+<li><a href="#manage-one-region-of-an-existing-file"><span>Manage one region of an existing file</span></a></li>
+<li><a href="#link-tracked-dotfiles"><span>Link tracked dotfiles</span></a></li>
+<li><a href="#copy-files-an-application-will-edit"><span>Copy files an application will edit</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../modules.html">Workstation - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

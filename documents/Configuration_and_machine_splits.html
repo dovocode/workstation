@@ -1,0 +1,184 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Configuration and machine splits | Workstation - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">Configuration and machine splits</a></li></ul></div>
+<div class="tsd-panel tsd-typography"><h1 id="configuration-and-machine-splits" class="tsd-anchor-link">Configuration and machine splits<a href="#configuration-and-machine-splits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p><a href="../">Handbook</a> · <a href="CLI_reference.html">CLI reference</a> · <a href="Troubleshooting.html">Troubleshooting</a></p>
+<h2 id="composition" class="tsd-anchor-link">Composition<a href="#composition" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Every fragment may be an object, a factory receiving <code>Context</code>, or a nested
+array. <code>false</code>, <code>null</code>, and <code>undefined</code> fragments and resource entries are ignored.
+Factories run synchronously. Imports are ordinary TypeScript modules.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, darwin, linux, machine, tools } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-3">common</span><span class="hl-1"> </span><span class="hl-4">=</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({ resources: [tools.</span><span class="hl-0">mise</span><span class="hl-1">({ node: </span><span class="hl-2">&quot;lts&quot;</span><span class="hl-1"> })] });</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-3">macos</span><span class="hl-1"> </span><span class="hl-4">=</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({ resources: [tools.</span><span class="hl-0">brewCask</span><span class="hl-1">([</span><span class="hl-2">&quot;ghostty&quot;</span><span class="hl-1">])] });</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">([</span><br/><span class="hl-1">  common,</span><br/><span class="hl-1">  </span><span class="hl-0">darwin</span><span class="hl-1">(macos),</span><br/><span class="hl-1">  </span><span class="hl-0">linux</span><span class="hl-1">({ resources: [tools.</span><span class="hl-0">apt</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">])] }),</span><br/><span class="hl-1">  </span><span class="hl-0">machine</span><span class="hl-1">([</span><span class="hl-2">&quot;studio&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;macbook&quot;</span><span class="hl-1">], { resources: [tools.</span><span class="hl-0">mise</span><span class="hl-1">([</span><span class="hl-2">&quot;shfmt&quot;</span><span class="hl-1">])] }),</span><br/><span class="hl-1">]);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Move those fragments into modules and import them from your entry point as the
+setup grows. <code>configure(factory)</code> provides a typed factory helper.
+<code>when(boolean, resources)</code> conditionally includes resources, whereas <code>darwin</code>,
+<code>linux</code>, and <code>machine</code> select configuration fragments.</p>
+<h2 id="context-and-paths" class="tsd-anchor-link">Context and paths<a href="#context-and-paths" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>machine</code></td>
+<td>OS hostname before the first dot, or exact <code>--machine</code> override</td>
+</tr>
+<tr>
+<td><code>hostname</code></td>
+<td>Full OS hostname</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td><code>darwin</code> or <code>linux</code> from the executing machine</td>
+</tr>
+<tr>
+<td><code>home</code></td>
+<td>Absolute home directory of the executing user</td>
+</tr>
+<tr>
+<td><code>configDir</code></td>
+<td>Absolute directory of the entry-point file</td>
+</tr>
+</tbody>
+</table>
+<p>Machine selection does not use the network SSID, serial number, or macOS
+display name. <code>--machine</code> changes the selector, not the OS or home directory.</p>
+<p>Relative source paths (symlinks, custom-tool sources, service programs) resolve
+against <code>configDir</code>. Relative file targets resolve against <code>home</code>. <code>~</code> expands
+to home and absolute paths remain absolute. Imported fragments share the entry
+point's base directory, not the importing file's directory.</p>
+<h2 id="overrides" class="tsd-anchor-link">Overrides<a href="#overrides" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Declarations are processed in order. The last declaration with an identical
+resource ID wins; objects are not deep-merged. File-like resources use the
+resolved target path as their ID. Packages use manager and name; services use
+their label or scope and unit name.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, files } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">([</span><br/><span class="hl-1">  { resources: [files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/app.json&quot;</span><span class="hl-1">, { theme: </span><span class="hl-2">&quot;light&quot;</span><span class="hl-1"> })] },</span><br/><span class="hl-1">  { resources: [files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/app.json&quot;</span><span class="hl-1">, { theme: </span><span class="hl-2">&quot;dark&quot;</span><span class="hl-1"> })] },</span><br/><span class="hl-1">]);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>You can also use <code>machines: { studio: [...] }</code> inside a fragment. Shared
+resources come before that fragment's machine resources. Later manager and
+<code>stateFile</code> settings override earlier settings.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, tools } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({</span><br/><span class="hl-1">  managers: { darwin: </span><span class="hl-2">&quot;brew&quot;</span><span class="hl-1">, linux: </span><span class="hl-2">&quot;apt&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">  resources: [tools.</span><span class="hl-0">system</span><span class="hl-1">([</span><span class="hl-2">&quot;git&quot;</span><span class="hl-1">, </span><span class="hl-2">&quot;jq&quot;</span><span class="hl-1">])],</span><br/><span class="hl-1">  stateFile: </span><span class="hl-2">&quot;~/.local/state/workstation/state.json&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Keep the state path stable: it contains ownership and original-file backups.
+Omit <code>managers.linux</code> to detect APT, DNF, YUM, or pacman from PATH (in that order).
+Use <code>linux: &quot;dnf&quot;</code>, <code>linux: &quot;yum&quot;</code>, or <code>linux: &quot;pacman&quot;</code> to select explicitly.
+Flatpak is an additional app backend, not a system-manager detection candidate.
+Use <code>linux(...)</code> for Flatpak/pacman declarations and <code>darwin(...)</code> for MAS.
+The state belongs to one machine selector and rejects a different selector.</p>
+<h2 id="commands-after-reconciliation" class="tsd-anchor-link">Commands after reconciliation<a href="#commands-after-reconciliation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>afterApply</code> accepts an array of commands declared with <code>task(...)</code>. They run
+in order after successful <code>build</code> and <code>upgrade</code> commands, including no-change
+runs. Imported fragments append hooks rather than replacing them. See
+<a href="Custom_tasks_and_aliases.html#post-apply-scripts">post-apply scripts</a> for execution and failure behavior.</p>
+<h2 id="dependencies-and-resource-ids" class="tsd-anchor-link">Dependencies and resource IDs<a href="#dependencies-and-resource-ids" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Resources accept <code>dependsOn</code> to name prerequisites. Dependencies affect apply
+ordering and keep dependent packages out of the same native batch. Generated
+services and checked provision operations react when dependencies change.
+Unknown IDs and cycles fail before build mutation.</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { configure, defineConfig, files, systemdService, linux } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">(</span><span class="hl-0">linux</span><span class="hl-1">(</span><span class="hl-0">configure</span><span class="hl-1">(({ </span><span class="hl-5">home</span><span class="hl-1"> }) </span><span class="hl-4">=&gt;</span><span class="hl-1"> ({ resources: [</span><br/><span class="hl-1">  files.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-2">&quot;~/.config/example/settings.json&quot;</span><span class="hl-1">, { port: </span><span class="hl-3">3000</span><span class="hl-1"> }),</span><br/><span class="hl-1">  </span><span class="hl-0">systemdService</span><span class="hl-1">(</span><span class="hl-2">&quot;example&quot;</span><span class="hl-1">, {</span><br/><span class="hl-1">    program: </span><span class="hl-2">&quot;/usr/local/bin/example&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    args: [</span><span class="hl-2">&quot;--config&quot;</span><span class="hl-1">, </span><span class="hl-2">`${</span><span class="hl-1">home</span><span class="hl-2">}/.config/example/settings.json`</span><span class="hl-1">],</span><br/><span class="hl-1">    dependsOn: [</span><span class="hl-2">`file:${</span><span class="hl-1">home</span><span class="hl-2">}/.config/example/settings.json`</span><span class="hl-1">],</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">] }))));</span>
+</code><button type="button">Copy</button></pre>
+
+<p>This template assumes the example executable is installed. Package and file IDs
+can be read from a plan, status, or <code>resourceId</code> on resolved resources.</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Resolved ID example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mise tool</td>
+<td><code>package:mise:node</code></td>
+</tr>
+<tr>
+<td>Scoped npm tool via mise</td>
+<td><code>package:mise:npm:@example/cli</code></td>
+</tr>
+<tr>
+<td>Homebrew formula/cask</td>
+<td><code>package:brew:jq</code> / <code>package:brew-cask:ghostty</code></td>
+</tr>
+<tr>
+<td>Flatpak</td>
+<td><code>package:flatpak:user:org.mozilla.firefox:stable</code></td>
+</tr>
+<tr>
+<td>Mac App Store app</td>
+<td><code>package:mas:497799835</code></td>
+</tr>
+<tr>
+<td>Generated file, symlink, custom tool, provision copy</td>
+<td><code>file:/absolute/target/path</code></td>
+</tr>
+<tr>
+<td>LaunchAgent</td>
+<td><code>launch-agent:dev.example.worker</code></td>
+</tr>
+<tr>
+<td>systemd unit</td>
+<td><code>systemd-service:user:example.service</code></td>
+</tr>
+<tr>
+<td>Other provision operation</td>
+<td><code>provision:vendor-repository</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>tools.system</code> resolves to the actual backend before identity is calculated.
+Flatpak remote is declaration metadata, while scope and branch are part of the ID.
+Copy provisions use the destination ID, not <code>provision:&lt;name&gt;</code>.</p>
+<h2 id="stable-identities-for-new-setups" class="tsd-anchor-link">Stable identities for new setups<a href="#stable-identities-for-new-setups" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({</span><br/><span class="hl-1">  id: </span><span class="hl-2">&quot;personal-workstation&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">  resources: [],</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>An <code>id</code> accepts letters, numbers, underscores, dots, and hyphens and replaces the
+entry-point path as the input to default state namespacing. Machine selection
+still separates state. An explicit <code>stateFile</code> takes precedence. Adding or changing
+an ID on an existing setup changes its default state location; preserve the old
+state explicitly before moving a managed configuration. See <a href="Everyday_workflows.html#move-or-rename-a-configuration">migration</a>.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#configuration-and-machine-splits"><span>Configuration and machine splits</span></a>
+<ul>
+<li><a href="#composition"><span>Composition</span></a></li>
+<li><a href="#context-and-paths"><span>Context and paths</span></a></li>
+<li><a href="#overrides"><span>Overrides</span></a></li>
+<li><a href="#commands-after-reconciliation"><span>Commands after reconciliation</span></a></li>
+<li><a href="#dependencies-and-resource-ids"><span>Dependencies and resource <wbr/>I<wbr/>Ds</span></a></li>
+<li><a href="#stable-identities-for-new-setups"><span>Stable identities for new setups</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../modules.html">Workstation - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

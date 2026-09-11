@@ -1,0 +1,214 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>CLI reference | Workstation - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">CLI reference</a></li></ul></div>
+<div class="tsd-panel tsd-typography"><h1 id="cli-reference" class="tsd-anchor-link">CLI reference<a href="#cli-reference" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p><a href="../">Handbook</a> · <a href="">CLI reference</a> · <a href="Troubleshooting.html">Troubleshooting</a></p>
+<table>
+<thead>
+<tr>
+<th>Invocation</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workstation</code>, <code>help</code>, <code>--help</code></td>
+<td>Help without configuration loading</td>
+</tr>
+<tr>
+<td><code>workstation --version</code></td>
+<td>Package version</td>
+</tr>
+<tr>
+<td><code>workstation init</code></td>
+<td>Create starter without overwriting</td>
+</tr>
+<tr>
+<td><code>workstation build</code></td>
+<td>Resolve pins and reconcile</td>
+</tr>
+<tr>
+<td><code>workstation upgrade [IDs...]</code></td>
+<td>Refresh package pins and reconcile, including declared npm tools</td>
+</tr>
+<tr>
+<td><code>workstation plan</code></td>
+<td>Preview without Workstation persistence writes</td>
+</tr>
+<tr>
+<td><code>workstation status</code></td>
+<td>Inspect recorded pins and drift</td>
+</tr>
+<tr>
+<td><code>workstation doctor</code></td>
+<td>Check executables and explain backend limits</td>
+</tr>
+<tr>
+<td><code>workstation history</code></td>
+<td>List configuration-scoped snapshots</td>
+</tr>
+<tr>
+<td><code>workstation rollback RUN</code></td>
+<td>Preview supported restoration</td>
+</tr>
+<tr>
+<td><code>workstation rollback RUN --apply</code></td>
+<td>Apply supported restoration</td>
+</tr>
+<tr>
+<td><code>workstation lock update [IDs...]</code></td>
+<td>Refresh all or selected package pins</td>
+</tr>
+<tr>
+<td><code>workstation update</code></td>
+<td>Self-update native or global npm installation</td>
+</tr>
+<tr>
+<td><code>workstation --list-tasks</code></td>
+<td>List tasks and aliases</td>
+</tr>
+<tr>
+<td><code>workstation TASK -- ARGS...</code></td>
+<td>Run task with literal arguments</td>
+</tr>
+</tbody>
+</table>
+<p>Put global options before task-style commands: for example,
+<code>workstation --config /project/setup.ts rollback RUN --apply</code>. After a task name,
+remaining arguments belong to the task. Build/plan accept <code>--config</code>, <code>--machine</code>,
+<code>--verbose</code>, and <code>--frozen-lockfile</code>. <code>build --no-remove</code> rejects remove actions,
+not ownership-only forget actions. Self-update rejects configuration/build options.</p>
+<p>Status returns 1 for drift, errors, changed or untracked declarations. Doctor returns
+1 for missing commands. Task exit status is preserved. Other failures return 1;
+successful commands return 0. Plans with proposed changes still succeed. JSON output
+is not yet implemented. Use <code>--verbose</code> for command traces and detailed inspections.</p>
+<p>See <a href="Architecture_and_maintenance.html">architecture</a> for implementation boundaries and
+<a href="Docker,_Docker_Sandboxes,_and_Microsandbox.html">environment tasks</a> for Docker and sandbox integrations.</p>
+<p><code>upgrade</code> includes npm tools declared with <code>tools.mise</code>, such as
+<code>&quot;npm:@example/cli&quot;: &quot;latest&quot;</code> or <code>&quot;npm:t3[allow_builds=node-pty]&quot;: &quot;nightly&quot;</code>.
+It resolves npm tags against the registry, updates their concrete lock versions,
+and installs the new versions through mise. A plain <code>build</code> retains existing
+pins. To upgrade just one npm tool:</p>
+<pre><code class="sh"><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-2">upgrade</span><span class="hl-1"> </span><span class="hl-2">package:mise:npm:@example/cli</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Only declared packages are managed; unrelated global npm installations and
+project <code>package.json</code> dependencies are outside this command's scope.</p>
+<h2 id="option-placement-examples" class="tsd-anchor-link">Option placement examples<a href="#option-placement-examples" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-2">build</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-3">--machine</span><span class="hl-1"> </span><span class="hl-2">studio</span><span class="hl-1"> </span><span class="hl-3">--no-remove</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-2">plan</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-3">--frozen-lockfile</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-3">--machine</span><span class="hl-1"> </span><span class="hl-2">studio</span><span class="hl-1"> </span><span class="hl-2">status</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-3">--verbose</span><span class="hl-1"> </span><span class="hl-2">doctor</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-2">lock</span><span class="hl-1"> </span><span class="hl-2">update</span><span class="hl-1"> </span><span class="hl-2">package:mise:node</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-2">history</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-2">rollback</span><span class="hl-1"> </span><span class="hl-2">RUN</span><span class="hl-1"> </span><span class="hl-3">--apply</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-3">--list-tasks</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--config</span><span class="hl-1"> </span><span class="hl-2">/path/setup.ts</span><span class="hl-1"> </span><span class="hl-2">test</span><span class="hl-1"> </span><span class="hl-3">--</span><span class="hl-1"> </span><span class="hl-3">--watch</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Replace paths, task names, and <code>RUN</code> with your actual configuration values.
+<code>build</code>, <code>plan</code>, and <code>upgrade</code> parse global options alongside the command. The
+other command names use task-style parsing: flags after their name become command
+arguments and may be rejected. Put global flags before those names consistently.
+<code>--config=PATH</code> is not supported; use separate arguments.</p>
+<h2 id="choosing-a-read-only-command" class="tsd-anchor-link">Choosing a read-only command<a href="#choosing-a-read-only-command" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Resolves new versions?</th>
+<th>Runs resource inspections?</th>
+<th>Writes Workstation data?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--help</code>, <code>--version</code></td>
+<td>No</td>
+<td>No configuration loading</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>--list-tasks</code></td>
+<td>No</td>
+<td>No; loads configuration</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>doctor</code></td>
+<td>No</td>
+<td>Package command availability and state validation</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>No</td>
+<td>Recorded declarations and live state</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>If needed, unless frozen</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>history</code></td>
+<td>No</td>
+<td>Reads recovery identifiers</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>rollback RUN</code></td>
+<td>May query exact mise availability</td>
+<td>Restoration preconditions</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>lock update</code></td>
+<td>Yes</td>
+<td>Version queries</td>
+<td>Lock only</td>
+</tr>
+</tbody>
+</table>
+<p>Executable configuration can perform its own side effects during loading. Read-only
+provision checks must really be read-only, and native metadata queries may maintain
+their own caches. Planning does not install missing managers or repositories.</p>
+<h2 id="output-and-failures" class="tsd-anchor-link">Output and failures<a href="#output-and-failures" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Builds show loading, version resolution, inspections, planned changes, and results.
+<code>--verbose</code>/<code>-v</code> includes command traces, per-resource inspection detail, query
+output, and exit timings. Mutations and CLI tasks stream output. Machine-readable
+JSON output is not implemented; use the embedded API for structured results.</p>
+<p><code>--no-remove</code> rejects actual removal actions during build/upgrade, but permits
+ownership-only forget actions. Although the parser accepts it for <code>plan</code>, it does
+not filter or reject that plan's output. It is not a general no-mutation switch.
+A failed build can have completed earlier actions; inspect the failure and rerun
+after fixing its cause. See <a href="Everyday_workflows.html#recover-after-a-failed-or-interrupted-build">recovery</a>.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#cli-reference"><span>CLI reference</span></a>
+<ul>
+<li><a href="#option-placement-examples"><span>Option placement examples</span></a></li>
+<li><a href="#choosing-a-read-only-command"><span>Choosing a read-<wbr/>only command</span></a></li>
+<li><a href="#output-and-failures"><span>Output and failures</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../modules.html">Workstation - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

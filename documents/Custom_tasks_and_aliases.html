@@ -1,0 +1,101 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Custom tasks and aliases | Workstation - v0.6.2</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"/><meta name="description" content="Documentation for Workstation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Workstation - v0.6.2</a>
+<div id="tsd-toolbar-links"><a href="https://dovocode.github.io/workstation/">Handbook</a><a href="https://github.com/dovocode/workstation">GitHub</a><a href="https://github.com/dovocode/workstation/releases">Releases</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">Custom tasks and aliases</a></li></ul></div>
+<div class="tsd-panel tsd-typography"><h1 id="custom-tasks-and-aliases" class="tsd-anchor-link">Custom tasks and aliases<a href="#custom-tasks-and-aliases" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p><a href="../">Handbook</a> · <a href="CLI_reference.html">CLI reference</a> · <a href="Troubleshooting.html">Troubleshooting</a></p>
+<p>Declare tasks alongside resources, using the same imported fragments and
+platform/machine conditions:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, task } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({</span><br/><span class="hl-1">  tasks: {</span><br/><span class="hl-1">    test: </span><span class="hl-0">task</span><span class="hl-1">(</span><span class="hl-2">&quot;pnpm&quot;</span><span class="hl-1">, [</span><span class="hl-2">&quot;test&quot;</span><span class="hl-1">], { description: </span><span class="hl-2">&quot;Run project tests&quot;</span><span class="hl-1"> }),</span><br/><span class="hl-1">    </span><span class="hl-2">&quot;build-app&quot;</span><span class="hl-1">: </span><span class="hl-0">task</span><span class="hl-1">(</span><span class="hl-2">&quot;pnpm&quot;</span><span class="hl-1">, [</span><span class="hl-2">&quot;build&quot;</span><span class="hl-1">], { cwd: </span><span class="hl-2">&quot;app&quot;</span><span class="hl-1"> }),</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">  aliases: { t: </span><span class="hl-2">&quot;test&quot;</span><span class="hl-1">, b: </span><span class="hl-2">&quot;build-app&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<pre><code class="sh"><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--list-tasks</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-2">test</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-2">t</span><span class="hl-1"> </span><span class="hl-3">--</span><span class="hl-1"> </span><span class="hl-3">--watch</span><br/><span class="hl-0">workstation</span><span class="hl-1"> </span><span class="hl-3">--machine</span><span class="hl-1"> </span><span class="hl-2">studio</span><span class="hl-1"> </span><span class="hl-2">build-app</span>
+</code><button type="button">Copy</button></pre>
+
+<p>A task invocation does not install resources or write the lock, manifest, or
+ownership state. It evaluates the configuration and executes only the selected
+command. Run <code>workstation build</code> to reconcile the setup.</p>
+<p>Task commands run directly without shell interpolation. Extra arguments are
+appended unchanged. For shell pipelines, explicitly declare a shell command
+such as <code>task(&quot;bash&quot;, [&quot;-lc&quot;, &quot;first-command &amp;&amp; second-command&quot;])</code>.
+CLI task output streams live and is also captured; its exit code is returned
+by the CLI. Stdin is inherited, but stdout/stderr are pipes and no PTY is allocated.
+Programs requiring a full interactive terminal may behave differently.</p>
+<h2 id="post-apply-scripts" class="tsd-anchor-link">Post-apply scripts<a href="#post-apply-scripts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Use <code>afterApply</code> for commands that must run after <code>workstation build</code> or
+<code>workstation upgrade</code> successfully reconciles resources:</p>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, task } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({</span><br/><span class="hl-1">  afterApply: [</span><br/><span class="hl-1">    </span><span class="hl-0">task</span><span class="hl-1">(</span><span class="hl-2">&quot;echo&quot;</span><span class="hl-1">, [</span><span class="hl-2">&quot;Workstation reconciliation complete&quot;</span><span class="hl-1">], {</span><br/><span class="hl-1">      description: </span><span class="hl-2">&quot;Report successful reconciliation&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    }),</span><br/><span class="hl-1">  ],</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Hooks use the same command options as tasks: literal arguments, a working
+directory relative to the configuration entry point (defaulting to that
+directory), and environment overrides. Use an explicit shell for shell syntax.
+Hooks from imported and platform/machine fragments append in declaration order.
+They are validated before applying resources and saved in the resolved manifest.</p>
+<p>Hooks run sequentially and stream output, including on successful runs with no
+resource changes. Write them to be safe to repeat. The first failure stops later
+hooks and makes the command fail; already-applied resources remain in place.
+Hooks do not run if reconciliation fails, or during <code>plan</code>, tasks, diagnostics,
+lock updates, or rollback. The embedded client's <code>build()</code> also runs them.</p>
+<p>Keep source-based builds in <code>customTool</code> so source changes control rebuilding.
+Use managed resources for service activation and health checks.
+Use a post-apply script for follow-up work such as reporting successful reconciliation.</p>
+<p>Working directories default to the entry point's directory; relative <code>cwd</code>
+values resolve there and <code>~</code> expands to home. <code>environment</code> overrides inherited
+environment entries. Later fragments override task names. Aliases can chain;
+cycles, missing targets, and task/alias name collisions are rejected.</p>
+<p>Place Workstation's own flags before the task name. All arguments after it
+belong to the task; one optional <code>--</code> separator is removed. All built-in command
+names are reserved, including <code>help</code>, <code>init</code>, <code>build</code>,
+<code>upgrade</code>, <code>plan</code>, <code>status</code>, <code>doctor</code>, <code>history</code>, <code>rollback</code>, <code>lock</code>, and <code>update</code>.
+Task aliases are CLI shortcuts, not executable symlinks or shell aliases; use
+the symlink and shell helpers for those separately.</p>
+<h2 id="runtime-bootstrap-and-embedded-tasks" class="tsd-anchor-link">Runtime bootstrap and embedded tasks<a href="#runtime-bootstrap-and-embedded-tasks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>A selected CLI task whose command is <code>node</code>, <code>npm</code>, <code>npx</code>, or <code>pnpm</code> prepares its
+pinned runtime through mise (Node.js 26.8.1 and, for pnpm, pnpm 12.3.4). Merely
+declaring the task does not install those runtimes during a file-only build.
+Other task executables must already be available. Embedded <code>client.task()</code> and
+<code>runTask()</code> do not perform this CLI bootstrap; provide prerequisites explicitly.</p>
+<h2 id="working-directory-and-environment-example" class="tsd-anchor-link">Working directory and environment example<a href="#working-directory-and-environment-example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> { defineConfig, task } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@dovocode/workstation&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-0">defineConfig</span><span class="hl-1">({</span><br/><span class="hl-1">  tasks: {</span><br/><span class="hl-1">    test: </span><span class="hl-0">task</span><span class="hl-1">(</span><span class="hl-2">&quot;pnpm&quot;</span><span class="hl-1">, [</span><span class="hl-2">&quot;test&quot;</span><span class="hl-1">], {</span><br/><span class="hl-1">      cwd: </span><span class="hl-2">&quot;projects/app&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">      environment: { NODE_ENV: </span><span class="hl-2">&quot;test&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">      description: </span><span class="hl-2">&quot;Test the app from its project directory&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    }),</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">  aliases: { t: </span><span class="hl-2">&quot;test&quot;</span><span class="hl-1">, quick: </span><span class="hl-2">&quot;t&quot;</span><span class="hl-1"> },</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>projects/app</code> is relative to the configuration entry point. Run
+<code>workstation --config /path/setup.ts quick -- --watch</code> to append <code>--watch</code> to
+<code>pnpm test</code>. A task argument named <code>--config</code> belongs to the task when it appears
+after the task name. Environment values override inherited entries only for that
+process; no <code>.env</code> file is loaded automatically.</p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#custom-tasks-and-aliases"><span>Custom tasks and aliases</span></a>
+<ul>
+<li><a href="#post-apply-scripts"><span>Post-<wbr/>apply scripts</span></a></li>
+<li><a href="#runtime-bootstrap-and-embedded-tasks"><span>Runtime bootstrap and embedded tasks</span></a></li>
+<li><a href="#working-directory-and-environment-example"><span>Working directory and environment example</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://dovocode.github.io/workstation/" class="tsd-nav-link">Handbook</a><a href="https://github.com/dovocode/workstation" class="tsd-nav-link">GitHub</a><a href="https://github.com/dovocode/workstation/releases" class="tsd-nav-link">Releases</a></nav>
+<nav class="tsd-navigation"><a href="../modules.html">Workstation - v0.6.2</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>
