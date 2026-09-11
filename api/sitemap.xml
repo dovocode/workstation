@@ -2,386 +2,386 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/index.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/hierarchy.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/classes/JsoncDocument.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/classes/ProcessRunner.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/Action.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/BrewCaskUpgradeOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/CommandResult.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/CommandSpec.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ConfigDefinition.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/Context.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/CustomToolResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/FlatpakOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/GeneratedFileOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/GeneratedFileResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/LaunchAgentResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/LockedConfigResult.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/LockOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/NestedWorkstationOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/PackageCapabilities.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/PackageResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ProvisionResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ResolvedConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ResolvedPackageResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ResourceStatus.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/Runner.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/RunOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ShellCommand.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/ShellFileOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/StateEntry.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/SymlinkResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/SystemdServiceResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/TaskDefinition.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/WorkstationOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/interfaces/WorkstationState.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ActionType.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ConfigFactory.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ConfigInput.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ConfigValue.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/EnvironmentTaskOptions.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/IfExistsPolicy.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/JsoncCommand.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/JsoncLine.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/OriginalFile.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/PackageManager.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/Platform.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ProvisionOperation.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ResolvedResource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/Resource.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ResourceInput.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/Shell.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ShellCondition.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ShellExpression.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ShellStatement.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/ShellValue.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/StructuredFormat.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/SystemdScope.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/WorkstationClient.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/types/WorkstationConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/bash.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/docker.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/files.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/jsonc.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/microsandbox.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/packageCapabilities.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/sbx.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/shell.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/tools.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/variables/zsh.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/configure.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/createWorkstation.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/customTool.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/darwin.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/defineConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/diagnose.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/findConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/fingerprint.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/inspectStatus.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/launchAgent.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/linux.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/loadConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/lockConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/lockPath.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/machine.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/manifestPath.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/npmHealth.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/provision.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/readManifest.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/renderShell.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/resolveConfig.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/resourceId.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/runTask.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/symlink.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/systemdService.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/task.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/when.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 	<url>
 		<loc>https://dovocode.github.io/workstation/api/functions/writeManifest.html</loc>
-		<lastmod>2026-09-11T21:57:59.224Z</lastmod>
+		<lastmod>2026-09-11T21:59:54.574Z</lastmod>
 	</url>
 </urlset>
