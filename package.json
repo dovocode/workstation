@@ -20,6 +20,7 @@
   "scripts": {
     "docs": "node scripts/check-docs.mjs && typedoc --options typedoc.json --treatWarningsAsErrors",
     "docs:check": "node scripts/check-docs.mjs",
+    "docs:publish": "pnpm run docs && node scripts/publish-docs.mjs",
     "build": "tsup",
     "build:native": "tsup && node scripts/build-native.mjs",
     "check": "tsc --noEmit && eslint .",

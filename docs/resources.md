@@ -1,4 +1,10 @@
+---
+title: "Resource declarations"
+---
+
 # Resource declarations
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## Packages
 
@@ -35,6 +41,29 @@ invocations. Numeric version selectors and non-npm tools keep mise resolution.
 Compatible packages automatically install, upgrade, and uninstall in native
 batches, with per-package verification and ownership tracking. No extra helper
 or flag is required; see [batch behavior and recovery](operations.md#native-package-batches).
+
+### Backend capabilities
+
+| Backend | Pin behavior | Bootstrap during build | Important limit |
+| --- | --- | --- | --- |
+| mise | Exact resolved version | Yes | Snapshot rollback needs the old exact version available |
+| Homebrew formula | Available tap version | Yes | Arbitrary historical downgrades unsupported |
+| Homebrew cask | Available cask version; some remain unpinned | Yes | `greedy` affects explicit upgrades; no snapshot rollback |
+| APT | Exact available repository version | No | Repository must retain the pin |
+| DNF / YUM | Exact RPM version including epoch/release/architecture | No | Available-version downgrade supported; no snapshot rollback |
+| pacman | Available sync-database version | No | No AUR, archive downloads, or automatic full upgrade |
+| Flatpak | OSTree commit | No | Fresh install needs the remote's current commit to match |
+| MAS | No version pin | No | Account must already have acquired the app |
+
+`packageCapabilities` exports the corresponding machine-readable information.
+Frozen builds validate recorded declarations/pins, but cannot give MAS or
+unpinned casks historical-version support. `tools.system` chooses a backend;
+it does not translate distribution-specific package names.
+
+Use [upgrade workflows](workflows.md#upgrade-packages-or-refresh-only-the-lock)
+for all or selected pins. Add repositories through [provisioning](provisioning.md)
+before depending on their packages. Optional backend CLIs must exist before
+version resolution; a package declaration alone does not bootstrap Flatpak or mas.
 
 ### Flatpak applications (Linux)
 
@@ -217,3 +246,25 @@ conditions, command evaluation, sourcing, and nested Boolean conditions.
 `shell.raw(...)` is the explicit escape hatch. Zsh-only `setopt` nodes cannot be
 rendered into Bash. Shell files use the same overwrite/restore default and
 optional update or ignore policies as other generated files.
+
+## More recipes
+
+- [Files and existing-content policies](files.md): dotenv merge, injection, private modes, and migration.
+- [Shells and activation](shells.md): startup-file selection, exact mise pins, PATH hooks, and rendering.
+- [Provision operations](provisioning.md): repositories, retained copies, vendor installers, and health checks.
+- [Services](services.md): generated units and dependency-driven restarts.
+
+### Keep custom builds reproducible
+
+The build command must write an executable to `{output}`. `{target}` is the final
+installation path, not the staging output to write. Commands are direct argument
+vectors; shell substitutions do not run unless you explicitly invoke a shell.
+The command executable itself does not receive placeholder expansion.
+
+Keep build outputs, caches, and mutable dependencies outside the source tree where
+possible. Source hashing includes every directory entry and file's contents, plus
+symlink targets; it does not apply `.gitignore` exclusions. A build that writes
+into its own source can trigger another rebuild on the next run. Use explicit
+package dependencies for required compilers and inspect unexpected artifact drift
+before replacing it. Custom tools are for one output executable; multi-file app
+installations fit a package backend or verified provision operation better.

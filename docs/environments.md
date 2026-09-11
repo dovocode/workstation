@@ -1,4 +1,10 @@
+---
+title: "Docker, Docker Sandboxes, and Microsandbox"
+---
+
 # Docker, Docker Sandboxes, and Microsandbox
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Workstation provides typed lifecycle **task helpers** for Docker containers,
 Compose projects, Docker Sandboxes (`sbx`), and Microsandbox (`msb`). These helpers
@@ -112,3 +118,38 @@ Official interfaces used:
 
 Validation currently covers command construction and embedded task dispatch with
 fake runners. Real Docker, sbx, and microVM execution has not been tested on this host.
+
+## Helper coverage and options
+
+| Helper | Supported operations/options |
+| --- | --- |
+| `docker.run` | Name, image, guest command; `detach`, `removeOnExit`, `envFiles` |
+| `docker.exec`, `docker.stop`, `docker.remove` | Execute in, stop, or remove one named container |
+| `docker.compose` | `up` (detached), `down`, `ps`, `logs`, `pull` with project and file |
+| `sbx.create`, `sbx.exec`, `sbx.stop`, `sbx.remove` | Explicit sandbox name, agent, workspace, and commands |
+| `microsandbox.create`, `microsandbox.exec`, `microsandbox.remove` | Named microVM lifecycle; removal deletes its disk |
+| Each runtime's `workstation` | Guest `config`, `executable`, `machine`, `plan`, `frozen`, `noRemove` |
+
+All helpers accept host task descriptions, working directories, and environment
+overrides in their options position. Container/sandbox/VM names accept letters,
+numbers, dots, underscores, and hyphens and must start with a letter or digit.
+Compose project names use lowercase letters, digits, underscores, and hyphens.
+Guest executable/command arguments remain literal.
+
+## A repeatable local Compose workflow
+
+Create your project's `compose.yaml`, then declare `up`, `ps`, `logs`, and `down`
+tasks using the same project name and file. Run them explicitly:
+
+```sh
+workstation containers:up
+workstation containers:status
+workstation containers:down
+```
+
+These names match the first example on this page. Add a logs task with
+`docker.compose("my-app", "compose.yaml", "logs")` if needed. Repeated Compose
+`up` delegates reconciliation to Compose. Repeating a named `docker.run` or
+sandbox/VM creation can fail because the name already exists; use lifecycle
+commands for the existing instance. Advanced port/mount/runtime flags belong in
+Compose or a literal `task` declaration; these helpers do not infer them.

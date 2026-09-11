@@ -1,0 +1,65 @@
+/* Keep TypeDoc's accessible navigation, search, code controls, and theme switch. */
+:root {
+  --light-color-background: #ffffff;
+  --light-color-background-secondary: #f5f8f7;
+  --light-color-background-active: #e3f2eb;
+  --light-color-active-menu-item: #e3f2eb;
+  --light-color-accent: #dce5e0;
+  --light-color-text: #263c33;
+  --light-color-contrast-text: #112c20;
+  --light-color-text-aside: #52675d;
+  --light-color-link: #087747;
+  --light-color-focus-outline: #087747;
+  --dark-color-background: #111b17;
+  --dark-color-background-secondary: #17251e;
+  --dark-color-background-active: #254333;
+  --dark-color-active-menu-item: #254333;
+  --dark-color-accent: #344b3e;
+  --dark-color-text: #d7e6dd;
+  --dark-color-contrast-text: #f1f8f4;
+  --dark-color-text-aside: #a4bbad;
+  --dark-color-link: #73dfaa;
+  --dark-color-focus-outline: #73dfaa;
+  --dim-toolbar-contents-height: 3.5rem;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { line-height: 1.25; color: var(--color-contrast-text); }
+h1 { letter-spacing: -0.035em; font-size: clamp(2rem, 4vw, 2.75rem); }
+h2 { letter-spacing: -0.02em; margin-top: 2.5rem; }
+code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+pre { padding: 1.25rem; border: 1px solid var(--color-accent); border-radius: 10px; line-height: 1.65; }
+.tsd-typography p code, .tsd-typography li code, .tsd-typography td code {
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+}
+.tsd-typography > p:first-of-type { font-size: 1.08rem; color: var(--color-text-aside); }
+.tsd-typography a { text-underline-offset: 3px; }
+.tsd-typography table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.tsd-typography th { text-align: left; background: var(--color-background-secondary); }
+.tsd-typography td, .tsd-typography th { padding: 0.8rem 1rem; border: 1px solid var(--color-accent); }
+.tsd-page-toolbar { border-bottom: 1px solid var(--color-accent); }
+.tsd-page-toolbar .title { font-weight: 750; letter-spacing: -0.025em; }
+.tsd-page-toolbar .title::before { content: ">_"; color: var(--color-link); margin-right: 0.7rem; font-family: monospace; }
+.tsd-navigation a { border-radius: 5px; }
+.tsd-page-title { margin-bottom: 2rem; }
+.tsd-panel { border-radius: 10px; }
+:focus-visible { outline: 2px solid var(--color-focus-outline); outline-offset: 3px; }
+
+@media (min-width: 1200px) {
+  .container-main { gap: 2.5rem; }
+}
+@media (max-width: 767px) {
+  h1 { font-size: 2rem; }
+  pre { padding: 1rem; }
+  .tsd-typography td, .tsd-typography th { padding: 0.6rem 0.75rem; }
+}
+@media print {
+  body { color: #000; background: #fff; }
+  pre, .tsd-typography table { overflow: visible; white-space: pre-wrap; }
+}

@@ -1,8 +1,17 @@
+---
+title: "API and documentation development"
+---
+
 # API and documentation development
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 Start with [architecture and maintenance](architecture.md) for module boundaries,
 extension workflows, ownership rules and test-isolation requirements. The
 [CLI reference](cli.md) documents invocation and exit-status contracts.
+
+For complete client recipes, method effects, and isolated examples, see
+[embedding Workstation](embedding.md).
 
 All supported consumer imports come from `@dovocode/workstation`. The generated API
 reference covers builders, resource types, configuration loading, locks,
@@ -38,6 +47,36 @@ Open `dist/docs/index.html`. TypeDoc builds the public API
 from `src/index.ts` and includes these Markdown guides. Generated output is
 ignored by Git and a package build may clean `dist`; regenerate docs afterward.
 No hosting or publishing is performed by this command.
+
+### Publish the GitHub Pages site
+
+The public handbook lives at <https://dovocode.github.io/workstation/>. It uses
+TypeDoc's static output, full-text guide/API search, syntax highlighting, guide
+navigation, and light/dark themes. Styling and the icon live under `docs/assets`;
+`typedoc.json` controls navigation and the canonical deployment URL.
+
+With Git push access to `dovocode/workstation`, publish reviewed documentation:
+
+```sh
+pnpm docs:publish
+```
+
+This rebuilds the site, checks its static assets, then commits and pushes only
+the rendered output to `gh-pages` using a temporary checkout. It leaves your
+working branch intact, preserves publication history, and refuses to replace
+an existing branch without the generated-site marker. Concurrent pushes fail
+normally rather than force-pushing. The temporary checkout is removed afterward.
+Commit source changes before publishing so the publication commit identifies the
+correct source revision. The script publishes the current working tree's build.
+
+Repository Settings → Pages must use **Deploy from a branch**, **gh-pages**, and
+**/ (root)**. GitHub deploys the branch after each publication. `.nojekyll` prevents
+Jekyll processing. The branch contains public rendered documentation only, not
+source checkouts, dependency directories, or private workstation state.
+
+This is an explicit publication command; a source push alone does not update the
+website. `pnpm run docs` remains the local build command. The publication script
+uses Git credentials and does not require permission to create Actions workflows.
 
 Edit API comments at their declarations and guides under `docs/`.
 Named functions and methods in the implementation also carry JSDoc describing

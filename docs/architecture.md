@@ -1,4 +1,10 @@
+---
+title: "Architecture and maintenance"
+---
+
 # Architecture and maintenance
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 This documents the implementation. The HTML roadmap describes future work.
 `src/index.ts` is the public import boundary; internal source paths are not a stable
@@ -49,8 +55,9 @@ state fingerprints describe resolved resources, including their applied pins.
 
 Default state hashes the absolute configuration path and machine. An explicit
 `stateFile` overrides isolation; moving a config changes the default namespace.
-Legacy state requires deliberate reuse/migration. Separate namespaces do not yet
-detect overlapping targets. Do not silently infer or transfer ownership.
+Legacy state requires deliberate reuse/migration. A machine-local claim registry rejects overlapping resource IDs between registered
+configurations. It cannot infer ownership from unregistered historical state.
+Do not silently infer or transfer ownership.
 
 Changing a resource shape requires updating config validation, manifest encoding and
 decoding, and state validation. TypeScript types alone do not validate persisted data.

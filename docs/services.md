@@ -1,4 +1,10 @@
+---
+title: "Services"
+---
+
 # Services
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 ## macOS LaunchAgents
 
@@ -52,12 +58,52 @@ to `on-failure`.
 
 Installation reloads the manager, enables the unit, and starts it. Owned removal
 disables/stops the unit, removes its unchanged file, and reloads the manager.
-An active user systemd manager is needed for user scope; Workstation does not
-configure lingering or create a login session.
+An active user systemd manager is needed for user scope. `systemdService` does
+not enable lingering automatically; use the separate `linger` provision operation
+when needed. It does not create a login session.
 
 ## Inspection limits
 
-Service reconciliation compares declaration files. An unchanged file does not
-currently trigger a live health check or repair of a separately stopped process.
-Use launchctl/systemctl to inspect runtime health. Service installation failures
-are reported rather than silently treated as success.
+Service reconciliation compares declaration files and runtime activation.
+Systemd units must be active and enabled. LaunchAgents must be loaded; with
+`keepAlive: true`, they must also report running. A stopped/disabled managed
+service can therefore produce an update even when its file is unchanged.
+
+This does not prove application readiness, network reachability, or successful
+account initialization. Use a separate read-only check for application health.
+Service installation failures are reported rather than treated as success.
+
+## Restart when configuration changes
+
+Add `dependsOn` to connect a service to its package, custom executable, generated
+config, or health resource. Use resolved IDs, including absolute paths for files:
+
+```ts
+import { configure, defineConfig, files, linux, systemdService } from "@dovocode/workstation";
+
+export default defineConfig(linux(configure(({ home }) => ({ resources: [
+  files.json("~/.config/worker/settings.json", { port: 7345 }),
+  systemdService("example-worker", {
+    program: "/usr/local/bin/example-worker",
+    args: ["--config", `${home}/.config/worker/settings.json`],
+    environment: { PATH: "/usr/local/bin:/usr/bin:/bin" },
+    dependsOn: [`file:${home}/.config/worker/settings.json`],
+  }),
+] }))));
+```
+
+Install the real worker executable before applying this template. A changed
+settings file is applied before the dependent service restarts. The same
+`dependsOn` option is available on `launchAgent`. Unknown IDs and cycles fail;
+see the [ID reference](configuration.md#dependencies-and-resource-ids).
+
+## Generated service or existing-service activation?
+
+Use `systemdService` or `launchAgent` when Workstation should generate and manage
+the unit/plist, including owned removal. Use `provision` with `type: "service"`
+when a package/vendor already supplies it and Workstation should check activation.
+Provision service declarations are retained on removal, including system launchd
+services. These are different lifecycle choices; do not manage the same service
+through both mechanisms.
+
+For logs and user-session errors, see [service troubleshooting](troubleshooting.md#a-service-is-installed-but-not-usable).

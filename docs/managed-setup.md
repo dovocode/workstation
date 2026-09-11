@@ -1,4 +1,10 @@
+---
+title: "Managed setup and recovery"
+---
+
 # Managed setup and recovery
+
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
 
 `build` handles both first-time setup and subsequent reconciliation. It installs
 missing prerequisite managers automatically in both the CLI and embedded client.
@@ -14,6 +20,9 @@ behavior when an upgrade is actually requested. Backends without version pinning
 (such as the Mac App Store) cannot provide a frozen historical installation.
 
 ## Setup resources
+
+See [provisioning recipes](provisioning.md) for every operation, options,
+dependencies, and complete configuration examples.
 
 Use `provision(name, operation, dependsOn?)` for native setup operations. Supported
 operations are Homebrew taps/trust, APT repositories with pinned key SHA-256 digests,

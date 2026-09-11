@@ -1,11 +1,42 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "Workstation",
-  "entryPoints": ["src/index.ts"],
+  "entryPoints": [
+    "src/index.ts"
+  ],
   "out": "dist/docs",
   "readme": "docs/README.md",
-  "projectDocuments": ["docs/*.md"],
+  "projectDocuments": [
+    "docs/*.md"
+  ],
   "excludePrivate": true,
   "excludeInternal": true,
-  "disableSources": true
+  "disableSources": true,
+  "customCss": "docs/assets/theme.css",
+  "favicon": "docs/assets/favicon.svg",
+  "hostedBaseUrl": "https://dovocode.github.io/workstation/",
+  "navigationLinks": {
+    "Handbook": "https://dovocode.github.io/workstation/",
+    "GitHub": "https://github.com/dovocode/workstation",
+    "Releases": "https://github.com/dovocode/workstation/releases"
+  },
+  "includeVersion": true,
+  "searchInDocuments": true,
+  "navigation": {
+    "includeCategories": false,
+    "includeGroups": true,
+    "includeFolders": false
+  },
+  "groupOrder": [
+    "Documents",
+    "Functions",
+    "Variables",
+    "Classes",
+    "Interfaces",
+    "Type Aliases",
+    "*"
+  ],
+  "githubPages": true,
+  "lightHighlightTheme": "github-light",
+  "darkHighlightTheme": "github-dark"
 }

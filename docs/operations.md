@@ -1,12 +1,21 @@
+---
+title: "Locks, ownership, and recovery"
+---
+
 # Locks, ownership, and recovery
 
-## Three files with different roles
+[Handbook](README.md) · [CLI reference](cli.md) · [Troubleshooting](troubleshooting.md)
+
+## Storage and responsibilities
 
 | File | Purpose | Commit it? |
 | --- | --- | --- |
 | `workstation.lock` beside the entry point | Machine targets, declaration fingerprints, package pins | Yes |
 | `config.toml` beside local state | Resolved declarations used for execution | No |
-| `~/.local/state/workstation/state.json` | Ownership, installed hashes/versions, original backups | No |
+| `~/.local/state/workstation/configs/<namespace>/state.json` by default | Ownership, installed hashes/versions, original backups | No |
+| `history/` beside state | Pre-apply recovery snapshots | No |
+| `pending.json` beside state | Intended ownership for interrupted actions | No |
+| `~/.local/state/workstation/claims.json` | Machine-local registered resource owners | No |
 
 The lock is not a backup or a complete machine image. Retain the source config,
 imports, and local tools in Git too. Backups in state may contain private file
@@ -48,10 +57,11 @@ Installed versions are recorded in local state. Workstation verifies completion
 using `mas list` and `mas outdated`; account failures and stale Spotlight data
 remain visible errors rather than being treated as successful installations.
 
-To intentionally refresh an unchanged package, remove its entry from the relevant
-machine section of `workstation.lock`, then run Workstation and review the diff.
-There is no separate update/frozen-lock CLI flag. Run one checkout at a time when
-updating the shared lock and resolve Git merge conflicts before execution.
+Refresh pins with `workstation lock update [IDs...]` and review the lock diff.
+Apply reviewed pins with `workstation build --frozen-lockfile`. For a combined
+refresh and reconciliation, use `workstation upgrade [IDs...]`. Run one checkout
+at a time when updating a shared lock and resolve Git merge conflicts before
+execution. See the [upgrade workflow](workflows.md#upgrade-packages-or-refresh-only-the-lock).
 
 ## Adoption and removal
 
@@ -62,7 +72,8 @@ restored on removal. Generated-file mode and content changes are compared.
 
 Changes are applied in dependency-friendly groups: service removals first,
 then other removals, package installations, custom tools, files, and services.
-This is fixed ordering, not a general dependency graph. A new mise version is
+Explicit `dependsOn` resource IDs supplement phase ordering; unknown references
+and dependency cycles are rejected. A new mise version is
 installed and verified before the previous owned version is removed.
 
 Successful actions checkpoint state. This is not an all-or-nothing transaction:
@@ -154,3 +165,36 @@ Workstation does not rewrite your mise configuration automatically.
 
 Do not delete ownership state to suppress an error: doing so loses the
 information needed for managed removal and original-file restoration.
+
+## Snapshot rollback
+
+Each build with actions saves preceding ownership state and the desired manifest
+under private history. `workstation history` lists identifiers for the selected
+configuration; `workstation rollback RUN` previews supported restoration and
+`workstation rollback RUN --apply` executes it. Place `--config PATH` before these
+commands when selecting another entry point.
+
+Rollback supports eligible updates to previously managed generated files and
+exactly pinned mise tools. For mise, both versions must be recorded, the current
+installation must match the newer pin, and the older exact version must still be
+installed or resolvable. It restores installations, not application data or shell
+activation. Other package backends, creation/removal, injection changes, policy
+changes, and provision operations are unsupported.
+
+External edits, unrelated drift, and changed state preconditions block restoration.
+Apply rechecks state under its guard and creates a new recovery snapshot. Rollback
+does not edit source configuration or `workstation.lock`; align those separately
+before your next build. See the [rollback workflow](workflows.md#roll-back-a-supported-update)
+and [troubleshooting](troubleshooting.md#rollback-is-refused-or-history-is-empty).
+
+## Configuration identity
+
+The default namespace hashes the absolute entry-point path (or explicit config
+`id`) and machine selector. `stateFile` overrides the default. The historical
+`~/.local/state/workstation/state.json` path is not automatically migrated.
+Keep the original state path when relocating an existing managed setup; see
+[moving a configuration](workflows.md#move-or-rename-a-configuration).
+
+The resolved manifest, ownership backups, journal, and snapshots can contain
+plaintext configuration. Keep them local and private. Retained backups are not
+an encrypted secret store or a substitute for a machine backup.

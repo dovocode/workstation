@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Publish the searchable handbook and API reference on GitHub Pages with guide navigation, responsive styling, and light/dark themes.
+
+- Expand the documentation into a linked handbook with a first-run tutorial, feature recipes, operational workflows, embedded API examples, and troubleshooting; correct outdated lock, task, service, and ownership guidance.
+
 ## 0.6.2 — 2026-09-11
 
 - Allow upgrades of adopted APT packages after refreshing their pins, while preserving their protection from automatic uninstall when removed from configuration.
