@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.6.0-dev.0
+## Unreleased
+
+## 0.6.0 — 2026-09-11
 
 - Refresh selected APT/Homebrew metadata before upgrade pin resolution; stop on refresh failures.
 - Add managed setup resources with shared build and upgrade reconciliation.
@@ -9,11 +11,6 @@
 - Inspect service runtime and custom-tool drift; refresh greedy pins only on explicit upgrade.
 - Unify first-time setup and normal builds under build, including prerequisite installation in the embedded API.
 
-
-User-visible changes are recorded here for each release. Add new changes under
-Unreleased, then move them into a dated version section when preparing a release.
-
-## Unreleased
 
 ## 0.4.1 — 2026-09-09
 

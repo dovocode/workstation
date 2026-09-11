@@ -90,6 +90,8 @@ it("rejects non-regular copy targets", async () => {
 
 it("renders mise activation from installed pins and keeps status stable", async () => {
   const { home, context } = await fixture();
+  await mkdir(join(home, ".local/bin"), { recursive: true });
+  await writeFile(join(home, ".local/bin/mise"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
   const runner: Runner = { async run(command, args) {
     if (command === "mise" && args[0] === "latest") return { exitCode: 0, stdout: "26.8.1\n", stderr: "" };
     if (command === "mise" && args[0] === "where") return { exitCode: 0, stdout: "/installed/node\n", stderr: "" };
