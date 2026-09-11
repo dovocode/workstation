@@ -1,8 +1,9 @@
+import { withRunLock } from "../persistence/guard.js";
+import { journalIntent, clearJournal, recoverJournal } from "../persistence/journal.js";
 import { fingerprint } from "../config/identity.js";
 import { createPlan } from "./plan.js";
 import { applyPackageBatch, isPackageMutation, type PackageAction } from "./package-batch.js";
 export { createPlan } from "./plan.js";
-import { mkdir, rmdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { writeManifest } from "../persistence/manifest.js";
 import {
@@ -25,6 +26,8 @@ import type {
 export interface ApplyOptions {
   /** Reject the entire plan if it contains a remove action; forget actions only update ownership. */
   readonly noRemove?: boolean;
+  /** Apply only these resource IDs without pruning other state (repository preparation). */
+  readonly onlyIds?: ReadonlySet<string>;
   /** Optional additional preconditions, used by rollback to reject stale state and unrelated drift. */
   readonly validate?: (actions: readonly Action[]) => Promise<void>;
 }
@@ -37,21 +40,10 @@ export async function applyPlan(
   onProgress?: (message: string) => void,
   options: ApplyOptions = {},
 ): Promise<Action[]> {
-  await mkdir(dirname(config.stateFile), { recursive: true, mode: 0o700 });
-  const guard = `${config.stateFile}.lock`;
-  try {
-    await mkdir(guard, { mode: 0o700 });
-  } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "EEXIST") {
-      throw new Error(`Another Workstation run holds ${guard}. If a previous run crashed, remove that directory after confirming it has stopped.`, { cause: error });
-    }
-    throw error;
-  }
-  try {
-    return await reconcile(config, runner, onAction, onProgress, options);
-  } finally {
-    await rmdir(guard);
-  }
+  return withRunLock(config, async () => {
+    await recoverJournal(config, runner);
+    return reconcile(config, runner, onAction, onProgress, options);
+  });
 }
 
 /** Apply calculated actions in order and checkpoint ownership and backups between mutations. */
@@ -63,7 +55,7 @@ async function reconcile(
   options: ApplyOptions = {},
 ): Promise<Action[]> {
   onProgress?.("Inspecting resources...");
-  const actions = await createPlan(config, runner, onProgress);
+  const actions = await createPlan(config, runner, onProgress, options.onlyIds);
   await options.validate?.(actions);
   onProgress?.(`Plan: ${actions.length} action(s).`);
   let state = await readState(config.stateFile, config.context.machine);
@@ -83,6 +75,10 @@ async function reconcile(
     if (isPackageMutation(action)) {
       const batch = collectBatch(actions, index, action);
       index += batch.length - 1;
+      await journalIntent(config, await Promise.all(batch.filter(item => item.type !== "remove").map(async item => {
+        const before = await inspectResource(item.resource, runner);
+        return entry(item, { owned: item.previous?.owned === true || !before.present, originalFile: item.previous?.originalFile });
+      })));
       await applyPackageBatch(batch, runner, async (completed, before, after) => {
         // Keep the prior version in state until cleanup succeeds, allowing a failed cleanup to retry.
         if (completed.type === "update" && after.matches) await removeReplacedMiseVersion(completed, runner);
@@ -97,6 +93,7 @@ async function reconcile(
         state = { ...state, resources };
         await writeState(config.stateFile, state);
       }, onAction, onProgress);
+      await clearJournal(config);
       continue;
     }
     await applyAction(action);
@@ -106,6 +103,11 @@ async function reconcile(
   async function applyAction(action: Action): Promise<void> {
     onAction?.(action);
     const resources = { ...state.resources };
+    if (action.type === "create" || action.type === "update") {
+      const before = await inspectResource(action.resource, runner);
+      const originalFile = await originalForUpdate(action, before);
+      await journalIntent(config, [entry(action, { owned: action.resource.kind !== "provision" && (action.previous?.owned === true || !before.present), originalFile })]);
+    }
     switch (action.type) {
       case "adopt": {
         const inspection = await inspectResource(action.resource, runner);
@@ -120,7 +122,7 @@ async function reconcile(
         const inspection = await installResource(action.resource, runner);
         resources[action.id] = entry(
           action,
-          { owned: true, inspection, originalFile: action.previous?.originalFile },
+          { owned: action.resource.kind !== "provision", inspection, originalFile: action.previous?.originalFile },
         );
         break;
       }
@@ -145,7 +147,7 @@ async function reconcile(
     /** Keep an original backup durable before replacing any generated content. */
     async function updateAction(): Promise<void> {
       const before = await inspectResource(action.resource, runner);
-      if (before.matches && action.resource.kind !== "custom-tool") {
+      if (canSkipUpdate(action, before)) {
         await removeReplacedMiseVersion(action, runner);
         resources[action.id] = entry(
           action,
@@ -175,11 +177,12 @@ async function reconcile(
       await removeReplacedMiseVersion(action, runner);
       resources[action.id] = entry(
         action,
-        { owned: action.previous?.owned === true || !before.present, inspection, originalFile },
+        { owned: action.resource.kind !== "provision" && (action.previous?.owned === true || !before.present), inspection, originalFile },
       );
     }
     state = { ...state, resources };
     await writeState(config.stateFile, state);
+    await clearJournal(config);
     onProgress?.(`  Done: ${action.type} ${action.id} (state saved)`);
   }
 
@@ -236,6 +239,7 @@ function entry(
 /** Reuse saved originals and capture only unowned files covered by a replacement policy. */
 async function originalForUpdate(action: Action, before: Inspection): Promise<StateEntry["originalFile"]> {
   if (action.previous?.originalFile) return action.previous.originalFile;
+  if (action.resource.kind === "provision" && action.resource.operation.type === "copy-file" && before.present) return backupResource(action.resource);
   if (action.resource.kind !== "generated-file" || action.previous?.owned === true || !before.present) return;
   if (!["overwrite", "inject", "merge"].includes(action.resource.ifExists)) return;
   return backupResource(action.resource);
@@ -247,7 +251,15 @@ function collectBatch(actions: readonly Action[], index: number, first: PackageA
   for (let nextIndex = index + 1; nextIndex < actions.length; nextIndex += 1) {
     const next = actions[nextIndex];
     if (!next || !isPackageMutation(next) || (next.type === "remove") !== (first.type === "remove")) break;
+    if (next.resource.dependsOn?.some(id => batch.some(item => item.id === id))) break;
     batch.push(next);
   }
   return batch;
+}
+
+/** A healthy check needs no repair; service dependencies may still require a restart. */
+function canSkipUpdate(action: Action, before: Inspection): boolean {
+  if (!before.matches || action.resource.kind === "custom-tool") return false;
+  if (action.reason !== "service dependency changed") return true;
+  return action.resource.kind === "provision" && action.resource.operation.type === "check" && !action.resource.operation.restartOnChange;
 }

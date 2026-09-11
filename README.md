@@ -139,6 +139,11 @@ owning project or package manager. There is no fallback to a global npm install.
 `workstation build` performs the complete lock, manifest, plan, and reconciliation
 flow. Running `workstation` without a command displays help.
 
+## Managed setup
+
+See [managed setup, shell activation and interruption recovery](docs/managed-setup.md).
+`workstation build` installs missing prerequisites and applies the complete setup.
+
 ## Documentation
 
 - [Docker, Docker Sandboxes, and Microsandbox task integration](docs/environments.md)
@@ -170,8 +175,8 @@ The client also provides `updateLock(ids?)`, `doctor()`, `history()`,
 It throws errors and returns values instead of exiting the host process. Default
 execution is silent; use callbacks or supply a `ProcessRunner` with logging enabled.
 Pass `runner` for a custom execution boundary and `context` with inline definitions
-for isolated tests. Only `build({ bootstrap: true })` opts into installing prerequisite
-managers; planning never does. `configPath` should be absolute for predictable project
+for isolated tests. `build()` and `upgrade()` install missing prerequisite managers
+automatically, just like the CLI; planning never does. `configPath` should be absolute for predictable project
 integration. The JavaScript package still requires its declared Node.js version.
 
 ### Dotenv files

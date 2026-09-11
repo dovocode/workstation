@@ -17,7 +17,7 @@ contents. Keep state local and preserve it when migrating the checkout path.
 Ordinary declarations reuse their pins until the declaration changes. New
 declarations resolve automatically; removed declarations leave the current
 machine's target. Other machine targets are preserved. Greedy Homebrew casks
-refresh their pin every run; casks reporting `latest` remain unpinned.
+refresh their pin during explicit upgrades; casks reporting `latest` remain unpinned.
 
 mise installs exact locked versions. APT installs its candidate version with
 an explicit version argument; the repository must still provide that version.

@@ -6,15 +6,23 @@ import type { SystemdServiceResource, Runner } from "../api/types.js";
 import { atomicWrite, isMissingFile, requireSuccess, type Inspection } from "./shared.js";
 
 /** Compare the on-disk unit contents with the rendered declaration. */
-export async function inspectSystemdService(resource: SystemdServiceResource): Promise<Inspection> {
+export async function inspectSystemdService(resource: SystemdServiceResource, runner?: Runner): Promise<Inspection> {
   const path = systemdServicePath(resource);
   try {
     const current = await readFile(path, "utf8");
-    const matches = current === renderSystemdService(resource);
+    let matches = current === renderSystemdService(resource);
+    const contentMatches = matches;
+    if (matches && runner) {
+      const scope = resource.scope === "user" ? ["--user"] : [];
+      const active = await runner.run("systemctl", [...scope, "is-active", "--quiet", resource.name]);
+      const enabled = await runner.run("systemctl", [...scope, "is-enabled", resource.name]);
+      if (![0, 3, 4].includes(active.exitCode) || ![0, 1, 3, 4].includes(enabled.exitCode)) throw new Error(`Cannot inspect systemd service ${resource.name}`);
+      matches = active.exitCode === 0 && enabled.exitCode === 0;
+    }
     return {
       present: true,
       matches,
-      ...(matches ? {} : { conflict: `${path} exists with different content` }),
+      ...(contentMatches ? {} : { conflict: `${path} exists with different content` }),
     };
   } catch (error) {
     if (isMissingFile(error)) return { present: false, matches: false };

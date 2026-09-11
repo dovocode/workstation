@@ -21,7 +21,8 @@ try {
   assert.deepEqual(JSON.parse(await readFile(join(root, "generated.json"), "utf8")), { ready: true });
   assert.match(execFileSync(native, args, options), /already converged/);
   assert.equal((await readdir(root)).includes("node_modules"), false);
-  assert.equal((await readdir(root)).includes(".local"), false);
+  // Private coordination state is expected; no runtime was installed.
+  assert.equal((await readdir(join(root, ".local"))).includes("bin"), false);
   console.log("Standalone build converged without Node, pnpm, or installed config dependencies.");
 } finally {
   await rm(root, { recursive: true, force: true });

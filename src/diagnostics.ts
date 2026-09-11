@@ -6,7 +6,7 @@ import { indexResources, fingerprint } from "./config/identity.js";
 import { readState } from "./persistence/state.js";
 import { inspectResource } from "./resources/dispatch.js";
 import { packageCapabilities } from "./resources/capabilities.js";
-import type { ResolvedConfig, Runner } from "./api/types.js";
+import type { ResolvedConfig, ResolvedResource, Runner } from "./api/types.js";
 
 export interface ResourceStatus {
   readonly id: string;
@@ -21,12 +21,11 @@ export async function inspectStatus(config: ResolvedConfig, runner: Runner): Pro
   const results = await mapConcurrent([...desired], async ([id, resource]): Promise<ResourceStatus> => {
     const previous = state.resources[id];
     if (!previous) return { id, status: "untracked" };
-    const recorded = { ...previous.resource };
-    if (recorded.kind === "package") Reflect.deleteProperty(recorded, "lockedVersion");
+    const recorded = declarationResource(previous.resource);
     if (fingerprint(recorded) !== fingerprint(resource)) return { id, status: "declaration-changed" };
     try {
       const inspection = await inspectResource(previous.resource, runner);
-      return { id, status: inspection.matches ? "converged" : "drifted", ...(inspection.conflict ? { detail: inspection.conflict } : {}) };
+      return { id, status: inspection.matches && (previous.resource.kind !== "custom-tool" || inspection.installedHash === previous.installedHash) ? "converged" : "drifted", ...(inspection.conflict ? { detail: inspection.conflict } : {}) };
     } catch (error) {
       return { id, status: "error", detail: error instanceof Error ? error.message : String(error) };
     }
@@ -65,4 +64,12 @@ async function findExecutable(command: string, searchPath: string): Promise<bool
     }
   }
   return found;
+}
+
+/** Normalize applied pins back to source selectors for declaration comparison. */
+function declarationResource(resource: ResolvedResource): ResolvedResource {
+  const recorded = { ...resource };
+  if (recorded.kind === "package") Reflect.deleteProperty(recorded, "lockedVersion");
+  if (recorded.kind === "generated-file" && recorded.miseSelectors && typeof recorded.value === "object" && recorded.value !== null && !Array.isArray(recorded.value)) recorded.value = { ...recorded.value, tools: recorded.miseSelectors };
+  return recorded;
 }

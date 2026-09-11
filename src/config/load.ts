@@ -1,3 +1,4 @@
+import { resolveProvision } from "./provision.js";
 import { hostname as readHostname, homedir, platform as readPlatform } from "node:os";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { access } from "node:fs/promises";
@@ -76,6 +77,7 @@ export async function resolveConfig(input: ConfigInput, context: Context, config
     throw new Error(`${configPath} did not produce any configuration`);
   }
   const definition = mergeDefinitions(definitions);
+  if (definition.id !== undefined && !/^[A-Za-z0-9_.-]+$/.test(definition.id)) throw new Error("Invalid configuration id");
   const afterApply = definitions.flatMap((fragment) => resolveAfterApply(fragment.afterApply, context));
   const inputs = definitions.flatMap((fragment) => [
     fragment.resources,
@@ -92,7 +94,7 @@ export async function resolveConfig(input: ConfigInput, context: Context, config
     ...resolveTasks(definition, context),
     resources,
     stateFile: expandPath(
-      definition.stateFile ?? `~/.local/state/workstation/configs/${createHash("sha256").update(resolve(configPath)).update("\0").update(context.machine).digest("hex").slice(0, 24)}/state.json`,
+      definition.stateFile ?? `~/.local/state/workstation/configs/${createHash("sha256").update(definition.id ?? resolve(configPath)).update("\0").update(context.machine).digest("hex").slice(0, 24)}/state.json`,
       context,
       false,
     ),
@@ -105,6 +107,7 @@ async function resolveResource(
   definition: ConfigDefinition,
   context: Context,
 ): Promise<ResolvedResource> {
+  if (resource.kind === "provision") return resolveProvision(resource, context);
   if (resource.kind === "package") { return resolvePackage(resource, definition, context); }
   if (resource.kind === "symlink") {
     return {
@@ -184,6 +187,7 @@ function collectDefinitions(value: unknown, context: Context): ConfigDefinition[
 function mergeDefinitions(definitions: readonly ConfigDefinition[]): ConfigDefinition {
   return definitions.reduce<ConfigDefinition>(
     (merged, fragment) => ({
+      ...(fragment.id !== undefined ? { id: fragment.id } : merged.id !== undefined ? { id: merged.id } : {}),
       managers: { ...merged.managers, ...fragment.managers },
       tasks: { ...merged.tasks, ...fragment.tasks },
       aliases: { ...merged.aliases, ...fragment.aliases },

@@ -1,3 +1,4 @@
+import type { ProvisionResource } from "./provision.js";
 export type Platform = "darwin" | "linux";
 export type PackageManager = "mise" | "brew" | "brew-cask" | "apt" | "dnf" | "yum" | "pacman" | "flatpak" | "mas" | "system";
 
@@ -10,7 +11,7 @@ export interface FlatpakOptions {
 
 /** Homebrew cask upgrade behavior. */
 export interface BrewCaskUpgradeOptions {
-  /** Include auto-updating casks and refresh their lock pins on each run. */
+  /** Include auto-updating casks when an upgrade is requested. */
   readonly greedy?: boolean;
   /** Pass --force when upgrading a cask; does not by itself trigger an upgrade. */
   readonly force?: boolean;
@@ -30,7 +31,11 @@ export interface Context {
   readonly configDir: string;
 }
 
-export interface PackageResource {
+export interface ResourceDependencies {
+  readonly dependsOn?: readonly string[];
+}
+
+export interface PackageResource extends ResourceDependencies {
   readonly kind: "package";
   readonly manager: PackageManager;
   readonly name: string;
@@ -44,13 +49,13 @@ export interface ResolvedPackageResource extends PackageResource {
   readonly lockedVersion?: string;
 }
 
-export interface SymlinkResource {
+export interface SymlinkResource extends ResourceDependencies {
   readonly kind: "symlink";
   readonly source: string;
   readonly target: string;
 }
 
-export interface LaunchAgentResource {
+export interface LaunchAgentResource extends ResourceDependencies {
   readonly kind: "launch-agent";
   readonly label: string;
   readonly program: string;
@@ -62,7 +67,7 @@ export interface LaunchAgentResource {
   readonly stderrPath?: string;
 }
 
-export type StructuredFormat = "toml" | "yaml" | "json" | "jsonc" | "zsh" | "bash" | "dotenv";
+export type StructuredFormat = "toml" | "yaml" | "json" | "jsonc" | "zsh" | "bash" | "sh" | "dotenv";
 /** `overwrite` saves and replaces unmanaged files; `update` rejects unmanaged differences; `ignore` preserves existing targets. */
 export type IfExistsPolicy = "update" | "overwrite" | "ignore" | "inject" | "merge";
 export type ConfigValue =
@@ -73,7 +78,9 @@ export type ConfigValue =
   | readonly ConfigValue[]
   | Readonly<{ [key: string]: ConfigValue }>;
 
-export interface GeneratedFileResource {
+export interface GeneratedFileResource extends ResourceDependencies {
+  /** Explicit mise activation selectors; lock resolution renders these as exact recorded pins. */
+  readonly miseSelectors?: Readonly<Record<string, string>>;
   /** Pre-rendered JSONC from the typed builder. Used only with format jsonc. */
   readonly renderedContent?: string;
   readonly kind: "generated-file";
@@ -86,7 +93,7 @@ export interface GeneratedFileResource {
 
 export type SystemdScope = "user" | "system";
 
-export interface SystemdServiceResource {
+export interface SystemdServiceResource extends ResourceDependencies {
   readonly kind: "systemd-service";
   readonly name: string;
   readonly description?: string;
@@ -111,7 +118,7 @@ export interface TaskDefinition extends CommandSpec {
   readonly description?: string;
 }
 
-export interface CustomToolResource {
+export interface CustomToolResource extends ResourceDependencies {
   readonly kind: "custom-tool";
   readonly name: string;
   readonly source: string;
@@ -121,6 +128,7 @@ export interface CustomToolResource {
 }
 
 export type Resource =
+  | ProvisionResource
   | PackageResource
   | SymlinkResource
   | LaunchAgentResource
@@ -144,8 +152,10 @@ export interface ConfigDefinition {
   readonly resources?: ResourceInput;
   /** Additional resources keyed by exact machine name. */
   readonly machines?: Readonly<Record<string, ResourceInput>>;
-  /** Local ownership/backup state path. Defaults to ~/.local/state/workstation/state.json; do not commit it. */
+  /** Local ownership/backup state path. Defaults to a configuration/machine namespace under ~/.local/state/workstation/configs; do not commit it. */
   readonly stateFile?: string;
+  /** Stable state namespace; set only with an explicit migration from existing path-based state. */
+  readonly id?: string;
 }
 
 /** A fragment, factory, or nested array of fragments; absent fragments are ignored. */

@@ -1,16 +1,13 @@
+import { buildConfiguration } from "../reconciliation/build.js";
 import { resolve } from "node:path";
 import { homedir, hostname, platform } from "node:os";
 import { loadConfig, resolveConfig } from "../config/load.js";
 import { lockConfig } from "../persistence/lock.js";
-import { writeManifest, manifestPath } from "../persistence/manifest.js";
 import { createPlan } from "../reconciliation/plan.js";
-import { applyPlan } from "../reconciliation/apply.js";
 import { inspectStatus, diagnose } from "../diagnostics.js";
 import { listHistory, rollback } from "../reconciliation/rollback.js";
 import { runTask } from "../resources/tasks.js";
 import { ProcessRunner } from "../resources/runner.js";
-import { ensurePrerequisites } from "../bootstrap.js";
-import { runAfterApply } from "../resources/hooks.js";
 import type { Action, ConfigInput, Context, Runner } from "./types.js";
 
 export interface WorkstationOptions {
@@ -52,16 +49,12 @@ export function createWorkstation(options: WorkstationOptions = {}) {
       const locked = await lockConfig(configPath, await configuration(), runner, { ...settings, write: false });
       return createPlan(locked.config, runner, options.onProgress);
     },
-    /** Lock and apply configuration. Prerequisite installation is explicitly opt-in for embedded use. */
-    async build(settings: { readonly frozen?: boolean; readonly noRemove?: boolean; readonly bootstrap?: boolean } = {}) {
-      const config = await configuration();
-      if (settings.bootstrap) await ensurePrerequisites(config, runner);
-      const locked = await lockConfig(configPath, config, runner, { ...(settings.frozen !== undefined ? { frozen: settings.frozen } : {}) });
-      await writeManifest(manifestPath(locked.config), locked.config);
-      const actions = await applyPlan(locked.config, runner, options.onAction, options.onProgress, { ...(settings.noRemove !== undefined ? { noRemove: settings.noRemove } : {}) });
-      await runAfterApply(locked.config, runner, options.onProgress);
-      return actions;
+    /** Install missing prerequisites, lock and apply configuration. */
+    async build(settings: { readonly frozen?: boolean; readonly noRemove?: boolean } = {}) {
+      return buildConfiguration(configPath, await configuration(), runner, { ...settings, ...(options.onAction ? { onAction: options.onAction } : {}), ...(options.onProgress ? { onProgress: options.onProgress } : {}) });
     },
+    /** Refresh selected packages and reconcile through the same state transaction. */
+    async upgrade(ids?: readonly string[]) { return buildConfiguration(configPath, await configuration(), runner, { refresh: ids ?? true }); },
     /** Refresh all pins or selected package resource IDs without installing packages. */
     async updateLock(ids?: readonly string[]) {
       return lockConfig(configPath, await configuration(), runner, { refresh: ids ?? true });

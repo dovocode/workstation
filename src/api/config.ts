@@ -53,7 +53,7 @@ export const tools = {
   /** Install Homebrew formulae (command-line packages). */
   brew: (packages: readonly string[]): PackageResource[] => packageList("brew", packages),
   /**
-   * Install macOS applications. Greedy casks refresh their lock pin each run.
+   * Install macOS applications. Greedy casks participate in explicit upgrades.
    * @example tools.brewCask(["ghostty"], { greedy: true, force: true })
    */
   brewCask: (
@@ -128,6 +128,10 @@ function generatedFile(
 
 /** Generate structured files from ordinary TypeScript values. Targets resolve relative to home. */
 export const files = {
+  /** Generate mise activation from the same exact pins used for installation. */
+  mise: (target: string, versions: Readonly<Record<string, string>>, settings: Readonly<Record<string, ConfigValue>> = {}): GeneratedFileResource => ({
+    ...generatedFile("toml", target, { settings, tools: versions }), miseSelectors: versions,
+  }),
   /** Merge literal single-line environment values, preserving unrelated keys. Defaults to private permissions. */
   dotenv: (target: string, values: Readonly<Record<string, string>>, options: GeneratedFileOptions = {}): GeneratedFileResource =>
     generatedFile("dotenv", target, values, { ...options, ifExists: options.ifExists ?? "merge", mode: options.mode ?? 0o600 }),

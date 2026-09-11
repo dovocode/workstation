@@ -1,13 +1,11 @@
+import { buildConfiguration } from "../reconciliation/build.js";
 import { parseArguments, type Options } from "./arguments.js";
 import * as bundledApi from "../index.js";
 import { findConfig, loadConfig } from "../config/load.js";
-import { manifestPath, readManifest, writeManifest } from "../persistence/manifest.js";
-import { applyPlan } from "../reconciliation/apply.js";
 import { ProcessRunner } from "../resources/runner.js";
 import { lockConfig } from "../persistence/lock.js";
 import type { Action, ResolvedConfig, Runner } from "../api/types.js";
 import { runTask } from "../resources/tasks.js";
-import { runAfterApply } from "../resources/hooks.js";
 import { initConfig } from "../config/init.js";
 import { ensurePrerequisites } from "../bootstrap.js";
 import { selfUpdate } from "../self-update.js";
@@ -68,8 +66,8 @@ export async function runCli(args: readonly string[]): Promise<void> {
     await showPlan(options, sourcePath, sourceConfig, runner);
     return;
   }
-  await ensurePrerequisites(sourceConfig, runner, options.task);
   if (options.task) {
+    await ensurePrerequisites(sourceConfig, runner, options.task);
     const result = await runTask(sourceConfig, options.task, options.taskArgs, new ProcessRunner({ progress: true, verbose: true }));
     process.exitCode = result.exitCode;
     return;
@@ -159,25 +157,12 @@ async function showPlan(options: Options, sourcePath: string, sourceConfig: Reso
 
 /** Resolve and serialize declarations before applying the validated manifest. */
 async function buildWorkstation(options: Options, sourcePath: string, sourceConfig: ResolvedConfig, runner: Runner): Promise<void> {
-  console.log(`Resolving package versions for ${sourceConfig.context.machine} (${sourceConfig.resources.length} resources)...`);
-  const locked = await lockConfig(sourcePath, sourceConfig, runner, options.upgrade
-    ? { refresh: options.upgradeIds.length ? options.upgradeIds : true }
-    : { frozen: options.frozen });
-  console.log(`Package lock ${locked.changed ? "updated" : "unchanged"}.${options.verbose ? ` ${locked.path}` : ""}`);
-  const outputPath = manifestPath(locked.config);
-  await writeManifest(outputPath, locked.config);
-  if (options.verbose) console.log(`Manifest: ${outputPath}`);
-
-  // Re-read the plain manifest so execution never relies on live TypeScript objects.
-  const config = await readManifest(outputPath);
-  const actions = await applyPlan(config, runner, printAction, (message) => {
-    if (!options.verbose && /^\s+(Inspect|Done):|^\s+Inspect removed declaration:/.test(message)) return;
-    console.log(message);
-  }, { noRemove: options.noRemove });
-  await runAfterApply(config, runner, (message) => console.log(message));
-  console.log(
-    actions.length === 0
-      ? "Workstation is already converged."
-      : `Reconciled ${actions.length} action(s).`,
-  );
+  const actions = await buildConfiguration(sourcePath, sourceConfig, runner, {
+    frozen: options.frozen, noRemove: options.noRemove,
+    ...(options.upgrade ? { refresh: options.upgradeIds.length ? options.upgradeIds : true } : {}),
+    onAction: printAction,
+    /** Display high-level progress unless verbose inspection output was requested. */
+    onProgress: message => { if (options.verbose || !/^\s+(Inspect|Done):/.test(message)) console.log(message); },
+  });
+  console.log(actions.length ? `Reconciled ${actions.length} action(s).` : "Workstation is already converged.");
 }

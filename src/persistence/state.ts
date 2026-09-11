@@ -1,3 +1,4 @@
+import { isProvisionResource } from "../config/provision.js";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isConfigValue, isStringRecord, isCommandSpec, isBrewCaskUpgradeOptions } from "../config/value-validation.js";
 import { dirname } from "node:path";
@@ -77,7 +78,9 @@ function isStateEntry(key: string, value: unknown): value is StateEntry {
 function isResolvedResource(value: unknown): value is ResolvedResource {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const candidate = value as Record<string, unknown>;
+  if (candidate.dependsOn !== undefined && (!Array.isArray(candidate.dependsOn) || !candidate.dependsOn.every(v => typeof v === "string"))) return false;
   switch (candidate.kind) {
+    case "provision": return isProvisionResource(value);
     case "package": return isStoredPackage(candidate);
     case "symlink": return isStoredSymlink(candidate);
     case "launch-agent": return isStoredLaunchAgent(candidate);
@@ -135,8 +138,9 @@ function isStoredLaunchAgent(candidate: Record<string, unknown>): boolean {
 /** Check persisted fields for generated-file resources. */
 function isStoredGeneratedFile(candidate: Record<string, unknown>): boolean {
   return (
+    (candidate.miseSelectors === undefined || (candidate.format === "toml" && isStringRecord(candidate.miseSelectors))) &&
     typeof candidate.target === "string" &&
-    ["toml", "yaml", "json", "jsonc", "zsh", "bash", "dotenv"].includes(String(candidate.format)) &&
+    ["toml", "yaml", "json", "jsonc", "zsh", "bash", "sh", "dotenv"].includes(String(candidate.format)) &&
     ["update", "overwrite", "ignore", "inject", "merge"].includes(String(candidate.ifExists)) &&
     (candidate.ifExists !== "merge" || candidate.format === "dotenv") &&
     isConfigValue(candidate.value) &&

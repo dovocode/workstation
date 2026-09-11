@@ -1,3 +1,6 @@
+export { npmHealth } from "./api/package-health.js";
+export { provision } from "./api/provision.js";
+export type { ProvisionResource, ProvisionOperation } from "./api/provision.js";
 export { jsonc, JsoncDocument } from "./api/jsonc.js";
 export { task } from "./api/tasks.js";
 export { docker, sbx, microsandbox } from "./api/environments.js";

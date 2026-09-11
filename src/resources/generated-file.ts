@@ -1,3 +1,4 @@
+import { validateShellContent } from "../rendering/shell-validation.js";
 import type { Stats } from "node:fs";
 import { lstat, mkdir, readFile, readlink, rename, symlink, unlink } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -42,8 +43,10 @@ export async function installGeneratedFile(resource: GeneratedFileResource, mana
     const stats = await lstat(resource.target);
     if (!stats.isFile()) throw new Error(`Refusing to replace changed managed file: ${resource.target}`);
   }
+  const content = renderGeneratedFile(resource);
+  await validateShellContent(resource, content);
   await mkdir(dirname(resource.target), { recursive: true });
-  await atomicWrite(resource.target, renderGeneratedFile(resource), resource.mode ?? 0o644);
+  await atomicWrite(resource.target, content, resource.mode ?? 0o644);
 }
 
 /** Remove unchanged managed content or restore the saved original file or symlink. */
@@ -80,16 +83,17 @@ export async function removeGeneratedFile(
 
 /** Capture original bytes and permissions or a symlink target before generated-file replacement. */
 export async function backupResource(resource: ResolvedResource): Promise<OriginalFile | undefined> {
-  if (resource.kind !== "generated-file") return undefined;
+  const target = resource.kind === "generated-file" ? resource.target : resource.kind === "provision" && resource.operation.type === "copy-file" ? resource.operation.target : undefined;
+  if (!target) return undefined;
   try {
-    const stats = await lstat(resource.target);
+    const stats = await lstat(target);
     if (stats.isSymbolicLink()) {
-      return { kind: "symlink", target: await readlink(resource.target) };
+      return { kind: "symlink", target: await readlink(target) };
     }
-    if (!stats.isFile()) throw new Error(`Cannot back up non-file target: ${resource.target}`);
+    if (!stats.isFile()) throw new Error(`Cannot back up non-file target: ${target}`);
     return {
       kind: "file",
-      content: await readFile(resource.target, "utf8"),
+      content: await readFile(target, "utf8"),
       mode: stats.mode & 0o777,
     };
   } catch (error) {

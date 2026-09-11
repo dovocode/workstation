@@ -42,8 +42,8 @@ import { defineConfig, task } from "@dovocode/workstation";
 
 export default defineConfig({
   afterApply: [
-    task("bash", ["scripts/activate-keyhold.sh"], {
-      description: "Activate the installed Keyhold agent",
+    task("echo", ["Workstation reconciliation complete"], {
+      description: "Report successful reconciliation",
     }),
   ],
 });
@@ -62,8 +62,8 @@ Hooks do not run if reconciliation fails, or during `plan`, tasks, diagnostics,
 lock updates, or rollback. The embedded client's `build()` also runs them.
 
 Keep source-based builds in `customTool` so source changes control rebuilding.
-Use a post-apply script for follow-up work such as activating the installed
-binary, without compiling it a second time.
+Use managed resources for service activation and health checks.
+Use a post-apply script for follow-up work such as reporting successful reconciliation.
 
 Working directories default to the entry point's directory; relative `cwd`
 values resolve there and `~` expands to home. `environment` overrides inherited

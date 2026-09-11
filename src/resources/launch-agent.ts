@@ -5,15 +5,20 @@ import type { LaunchAgentResource, Runner } from "../api/types.js";
 import { atomicWrite, isMissingFile, requireSuccess, type Inspection } from "./shared.js";
 
 /** Compare the on-disk LaunchAgent plist with the rendered declaration. */
-export async function inspectLaunchAgent(resource: LaunchAgentResource): Promise<Inspection> {
+export async function inspectLaunchAgent(resource: LaunchAgentResource, runner?: Runner): Promise<Inspection> {
   const path = launchAgentPath(resource);
   try {
     const current = await readFile(path, "utf8");
-    const matches = current === renderLaunchAgent(resource);
+    let matches = current === renderLaunchAgent(resource);
+    const contentMatches = matches;
+    if (matches && runner) {
+      const loaded = await runner.run("launchctl", ["print", `gui/${process.getuid?.() ?? 0}/${resource.label}`]);
+      matches = loaded.exitCode === 0 && (resource.keepAlive !== true || /state = running/.test(loaded.stdout));
+    }
     return {
       present: true,
       matches,
-      ...(matches ? {} : { conflict: `${path} exists with different content` }),
+      ...(contentMatches ? {} : { conflict: `${path} exists with different content` }),
     };
   } catch (error) {
     if (isMissingFile(error)) return { present: false, matches: false };

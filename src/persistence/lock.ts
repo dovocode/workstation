@@ -1,3 +1,4 @@
+import { withDirectoryLock } from "./guard.js";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parse, stringify } from "smol-toml";
@@ -53,7 +54,7 @@ export function lockPath(configPath: string): string {
 }
 
 /** Resolve package pins and update the current machine's lock target; does not install resources. */
-export async function lockConfig(
+async function resolveLockConfig(
   configPath: string,
   config: ResolvedConfig,
   runner: Runner,
@@ -88,7 +89,17 @@ export async function lockConfig(
       }
     };
   });
-  const resources = resolved.map(({ resource }) => resource);
+  const pins = new Map(resolved.flatMap(({ resource }) => resource.kind === "package" && resource.manager === "mise" && resource.lockedVersion ? [[resource.name, resource.lockedVersion] as const] : []));
+  const resources = resolved.map(({ resource }): ResolvedResource => {
+    if (resource.kind !== "generated-file" || !resource.miseSelectors) return resource;
+    const tools = Object.fromEntries(Object.keys(resource.miseSelectors).map(name => {
+      const version = pins.get(name);
+      if (!version) throw new Error(`Mise activation requires a declared pinned package: ${name}`);
+      return [name, version];
+    }));
+    if (typeof resource.value !== "object" || resource.value === null || Array.isArray(resource.value)) throw new Error("Mise configuration must be an object");
+    return { ...resource, value: { ...resource.value, tools } };
+  });
   const entries = resolved.map(({ entry }) => entry);
 
   const nextTarget: LockTarget = {
@@ -206,6 +217,11 @@ function canReusePin(resource: ResolvedResource, prior: LockEntry | undefined, d
   if (options.refresh === true) return false;
   if (Array.isArray(options.refresh) && options.refresh.includes(resourceId(resource))) return false;
   if (resource.manager !== "mas" && prior.lockedVersion === undefined) return false;
-  const refreshesOnRun = resource.manager === "brew-cask" && resource.upgrade?.greedy === true;
-  return !refreshesOnRun || options.frozen === true || options.refresh !== undefined;
+  return true;
+}
+
+/** Serialize the complete read/resolve/write operation, including standalone lock updates. */
+export async function lockConfig(configPath: string, config: ResolvedConfig, runner: Runner, options: LockOptions = {}): Promise<LockedConfigResult> {
+  if (options.write === false) return resolveLockConfig(configPath, config, runner, options);
+  return withDirectoryLock(`${lockPath(configPath)}.guard`, () => resolveLockConfig(configPath, config, runner, options));
 }

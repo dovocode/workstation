@@ -30,14 +30,10 @@ avoids materializing a fake package on disk, and leaves third-party resolution
 unchanged. Direct library callers retain normal project resolution unless they
 explicitly supply the optional bundled API to `loadConfig`.
 
-CLI build loads configuration, bootstraps prerequisites, resolves the lock, writes
-and reads the manifest, then acquires the apply guard. Planning, validation,
-snapshotting and resource mutation occur under that guard. Lock and manifest writes
-currently precede it: this is not a transaction over the whole invocation.
-
-The embedded client shares these lower-level operations but has separate orchestration.
-Bootstrap is opt-in there. Check both invocation paths when changing policy. The
-client is silent by default, returns values, and throws errors rather than exiting.
+CLI and embedded builds share `reconciliation/build.ts`. A machine/state guard covers
+prerequisite preparation, lock resolution, manifest writes, reconciliation and hooks.
+Repository resources converge before package queries. A per-action pending journal
+preserves intended ownership across interrupted mutations. See [managed setup](managed-setup.md).
 
 Plan resolves pins with `write: false` and inspects resources. It does not bootstrap
 or write Workstation state, locks or manifests. TypeScript configuration is executable
@@ -73,8 +69,7 @@ injection changes, policy changes, other backends and application data are exclu
 Rollback checks state again under the apply guard and does not rewrite source or lock.
 
 `mapConcurrent` limits independent reads, preserves result order and drains active
-work on failure. Mutations use fixed ordering and supported native batches. There
-is no general dependency graph or cross-configuration package-manager lock yet.
+work on failure. Mutations use fixed ordering and supported native batches. Explicit dependency edges supplement phase ordering, and a machine guard serializes local mutations.
 Partial batches may have succeeded; checkpoint verified results, not assumptions.
 
 ## Extension workflow

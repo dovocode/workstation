@@ -1,3 +1,4 @@
+import { inspectProvision, installProvision } from "./provision.js";
 import type { OriginalFile, ResolvedResource, Runner } from "../api/types.js";
 import type { Inspection } from "./shared.js";
 export type { Inspection } from "./shared.js";
@@ -15,16 +16,17 @@ export async function inspectResource(
   runner: Runner,
 ): Promise<Inspection> {
   switch (resource.kind) {
+    case "provision": return inspectProvision(resource, runner);
     case "package":
       return await inspectPackage(resource, runner);
     case "symlink":
       return await inspectSymlink(resource);
     case "launch-agent":
-      return await inspectLaunchAgent(resource);
+      return await inspectLaunchAgent(resource, runner);
     case "generated-file":
       return await inspectGeneratedFile(resource);
     case "systemd-service":
-      return await inspectSystemdService(resource);
+      return await inspectSystemdService(resource, runner);
     case "custom-tool":
       return await inspectCustomTool(resource);
   }
@@ -37,6 +39,7 @@ export async function installResource(
   options: { readonly managedFile?: boolean } = {},
 ): Promise<Inspection> {
   switch (resource.kind) {
+    case "provision": return installProvision(resource, runner);
     case "package":
       return await reconcilePackage(resource, runner);
     case "symlink":
@@ -75,6 +78,7 @@ export async function removeResource(
   installedHash?: string,
 ): Promise<void> {
   switch (resource.kind) {
+    case "provision": return; // Retained setup: removing a declaration never reverses system configuration.
     case "package":
       await removePackage(resource, runner, installedVersion);
       return;

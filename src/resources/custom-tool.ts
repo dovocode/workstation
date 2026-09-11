@@ -13,7 +13,7 @@ export async function inspectCustomTool(resource: ResolvedResource & { kind: "cu
     }
     return {
       present: true,
-      matches: true,
+      matches: (stats.mode & 0o111) !== 0,
       installedHash: createHash("sha256").update(await readFile(resource.target)).digest("hex"),
     };
   } catch (error) {

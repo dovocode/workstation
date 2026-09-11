@@ -45,6 +45,9 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Install shell parsers for runtime tests
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y zsh
       - run: pnpm check
       - run: pnpm test
       - name: Check code quality with fresh coverage

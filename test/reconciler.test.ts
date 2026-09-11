@@ -142,7 +142,7 @@ describe("reconciliation ownership", () => {
     } };
     await writeState(files.stateFile, state);
     const absent = { exitCode: 1, stdout: "", stderr: "not installed" };
-    const runner = new SequenceRunner([absent, absent, { ...absent, stderr: "download failed" }]);
+    const runner = new SequenceRunner([absent, absent, absent, { ...absent, stderr: "download failed" }]);
     await expect(applyPlan(config(files, [{ ...resource, lockedVersion: "24.0.0" }]), runner))
       .rejects.toThrow("download failed");
     expect(runner.calls.some(({ args }) => args[0] === "uninstall")).toBe(false);

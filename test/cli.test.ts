@@ -3,12 +3,12 @@ import type { ResolvedConfig } from "../src/api/types.js";
 
 const config = vi.hoisted((): ResolvedConfig => ({
   context: { home: "/unused", configDir: "/unused", machine: "test", hostname: "test", platform: "linux" },
-  stateFile: "/unused/state.json", resources: [],
+  stateFile: "/unused/state.json", resources: [{ kind: "package", manager: "mise", name: "node" }, { kind: "package", manager: "brew", name: "jq" }],
   tasks: { hello: { command: "echo", description: "Say hello" } }, aliases: { hi: "hello" },
 }));
 const mocks = vi.hoisted(() => ({
   find: vi.fn(async () => "/unused/config.ts"), load: vi.fn(),
-  bootstrap: vi.fn(), update: vi.fn(), init: vi.fn(async () => "/unused/config.ts"),
+  metadata: vi.fn(), bootstrap: vi.fn(), update: vi.fn(), init: vi.fn(async () => "/unused/config.ts"),
   lock: vi.fn(), plan: vi.fn(async () => []), apply: vi.fn(async () => []),
   task: vi.fn(async () => ({ exitCode: 7, stdout: "", stderr: "" })),
   status: vi.fn(async () => []), doctor: vi.fn(async () => []),
@@ -18,12 +18,16 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("../src/config/load.js", () => ({ findConfig: mocks.find, loadConfig: mocks.load }));
 vi.mock("../src/index.js", () => ({ bundledApiMarker: true }));
+vi.mock("../src/persistence/guard.js", () => ({ withRunLock: (_config: unknown, fn: () => unknown) => fn() }));
+vi.mock("../src/persistence/claims.js", () => ({ claimResources: async () => {}, releaseUnusedClaims: async () => {} }));
+vi.mock("../src/persistence/state.js", () => ({ readState: async () => ({ version: 1, machine: "test", resources: {} }) }));
+vi.mock("../src/resources/package-metadata.js", () => ({ refreshPackageMetadata: mocks.metadata }));
 vi.mock("../src/bootstrap.js", () => ({ ensurePrerequisites: mocks.bootstrap }));
 vi.mock("../src/self-update.js", () => ({ selfUpdate: mocks.update }));
 vi.mock("../src/config/init.js", () => ({ initConfig: mocks.init }));
 vi.mock("../src/persistence/lock.js", () => ({ lockConfig: mocks.lock }));
 vi.mock("../src/persistence/manifest.js", () => ({ manifestPath: () => "/unused/manifest.toml", writeManifest: mocks.write, readManifest: mocks.read }));
-vi.mock("../src/reconciliation/plan.js", () => ({ createPlan: mocks.plan }));
+vi.mock("../src/reconciliation/plan.js", () => ({ createPlan: mocks.plan, orderDependencies: () => [] }));
 vi.mock("../src/reconciliation/apply.js", () => ({ applyPlan: mocks.apply }));
 vi.mock("../src/reconciliation/rollback.js", () => ({ listHistory: mocks.history, rollback: mocks.rollback }));
 vi.mock("../src/diagnostics.js", () => ({ diagnose: mocks.doctor, inspectStatus: mocks.status }));
@@ -99,6 +103,8 @@ it.each([
   mocks.read.mockResolvedValueOnce(resolved);
   await runCli(["upgrade", ...ids, "--no-remove"]);
   expect(mocks.bootstrap).toHaveBeenCalledOnce();
+  expect(mocks.metadata).toHaveBeenCalledExactlyOnceWith(config.resources, refresh, expect.anything());
+  expect(mocks.metadata.mock.invocationCallOrder[0]).toBeLessThan(mocks.lock.mock.invocationCallOrder[0]!);
   expect(mocks.lock).toHaveBeenCalledExactlyOnceWith("/unused/config.ts", config, expect.anything(), { refresh });
   expect(mocks.write).toHaveBeenCalledWith("/unused/manifest.toml", resolved);
   expect(mocks.apply).toHaveBeenCalledWith(resolved, expect.anything(), expect.any(Function), expect.any(Function), { noRemove: true });
@@ -124,4 +130,17 @@ it("reports hook failures without claiming success", async () => {
   mocks.afterApply.mockRejectedValueOnce(new Error("hook failed"));
   await expect(runCli(["build"])).rejects.toThrow("hook failed");
   expect(console.log).not.toHaveBeenCalledWith("Workstation is already converged.");
+});
+
+it("stops upgrade before resolving pins when metadata refresh fails", async () => {
+  mocks.metadata.mockRejectedValueOnce(new Error("metadata unavailable"));
+  await expect(runCli(["upgrade"])).rejects.toThrow("metadata unavailable");
+  expect(mocks.lock).not.toHaveBeenCalled();
+  expect(mocks.write).not.toHaveBeenCalled();
+  expect(mocks.apply).not.toHaveBeenCalled();
+});
+
+it("does not refresh package metadata during an ordinary build", async () => {
+  await runCli(["build"]);
+  expect(mocks.metadata).not.toHaveBeenCalled();
 });

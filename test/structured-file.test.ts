@@ -82,7 +82,7 @@ describe("structured files", () => {
 
     expect(resource.target).toBe("~/.zprofile");
     const rendered = renderGeneratedFile(resource);
-    expect(rendered).toContain('export PATH="${HOME}/.local/bin":\'/opt/homebrew/bin\':"$PATH"');
+    expect(rendered).toContain('for _ws_prepend in \'/opt/homebrew/bin\' "${HOME}/.local/bin"; do');
     expect(rendered).toContain("export EDITOR='zed --wait'");
     expect(rendered).toContain("alias ll='eza -lah --git'");
     expect(rendered).toContain("if command -v 'mise' >/dev/null 2>&1; then");
@@ -101,7 +101,7 @@ describe("structured files", () => {
     });
     expect(renderGeneratedFile(resource)).toContain("export EDITOR='code --wait'");
     expect(renderGeneratedFile(resource)).toContain(
-      'if [[ -r "${HOME}/.local/bash/common.sh" ]]; then source "${HOME}/.local/bash/common.sh"; fi',
+      'if [ -r "${HOME}/.local/bash/common.sh" ]; then source "${HOME}/.local/bash/common.sh"; fi',
     );
   });
 });

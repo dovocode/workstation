@@ -166,7 +166,7 @@ describe("workstation lock", () => {
     expect(brew.config.resources[0]).not.toHaveProperty("lockedVersion");
   });
 
-  it("refreshes a greedy cask pin on every run", async () => {
+  it("retains greedy cask pins until an explicit refresh", async () => {
     const root = await mkdtemp(join(tmpdir(), "workstation-lock-test-"));
     const configPath = join(root, "workstation.config.ts");
     const base = config(root);
@@ -192,6 +192,8 @@ describe("workstation lock", () => {
         },
       ]),
     );
+    const unchanged = await lockConfig(configPath, greedy, new RecordingRunner([]));
+    expect(unchanged.changed).toBe(false);
     const refreshed = await lockConfig(
       configPath,
       greedy,
@@ -202,6 +204,7 @@ describe("workstation lock", () => {
           stderr: "",
         },
       ]),
+      { refresh: true },
     );
 
     expect(refreshed.changed).toBe(true);

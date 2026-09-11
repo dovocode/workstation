@@ -21,6 +21,7 @@ let installed: Set<string>;
 
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), "workstation-npm-upgrade-"));
+  vi.stubEnv("HOME", root);
   configPath = join(root, "config.ts");
   registry = new Map(packages.map(({ spec }) => [spec, "1.0.0"]));
   installed = new Set();
@@ -35,19 +36,7 @@ beforeEach(async () => {
       return version ? { exitCode: 0, stdout: JSON.stringify(version), stderr: "" }
         : { exitCode: 1, stdout: "", stderr: "Registry unavailable" };
     }
-    if (command === "mise" && args[0] === "where") {
-      const spec = args[1] ?? "";
-      return installed.has(spec) ? { exitCode: 0, stdout: join(root, "installs", spec.slice(spec.lastIndexOf("@") + 1)), stderr: "" }
-        : { exitCode: 1, stdout: "", stderr: "Not installed" };
-    }
-    if (command === "mise" && args[0] === "install") {
-      args.slice(1).forEach((spec) => installed.add(spec));
-      return { exitCode: 0, stdout: "", stderr: "" };
-    }
-    if (command === "mise" && args[0] === "uninstall") {
-      args.slice(1).forEach((spec) => installed.delete(spec));
-      return { exitCode: 0, stdout: "", stderr: "" };
-    }
+    if (command === "mise") return simulateMise(args);
     throw new Error(`Unexpected command: ${command} ${args.join(" ")}`);
   });
   vi.spyOn(console, "log").mockImplementation(() => {});
@@ -58,6 +47,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   await rm(root, { recursive: true, force: true });
 });
 
@@ -92,3 +82,20 @@ it("preserves npm installations and the lock when registry refresh fails", async
   expect(installed).toEqual(new Set(packages.map(({ name }) => `${name}@1.0.0`)));
   expect(commands.mock.calls.every(([command]) => command === "npm")).toBe(true);
 });
+
+function simulateMise(args: readonly string[]) {
+    if (args[0] === "where") {
+      const spec = args[1] ?? "";
+      return installed.has(spec) ? { exitCode: 0, stdout: join(root, "installs", spec.slice(spec.lastIndexOf("@") + 1)), stderr: "" }
+        : { exitCode: 1, stdout: "", stderr: "Not installed" };
+    }
+    if (args[0] === "install") {
+      args.slice(1).forEach((spec) => installed.add(spec));
+      return { exitCode: 0, stdout: "", stderr: "" };
+    }
+    if (args[0] === "uninstall") {
+      args.slice(1).forEach((spec) => installed.delete(spec));
+      return { exitCode: 0, stdout: "", stderr: "" };
+    }
+  throw new Error(`Unexpected mise command: ${args.join(" ")}`);
+}

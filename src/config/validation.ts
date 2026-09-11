@@ -1,3 +1,4 @@
+import { isProvisionResource } from "./provision.js";
 import type { Resource } from "../api/types.js";
 import { isConfigValue, isStringRecord, isCommandSpec, isBrewCaskUpgradeOptions } from "./value-validation.js";
 import { isFlatpakOptions, isPackageName } from "./package-options.js";
@@ -8,7 +9,9 @@ export function validateResource(value: unknown): asserts value is Resource {
     throw new Error("Every configured resource must be an object, array, or falsey value");
   }
   const candidate = value as Record<string, unknown>;
+  if (candidate.dependsOn !== undefined && (!Array.isArray(candidate.dependsOn) || !candidate.dependsOn.every(v => typeof v === "string" && v.length > 0))) throw new Error("Invalid resource dependencies");
   switch (candidate.kind) {
+    case "provision": if (!isProvisionResource(value)) throw new Error("Invalid provision resource"); return;
     case "package": return validatePackage(candidate);
     case "symlink": return validateSymlink(candidate);
     case "launch-agent": return validateLaunchAgent(candidate);
@@ -57,15 +60,16 @@ function validateLaunchAgent(candidate: Record<string, unknown>): void {
 
 /** Validate declaration fields for generated-file resources. */
 function validateGeneratedFile(candidate: Record<string, unknown>): void {
+  validateMiseSelectors(candidate);
   if (
     typeof candidate.target !== "string" ||
-    !["toml", "yaml", "json", "jsonc", "zsh", "bash", "dotenv"].includes(String(candidate.format)) ||
+    !["toml", "yaml", "json", "jsonc", "zsh", "bash", "sh", "dotenv"].includes(String(candidate.format)) ||
     !["update", "overwrite", "ignore", "inject", "merge"].includes(String(candidate.ifExists)) ||
     (candidate.ifExists === "merge" && candidate.format !== "dotenv") ||
     !isConfigValue(candidate.value) ||
     (candidate.renderedContent !== undefined &&
       (candidate.format !== "jsonc" || typeof candidate.renderedContent !== "string")) ||
-    (candidate.ifExists !== "inject" && ["zsh", "bash"].includes(String(candidate.format)) &&
+    (candidate.ifExists !== "inject" && ["zsh", "bash", "sh"].includes(String(candidate.format)) &&
       typeof candidate.value !== "string") ||
     (candidate.mode !== undefined &&
       (typeof candidate.mode !== "number" ||
@@ -106,4 +110,9 @@ function validateSystemdService(candidate: Record<string, unknown>): void {
   ) {
     throw new Error("Invalid systemd service resource");
   }
+}
+
+/** Mise activation metadata is valid only for a TOML string map. */
+function validateMiseSelectors(candidate: Record<string, unknown>): void {
+  if (candidate.miseSelectors !== undefined && (candidate.format !== "toml" || !isStringRecord(candidate.miseSelectors))) throw new Error("Invalid mise activation selectors");
 }

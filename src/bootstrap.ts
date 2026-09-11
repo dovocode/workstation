@@ -19,7 +19,7 @@ export async function ensurePrerequisites(
   const managers = new Set(config.resources.flatMap((resource) =>
     resource.kind === "package" ? [resource.manager] : []));
   const taskCommand = taskName === undefined ? undefined : selectedTaskCommand(config, taskName);
-  const needsBrew = managers.has("brew") || managers.has("brew-cask");
+  const needsBrew = managers.has("brew") || managers.has("brew-cask") || config.resources.some(resource => resource.kind === "provision" && resource.operation.type === "brew-tap");
   const needsNpm = config.resources.some((resource) => npmDistTagSpec(resource) !== undefined);
   const needsNode = needsNpm || taskCommand === "node" || taskCommand === "npm" || taskCommand === "npx" || taskCommand === "pnpm";
   const needsPnpm = taskCommand === "pnpm";

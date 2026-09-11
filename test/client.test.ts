@@ -1,8 +1,11 @@
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { createWorkstation, files, type Context } from "../src/index.js";
+import { ensurePrerequisites } from "../src/bootstrap.js";
+
+vi.mock("../src/bootstrap.js", () => ({ ensurePrerequisites: vi.fn() }));
 
 it("supports inline config through the public entry point with isolated plan, build and status", async () => {
   const root = await mkdtemp(join(tmpdir(), "workstation-client-"));
@@ -33,4 +36,22 @@ it("loads a project's file and returns task results without exiting the host", a
     return { exitCode: 7, stdout: "result", stderr: "failure" };
   } } });
   expect(await client.task("test", ["$(untouched)"])).toEqual({ exitCode: 7, stdout: "result", stderr: "failure" });
+});
+
+it.each(["build", "upgrade"] as const)("prepares prerequisites before embedded %s reconciliation", async (command) => {
+  const root = await mkdtemp(join(tmpdir(), "workstation-client-prerequisites-"));
+  const context: Context = { home: root, configDir: root, machine: "test", hostname: "test", platform: "linux" };
+  const target = join(root, "settings.json");
+  const client = createWorkstation({ configPath: join(root, "config.ts"), context,
+    config: { resources: [files.json(target, { ready: true })] },
+    runner: { async run() { throw new Error("Unexpected process"); } },
+  });
+  vi.mocked(ensurePrerequisites).mockImplementationOnce(async () => {
+    await expect(readFile(target)).rejects.toMatchObject({ code: "ENOENT" });
+    throw new Error("prerequisite unavailable");
+  });
+  await expect(client[command]()).rejects.toThrow("prerequisite unavailable");
+  await expect(readFile(target)).rejects.toMatchObject({ code: "ENOENT" });
+  await client[command]();
+  expect(JSON.parse(await readFile(target, "utf8"))).toEqual({ ready: true });
 });

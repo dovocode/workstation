@@ -9,6 +9,7 @@ export function indexResources(resources: readonly ResolvedResource[]): Map<stri
 /** Stable ownership key. File-like resources share their destination as an identity. */
 export function resourceId(resource: ResolvedResource): string {
   switch (resource.kind) {
+    case "provision": return resource.operation.type === "copy-file" ? `file:${resource.operation.target}` : `provision:${resource.name}`;
     case "package":
       if (resource.manager === "flatpak") return `package:flatpak:${resource.flatpak?.scope ?? "user"}:${resource.name}:${resource.flatpak?.branch ?? "stable"}`;
       return `package:${resource.manager}:${resource.name}`;

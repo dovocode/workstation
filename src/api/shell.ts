@@ -1,7 +1,7 @@
 import type { GeneratedFileResource, IfExistsPolicy } from "./types.js";
 
 /** Supported shell rendering targets. */
-export type Shell = "zsh" | "bash";
+export type Shell = "zsh" | "bash" | "sh";
 
 /** A value expanded when the generated shell file runs, rather than during configuration loading. */
 export type ShellExpression =
@@ -34,6 +34,7 @@ export type ShellStatement =
   | { readonly kind: "export"; readonly name: string; readonly value: ShellValue }
   | { readonly kind: "assign"; readonly name: string; readonly value: ShellValue }
   | { readonly kind: "unset"; readonly names: readonly string[] }
+  | { readonly kind: "keep-path-first"; readonly values: readonly ShellValue[] }
   | { readonly kind: "prepend-path"; readonly values: readonly ShellValue[] }
   | { readonly kind: "alias"; readonly name: string; readonly command: string }
   | { readonly kind: "eval"; readonly command: ShellCommand }
@@ -106,6 +107,8 @@ export const shell = {
   prependPath(...values: readonly ShellValue[]): ShellStatement {
     return { kind: "prepend-path", values };
   },
+  /** Keep wrapper paths first after interactive environment hooks without duplicating hooks. */
+  keepPathFirst(...values: readonly ShellValue[]): ShellStatement { return { kind: "keep-path-first", values }; },
   /** Define an alias; its command text is interpreted when the alias runs. */
   alias(name: string, command: string): ShellStatement {
     if (!/^[A-Za-z0-9_.-]+$/.test(name)) throw new Error(`Invalid shell alias: ${name}`);
@@ -206,9 +209,9 @@ export const bash = {
   /** Generate ~/.bash_profile for Bash login shells; source ~/.bashrc explicitly if desired. */
   bashProfile: (statements: readonly ShellStatement[], options?: ShellFileOptions) =>
     shellFile("bash", "~/.bash_profile", statements, options),
-  /** Generate ~/.profile using Bash syntax; use only where Bash will read it. */
+  /** Generate a POSIX ~/.profile, also safe for sh and display-manager startup. */
   profile: (statements: readonly ShellStatement[], options?: ShellFileOptions) =>
-    shellFile("bash", "~/.profile", statements, options),
+    shellFile("sh", "~/.profile", statements, options),
 };
 
 /** Render statements to shell text without writing a file or running a command. */
@@ -244,15 +247,16 @@ function renderStatement(statement: ShellStatement, target: Shell, depth: number
     case "unset":
       return `${indent}unset ${statement.names.join(" ")}`;
     case "prepend-path":
-      return `${indent}export PATH=${[...statement.values.map(renderValue), '"$PATH"'].join(":")}`;
+      return renderPrependPath(statement.values).split("\n").map(line => indent + line).join("\n");
+    case "keep-path-first": return renderPathHook(statement.values, target);
     case "alias":
       return `${indent}alias ${statement.name}=${quote(statement.command)}`;
     case "eval":
-      return `${indent}eval "${escapeDouble(`$(${renderCommand(statement.command)})`)}"`;
+      return `${indent}eval "$(${renderCommand(statement.command)})"`;
     case "source": {
-      const source = `source ${renderValue(statement.path)}`;
+      const source = `${target === "sh" ? "." : "source"} ${renderValue(statement.path)}`;
       return statement.ifExists
-        ? `${indent}if [[ -r ${renderValue(statement.path)} ]]; then ${source}; fi`
+        ? `${indent}if [ -r ${renderValue(statement.path)} ]; then ${source}; fi`
         : `${indent}${source}`;
     }
     case "if":
@@ -275,21 +279,21 @@ function renderCondition(condition: ShellCondition): string {
     case "command-exists":
       return `command -v ${quote(condition.command)} >/dev/null 2>&1`;
     case "executable":
-      return `[[ -x ${renderValue(condition.path)} ]]`;
+      return `[ -x ${renderValue(condition.path)} ]`;
     case "file":
-      return `[[ -f ${renderValue(condition.path)} ]]`;
+      return `[ -f ${renderValue(condition.path)} ]`;
     case "directory":
-      return `[[ -d ${renderValue(condition.path)} ]]`;
+      return `[ -d ${renderValue(condition.path)} ]`;
     case "empty":
-      return `[[ -z ${renderValue(condition.value)} ]]`;
+      return `[ -z ${renderValue(condition.value)} ]`;
     case "non-empty":
-      return `[[ -n ${renderValue(condition.value)} ]]`;
+      return `[ -n ${renderValue(condition.value)} ]`;
     case "and":
-      return condition.conditions.map(renderCondition).join(" && ");
+      return condition.conditions.map(c => `( ${renderCondition(c)} )`).join(" && ");
     case "or":
-      return condition.conditions.map(renderCondition).join(" || ");
+      return condition.conditions.map(c => `( ${renderCondition(c)} )`).join(" || ");
     case "not":
-      return `! ${renderCondition(condition.condition)}`;
+      return `! ( ${renderCondition(condition.condition)} )`;
   }
 }
 
@@ -328,11 +332,56 @@ function quote(value: string): string {
 
 /** Escape backslashes and double quotes inside a shell expression. */
 function escapeDouble(value: string): string {
-  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("$", "\\$").replaceAll("`", "\\`");
 }
 
 /** Reject names that are not valid shell variable identifiers. */
 function validateVariable(name: string): string {
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) throw new Error(`Invalid shell variable: ${name}`);
   return name;
+}
+
+/** Prepend each requested path once, preserving the order of all other nonempty entries. */
+function renderPrependPath(values: readonly ShellValue[]): string {
+  if (!values.length) return ":";
+  return `for _ws_prepend in ${[...values].reverse().map(renderValue).join(" ")}; do
+  _ws_rest="$PATH"
+  _ws_path="$_ws_prepend"
+  while :; do
+    _ws_entry="\${_ws_rest%%:*}"
+    if [ -n "$_ws_entry" ] && [ "$_ws_entry" != "$_ws_prepend" ]; then
+      _ws_path="$_ws_path:$_ws_entry"
+    fi
+    case "$_ws_rest" in
+      (*:*) _ws_rest="\${_ws_rest#*:}" ;;
+      (*) break ;;
+    esac
+  done
+  PATH="$_ws_path"
+done
+export PATH
+unset _ws_prepend _ws_rest _ws_path _ws_entry`;
+}
+/** Register a single interactive PATH correction hook in the target shell. */
+
+function renderPathHook(values: readonly ShellValue[], target: Shell): string {
+  if (target === "sh") throw new Error("Interactive PATH hooks require Bash or Zsh");
+  const body = `_workstation_local_bin_first() {
+${renderPrependPath(values)}
+}
+`;
+  if (target === "zsh") return body + `autoload -Uz add-zsh-hook
+add-zsh-hook -d precmd _workstation_local_bin_first
+add-zsh-hook -d chpwd _workstation_local_bin_first
+add-zsh-hook precmd _workstation_local_bin_first
+add-zsh-hook chpwd _workstation_local_bin_first
+_workstation_local_bin_first`;
+  return body + `if [[ " \${PROMPT_COMMAND[*]-} " != *"_workstation_local_bin_first"* ]]; then
+  if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" == "declare -a "* ]]; then
+    PROMPT_COMMAND+=(_workstation_local_bin_first)
+  else
+    PROMPT_COMMAND="\${PROMPT_COMMAND:+\${PROMPT_COMMAND}; }_workstation_local_bin_first"
+  fi
+fi
+_workstation_local_bin_first`;
 }

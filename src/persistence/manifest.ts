@@ -1,3 +1,4 @@
+import { isProvisionResource } from "../config/provision.js";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isConfigValue } from "../config/value-validation.js";
 import { resolveAfterApply } from "../config/hooks.js";
@@ -37,7 +38,7 @@ export async function writeManifest(path: string, config: ResolvedConfig): Promi
       home: config.context.home,
       config_dir: config.context.configDir,
     },
-    resources: config.resources.map(toTomlResource),
+    resources: config.resources.map(resource => ({ ...toTomlResource(resource), ...(resource.dependsOn ? { depends_on: [...resource.dependsOn] } : {}) })),
     ...(config.afterApply?.length ? { after_apply: config.afterApply.map((command) => ({ ...command })) } : {}),
   };
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
@@ -56,7 +57,7 @@ export async function readManifest(path: string): Promise<ResolvedConfig> {
   const context = parseContext(requireTable(document.context, "context"));
   if (!Array.isArray(document.resources)) throw new Error("Manifest resources must be an array");
   const resources = document.resources.map((resource, index) =>
-    parseResource(requireTable(resource, `resources[${index}]`)),
+    parseResourceWithDependencies(requireTable(resource, `resources[${index}]`)),
   );
   const afterApply = resolveAfterApply(document.after_apply, context);
   return { context, resources, stateFile, ...(afterApply.length ? { afterApply } : {}) };
@@ -65,6 +66,7 @@ export async function readManifest(path: string): Promise<ResolvedConfig> {
 /** Encode a resolved resource using the manifest's field names and JSON value payload. */
 function toTomlResource(resource: ResolvedResource): TomlTableWithoutBigInt {
   switch (resource.kind) {
+    case "provision": return { kind: resource.kind, provision_json: JSON.stringify(resource) };
     case "package":
       return encodePackage(resource);
     case "symlink":
@@ -98,6 +100,11 @@ function parseContext(value: TomlTableWithoutBigInt): Context {
 /** Dispatch manifest decoding by resource kind and reject unknown kinds. */
 function parseResource(value: TomlTableWithoutBigInt): ResolvedResource {
   const kind = requireString(value.kind, "resource.kind");
+  if (kind === "provision") {
+    const resource: unknown = JSON.parse(requireString(value.provision_json, "provision_json"));
+    if (!isProvisionResource(resource)) throw new Error("Invalid provision manifest");
+    return resource;
+  }
   if (kind === "package") return parsePackage(value);
   if (kind === "symlink") return parseSymlink(value);
   if (kind === "launch-agent") return parseLaunchAgent(value);
@@ -133,6 +140,7 @@ function parseGeneratedFile(value: TomlTableWithoutBigInt): GeneratedFileResourc
     format,
     ifExists: ifExists as GeneratedFileResource["ifExists"],
     value: configValue,
+    ...(value.mise_selectors !== undefined ? { miseSelectors: requireStringTable(value.mise_selectors, "mise_selectors") } : {}),
     ...(value.rendered_content !== undefined
       ? { renderedContent: requireString(value.rendered_content, "generated-file.rendered_content") }
       : {}),
@@ -348,6 +356,7 @@ function encodeGeneratedFile(resource: Extract<ResolvedResource, { kind: "genera
     format: resource.format,
     if_exists: resource.ifExists,
     value_json: JSON.stringify(resource.value),
+    ...(resource.miseSelectors ? { mise_selectors: { ...resource.miseSelectors } } : {}),
     ...(resource.renderedContent !== undefined ? { rendered_content: resource.renderedContent } : {}),
     ...(resource.mode !== undefined ? { mode: resource.mode } : {}),
   };
@@ -389,7 +398,7 @@ function encodeCustomTool(resource: Extract<ResolvedResource, { kind: "custom-to
 
 /** Narrow serialized format identifiers without accepting unknown renderers. */
 function isGeneratedFormat(format: string): format is GeneratedFileResource["format"] {
-  return ["toml", "yaml", "json", "jsonc", "zsh", "bash", "dotenv"].includes(format);
+  return ["toml", "yaml", "json", "jsonc", "zsh", "bash", "sh", "dotenv"].includes(format);
 }
 
 /** Decode optional cask upgrade flags while preserving false values. */
@@ -408,4 +417,10 @@ function parseUpgrade(upgrade: TomlTableWithoutBigInt | undefined): Pick<Resolve
       }
       : {}),
   };
+}
+/** Restore validated dependency IDs alongside the backend payload. */
+
+function parseResourceWithDependencies(value: TomlTableWithoutBigInt): ResolvedResource {
+  const resource = parseResource(value);
+  return value.depends_on === undefined ? resource : { ...resource, dependsOn: requireStringArray(value.depends_on, "depends_on") };
 }
