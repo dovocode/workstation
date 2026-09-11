@@ -8,7 +8,7 @@ import { installGeneratedFile } from "../src/resources/generated-file.js";
 
 it.each(["sh", "bash", "zsh"] as const)("deduplicates paths with literal metacharacters when repeatedly sourced by %s", target => {
   const content = renderShell([shell.prependPath('/tmp/a b$`literal`', "/bin")], target);
-  const result = execFileSync(`/bin/${target}`, ["-f", "-c", `${content}\n${content}\nprintf '%s' "$PATH"`], { env: { PATH: "/usr/bin:/bin:/usr/bin" }, encoding: "utf8" });
+  const result = execFileSync(`/bin/${target}`, ["-f", "-c", `PATH=/usr/bin:/bin:/usr/bin\n${content}\n${content}\nprintf '%s' "$PATH"`], { env: { PATH: "/usr/bin:/bin:/usr/bin" }, encoding: "utf8" });
   expect(result).toBe('/tmp/a b$`literal`:/bin:/usr/bin:/usr/bin');
 });
 it("renders profile sources and conditions using POSIX syntax", () => {
