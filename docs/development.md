@@ -77,7 +77,7 @@ and styling live under `website/`; `typedoc.json` controls the generated API.
 
 `node scripts/finalize-docs.mjs` adds redirects from the previously published
 TypeDoc guide/API URLs and verifies the search index and static output. Maintain
-`website/legacy-routes.json` when changing a previously published guide path.
+`website/legacy-routes.json` when changing a previously published guide or API path.
 Docusaurus treats broken internal links as build errors.
 
 With Git push access to `dovocode/workstation`, publish reviewed documentation:
