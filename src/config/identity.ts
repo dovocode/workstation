@@ -26,9 +26,12 @@ export function resourceId(resource: ResolvedResource): string {
   }
 }
 
-/** SHA-256 of a declaration with object keys ordered consistently. Array order remains meaningful. */
+/** SHA-256 of installed-content declarations, excluding package ownership. Keys are ordered; array order is meaningful. */
 export function fingerprint(resource: ResolvedResource): string {
-  return createHash("sha256").update(stableJson(resource)).digest("hex");
+  const declaration = { ...resource };
+  // Ownership changes must not refresh package pins or imply installed-content drift.
+  if (declaration.kind === "package") delete declaration.ownership;
+  return createHash("sha256").update(stableJson(declaration)).digest("hex");
 }
 
 /** Serialize values deterministically by sorting object keys while preserving array order. */

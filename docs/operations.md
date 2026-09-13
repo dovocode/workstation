@@ -64,7 +64,9 @@ execution. See the [upgrade workflow](workflows.md#upgrade-packages-or-refresh-o
 
 ## Adoption and removal
 
-Matching pre-existing resources are adopted. They are forgotten, not uninstalled,
+Matching pre-existing resources are adopted by default. Package declarations can
+[explicitly claim ownership](resources.md#claiming-existing-packages) using
+`packageOwnership` or per-package `ownership: "own"`. Unclaimed adopted resources are forgotten, not uninstalled,
 when removed from the configuration. Owned resources are removed when no longer
 declared. Files overwritten by Workstation retain an original backup which is
 restored on removal. Generated-file mode and content changes are compared.
@@ -155,7 +157,7 @@ Workstation does not rewrite your mise configuration automatically.
 | No configuration found | Run from the entry directory or pass `--config` |
 | Package manager not found | Install it and make it available on PATH |
 | Locked Homebrew version unavailable | Keep the installed pin or deliberately refresh its lock entry |
-| Cannot update adopted resource | The existing resource is not owned; explicitly migrate it before retrying |
+| Cannot update adopted resource | For packages, set `packageOwnership` or `ownership: "own"` and rerun; other resources require an explicit migration |
 | Changed symlink during removal, service, or custom tool | Inspect the external modification before restoring or moving the conflicting resource |
 | State belongs to another machine | Use the original machine selector or a distinct state path |
 | Another run holds state.json.lock | Wait for that process; after a crash, confirm it stopped before removing the exact guard directory |

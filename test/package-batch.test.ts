@@ -3,6 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { CommandResult, PackageManager, ResolvedConfig, ResolvedPackageResource, Runner, RunOptions } from "../src/api/types.js";
+import { createPlan } from "../src/reconciliation/plan.js";
+import { recoverJournal } from "../src/persistence/journal.js";
 import { applyPlan } from "../src/reconciliation/apply.js";
 import { readState, writeState } from "../src/persistence/state.js";
 import { fingerprint, resourceId } from "../src/config/identity.js";
@@ -96,6 +98,35 @@ async function fixture(manager: PackageManager) {
 }
 
 describe.each(managers)("%s native batches", (manager) => {
+  it.each([false, true])("claims matching packages without mutation (previously adopted: %s)", async (tracked) => {
+    const f = await fixture(manager);
+    for (const resource of f.resources) f.installed.set(resource.name, f.version);
+    if (tracked) await applyPlan(f.config, f.runner);
+    const owned = { ...f.config, resources: f.resources.map(resource => ({ ...resource, ownership: "own" as const })) };
+    const before = await readState(f.config.stateFile, "test");
+    expect((await createPlan(owned, f.runner)).map(action => action.reason)).toEqual(["take package ownership", "take package ownership"]);
+    expect(await readState(f.config.stateFile, "test")).toEqual(before);
+    await applyPlan(owned, f.runner);
+    expect(f.mutations).toEqual([]);
+    expect(Object.values((await readState(f.config.stateFile, "test")).resources).every(entry => entry.owned)).toBe(true);
+    expect(await applyPlan(owned, f.runner)).toEqual([]);
+    // Removing the opt-in does not silently relinquish recorded ownership.
+    expect(await applyPlan(f.config, f.runner)).toEqual([]);
+    await applyPlan({ ...f.config, resources: [] }, f.runner);
+    expect(f.installed.size).toBe(0);
+  });
+
+  it.each([false, true])("claims packages while upgrading (previously adopted: %s)", async (tracked) => {
+    const f = await fixture(manager);
+    for (const resource of f.resources) f.installed.set(resource.name, f.oldVersion);
+    if (tracked) await applyPlan({ ...f.config, resources: f.resources.map(resource => ({ ...resource, ...(manager === "mas" ? {} : { lockedVersion: f.oldVersion }) })) }, f.runner);
+    const owned = { ...f.config, resources: f.resources.map(resource => ({ ...resource, ownership: "own" as const })) };
+    await applyPlan(owned, f.runner);
+    expect([...f.installed.values()]).toEqual([f.version, f.version]);
+    expect(Object.values((await readState(f.config.stateFile, "test")).resources).every(entry => entry.owned)).toBe(true);
+    expect(await applyPlan(owned, f.runner)).toEqual([]);
+  });
+
   it("installs and removes multiple targets with per-package ownership and idempotence", async () => {
     const f = await fixture(manager);
     await applyPlan(f.config, f.runner);
@@ -122,6 +153,30 @@ describe.each(managers)("%s native batches", (manager) => {
 });
 
 describe("batch safety", () => {
+  it("still rejects changed adopted Homebrew pins without an ownership opt-in", async () => {
+    const f = await fixture("brew");
+    for (const resource of f.resources) f.installed.set(resource.name, f.oldVersion);
+    await applyPlan({ ...f.config, resources: f.resources.map(resource => ({ ...resource, lockedVersion: f.oldVersion })) }, f.runner);
+    await expect(applyPlan(f.config, f.runner)).rejects.toThrow("Cannot update adopted resource package:brew:alpha");
+    expect(f.mutations).toEqual([]);
+    expect(Object.values((await readState(f.config.stateFile, "test")).resources).every(entry => !entry.owned)).toBe(true);
+  });
+
+  it("recovers explicit ownership after an interrupted upgrade", async () => {
+    const f = await fixture("brew");
+    for (const resource of f.resources) f.installed.set(resource.name, f.oldVersion);
+    await applyPlan({ ...f.config, resources: f.resources.map(resource => ({ ...resource, lockedVersion: f.oldVersion })) }, f.runner);
+    const owned = { ...f.config, resources: f.resources.map(resource => ({ ...resource, ownership: "own" as const })) };
+    f.fail(true);
+    await expect(applyPlan(owned, f.runner)).rejects.toThrow("transaction failed");
+    expect((await readState(f.config.stateFile, "test")).resources["package:brew:alpha"]?.owned).toBe(true);
+    // Model a native transaction finishing after the process lost its checkpoint.
+    for (const resource of f.resources) f.installed.set(resource.name, f.version);
+    await recoverJournal(owned, f.runner);
+    expect(Object.values((await readState(f.config.stateFile, "test")).resources).every(entry => entry.owned)).toBe(true);
+    expect(await applyPlan(owned, f.runner)).toEqual([]);
+  });
+
   it("upgrades adopted APT packages after refreshing pins without taking removal ownership", async () => {
     const f = await fixture("apt");
     for (const resource of f.resources) f.installed.set(resource.name, f.oldVersion);

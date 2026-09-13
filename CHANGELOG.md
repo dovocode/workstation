@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.6.3 — 2026-09-13
+
+- Add `packageOwnership` defaults by manager and per-package `ownership` overrides to explicitly claim existing packages across machines. Claim matching installations without reinstalling or refreshing pins, allow adopted package upgrades, and preserve ownership through interrupted runs.
+
 - Move the documentation website to Docusaurus with an ordered learning path, local search, complete developer-workstation walkthrough, conceptual guidance, focused resource recipes, and redirects for existing links.
 
 - Publish the searchable handbook and API reference on GitHub Pages with guide navigation, responsive styling, and light/dark themes.

@@ -11,7 +11,7 @@ import { createJiti } from "jiti/static";
 import { resolveTasks } from "./tasks.js";
 import { resolveAfterApply } from "./hooks.js";
 import { detectLinuxManager } from "./system-manager.js";
-import { isPackageName } from "./package-options.js";
+import { isPackageName, isPackageOwnership } from "./package-options.js";
 import type {
   ConfigDefinition,
   ConfigInput,
@@ -168,6 +168,14 @@ function validateDefinition(value: unknown): asserts value is ConfigDefinition {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("Configuration must resolve to an object");
   }
+  if ("packageOwnership" in value && value.packageOwnership !== undefined) {
+    const policies = value.packageOwnership;
+    if (typeof policies !== "object" || policies === null || Array.isArray(policies) ||
+      !Object.entries(policies).every(([manager, policy]) =>
+        ["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas"].includes(manager) && isPackageOwnership(policy))) {
+      throw new Error("Invalid packageOwnership: expected package managers mapped to adopt or own");
+    }
+  }
 }
 
 /** Evaluate and flatten configuration fragments in declaration order. */
@@ -189,6 +197,7 @@ function mergeDefinitions(definitions: readonly ConfigDefinition[]): ConfigDefin
     (merged, fragment) => ({
       ...(fragment.id !== undefined ? { id: fragment.id } : merged.id !== undefined ? { id: merged.id } : {}),
       managers: { ...merged.managers, ...fragment.managers },
+      packageOwnership: { ...merged.packageOwnership, ...fragment.packageOwnership },
       tasks: { ...merged.tasks, ...fragment.tasks },
       aliases: { ...merged.aliases, ...fragment.aliases },
       ...(fragment.stateFile !== undefined
@@ -205,6 +214,8 @@ function mergeDefinitions(definitions: readonly ConfigDefinition[]): ConfigDefin
 async function resolvePackage(resource: Extract<Resource, { kind: "package" }>, definition: ConfigDefinition, context: Context): Promise<ResolvedResource> {
   const manager = await resolveManager(resource.manager, definition, context);
   validatePackageCompatibility(resource, manager, context);
+  const ownership = resource.ownership ?? definition.packageOwnership?.[manager];
+  resource = { ...resource, ...(ownership !== undefined ? { ownership } : {}) };
   if (manager === "mise") {
     return { ...resource, manager, version: resource.version ?? "latest" };
   }

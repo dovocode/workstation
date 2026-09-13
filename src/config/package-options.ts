@@ -1,4 +1,4 @@
-import type { FlatpakOptions } from "../api/types.js";
+import type { FlatpakOptions, PackageOwnership } from "../api/types.js";
 
 /** Validate Flatpak installation options at configuration, manifest and state boundaries. */
 export function isFlatpakOptions(value: unknown): value is FlatpakOptions {
@@ -17,4 +17,9 @@ export function isPackageName(manager: unknown, name: unknown): name is string {
   if (manager === "flatpak") return /^[A-Za-z_][A-Za-z0-9_-]*(?:\.[A-Za-z_][A-Za-z0-9_-]*){2,}$/.test(name);
   if (manager === "pacman") return /^[A-Za-z0-9@_+][A-Za-z0-9@._+-]*$/.test(name);
   return true;
+}
+
+/** Validate explicit ownership policies without coercion. */
+export function isPackageOwnership(value: unknown): value is PackageOwnership {
+  return value === "adopt" || value === "own";
 }

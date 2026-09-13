@@ -5,7 +5,7 @@ import { resolveAfterApply } from "../config/hooks.js";
 import { dirname, resolve } from "node:path";
 import { parse, stringify, type TomlTableWithoutBigInt } from "smol-toml";
 import { requireTable, requireString } from "./validation.js";
-import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
+import { isFlatpakOptions, isPackageName, isPackageOwnership } from "../config/package-options.js";
 import type {
   Context,
   CustomToolResource,
@@ -222,6 +222,7 @@ function parsePackage(value: TomlTableWithoutBigInt): ResolvedPackageResource {
     kind: "package",
     manager,
     name: requireString(value.name, "package.name"),
+    ...parsePackageOwnership(value.ownership),
     ...(isFlatpakOptions(value.flatpak) ? { flatpak: value.flatpak } : {}),
     ...(value.version !== undefined
       ? { version: requireString(value.version, "package.version") }
@@ -231,6 +232,13 @@ function parsePackage(value: TomlTableWithoutBigInt): ResolvedPackageResource {
       : {}),
     ...parseUpgrade(upgrade),
   };
+}
+
+/** Decode the optional package ownership policy without accepting invalid values. */
+function parsePackageOwnership(value: unknown): Pick<PackageResource, "ownership"> {
+  if (value === undefined) return {};
+  if (!isPackageOwnership(value)) throw new Error("Invalid package ownership");
+  return { ownership: value };
 }
 
 /** Decode a symlink's resolved source and destination. */
@@ -306,6 +314,7 @@ function encodePackage(resource: Extract<ResolvedResource, { kind: "package" }>)
     kind: resource.kind,
     manager: resource.manager,
     name: resource.name,
+    ...(resource.ownership !== undefined ? { ownership: resource.ownership } : {}),
     ...(resource.version ? { version: resource.version } : {}),
     ...(resource.lockedVersion ? { locked_version: resource.lockedVersion } : {}),
     ...(resource.flatpak ? {

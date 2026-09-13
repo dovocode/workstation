@@ -19,7 +19,7 @@ describe("resolved TOML manifest", () => {
       },
       stateFile: join(root, "state.json"),
       resources: [
-        { kind: "package", manager: "pacman", name: "jq", lockedVersion: "1.8.1-2" },
+        { kind: "package", manager: "pacman", name: "jq", ownership: "adopt", lockedVersion: "1.8.1-2" },
         { kind: "package", manager: "mas", name: "497799835" },
         { kind: "package", manager: "flatpak", name: "org.example.App", lockedVersion: "a".repeat(64), flatpak: { scope: "system", remote: "testing", branch: "beta" } },
         { kind: "package", manager: "dnf", name: "jq", lockedVersion: "0:1.7-2.fc42.x86_64" },
@@ -28,6 +28,7 @@ describe("resolved TOML manifest", () => {
           kind: "package",
           manager: "brew-cask",
           name: "ghostty",
+          ownership: "own",
           lockedVersion: "1.2.3",
           upgrade: { greedy: true, force: true },
         },

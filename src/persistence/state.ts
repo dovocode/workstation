@@ -3,7 +3,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { isConfigValue, isStringRecord, isCommandSpec, isBrewCaskUpgradeOptions } from "../config/value-validation.js";
 import { dirname } from "node:path";
 import { fingerprint, resourceId } from "../config/identity.js";
-import { isFlatpakOptions, isPackageName } from "../config/package-options.js";
+import { isFlatpakOptions, isPackageName, isPackageOwnership } from "../config/package-options.js";
 import type { ResolvedResource, StateEntry, WorkstationState } from "../api/types.js";
 
 /** Load validated ownership state; return empty state for a missing file and reject machine mismatches. */
@@ -110,6 +110,7 @@ function isStoredPackage(candidate: Record<string, unknown>): boolean {
   return (
     ["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas"].includes(String(candidate.manager)) &&
     isPackageName(candidate.manager, candidate.name) &&
+    (candidate.ownership === undefined || isPackageOwnership(candidate.ownership)) &&
     (candidate.flatpak === undefined || (candidate.manager === "flatpak" && isFlatpakOptions(candidate.flatpak))) &&
     (candidate.manager !== "mas" || candidate.lockedVersion === undefined) &&
     (candidate.version === undefined || typeof candidate.version === "string") &&

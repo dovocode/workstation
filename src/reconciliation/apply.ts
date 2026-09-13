@@ -228,7 +228,7 @@ function entry(
   return {
     id: action.id,
     fingerprint: fingerprint(action.resource),
-    owned,
+    owned: owned || (action.resource.kind === "package" && action.resource.ownership === "own"),
     resource: action.resource,
     ...(installedVersion ? { installedVersion } : {}),
     ...(originalFile ? { originalFile } : {}),

@@ -1,6 +1,6 @@
 {
   "name": "@dovocode/workstation",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A stateful, programmable workstation configuration reconciler",
   "type": "module",
   "bin": {

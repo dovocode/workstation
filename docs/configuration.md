@@ -66,7 +66,9 @@ export default defineConfig([
 
 You can also use `machines: { studio: [...] }` inside a fragment. Shared
 resources come before that fragment's machine resources. Later manager and
-`stateFile` settings override earlier settings.
+`stateFile` settings override earlier settings. `packageOwnership` defaults merge by
+concrete manager; per-package `ownership` overrides the merged default. See
+[claiming existing packages](resources.md#claiming-existing-packages).
 
 ```ts
 import { defineConfig, tools } from "@dovocode/workstation";

@@ -1,7 +1,7 @@
 import { isProvisionResource } from "./provision.js";
 import type { Resource } from "../api/types.js";
 import { isConfigValue, isStringRecord, isCommandSpec, isBrewCaskUpgradeOptions } from "./value-validation.js";
-import { isFlatpakOptions, isPackageName } from "./package-options.js";
+import { isFlatpakOptions, isPackageName, isPackageOwnership } from "./package-options.js";
 
 /** Validate a resource declaration before resolving paths or running backends. */
 export function validateResource(value: unknown): asserts value is Resource {
@@ -28,6 +28,7 @@ function validatePackage(candidate: Record<string, unknown>): void {
   if (
     !["mise", "brew", "brew-cask", "apt", "dnf", "yum", "pacman", "flatpak", "mas", "system"].includes(String(candidate.manager)) ||
     !isPackageName(candidate.manager, candidate.name) ||
+    (candidate.ownership !== undefined && !isPackageOwnership(candidate.ownership)) ||
     (candidate.flatpak !== undefined &&
       (!["flatpak", "system"].includes(String(candidate.manager)) || !isFlatpakOptions(candidate.flatpak))) ||
     (candidate.version !== undefined && typeof candidate.version !== "string") ||

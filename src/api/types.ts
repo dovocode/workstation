@@ -35,7 +35,12 @@ export interface ResourceDependencies {
   readonly dependsOn?: readonly string[];
 }
 
+/** Whether pre-existing packages remain adopted or become removable by Workstation. */
+export type PackageOwnership = "adopt" | "own";
+
 export interface PackageResource extends ResourceDependencies {
+  /** Override the manager default. Owning permits later removal; adopt does not relinquish existing ownership. */
+  readonly ownership?: PackageOwnership;
   readonly kind: "package";
   readonly manager: PackageManager;
   readonly name: string;
@@ -140,6 +145,8 @@ export type ResourceInput = Resource | readonly ResourceInput[] | false | null |
 
 /** A composable configuration fragment. Prefer the exported helpers to constructing resources manually. */
 export interface ConfigDefinition {
+  /** Ownership defaults by resolved package manager. Omitted managers adopt existing packages. */
+  readonly packageOwnership?: Partial<Record<Exclude<PackageManager, "system">, PackageOwnership>>;
   /** Commands run sequentially after successful build/upgrade, including no-change runs. Fragments append in order. */
   readonly afterApply?: readonly TaskDefinition[];
   /** Named commands executed explicitly with workstation <task>. */

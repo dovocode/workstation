@@ -46,6 +46,40 @@ Compatible packages automatically install, upgrade, and uninstall in native
 batches, with per-package verification and ownership tracking. No extra helper
 or flag is required; see [batch behavior and recovery](operations.md#native-package-batches).
 
+### Claiming existing packages
+
+By default, Workstation adopts pre-existing packages without permission to remove
+them. To manage existing Homebrew formulae and casks on every configured machine:
+
+```ts
+import { defineConfig, tools } from "@dovocode/workstation";
+
+export default defineConfig({
+  packageOwnership: { brew: "own", "brew-cask": "own" },
+  resources: [
+    tools.brew(["fzf", "ripgrep"]),
+    tools.brewCask(["ghostty"]),
+    { kind: "package", manager: "brew", name: "git", ownership: "adopt" },
+  ],
+});
+```
+
+Run `workstation plan` to preview, then `workstation build` to record ownership.
+`"own"` claims both previously adopted packages and existing installations discovered
+on a first run. Matching packages require no reinstall; packages needing an update
+can be claimed and upgraded together. Only declared packages are claimed, not every
+Homebrew dependency or unrelated installation. Ownership-only changes retain lock pins.
+
+`packageOwnership` accepts any concrete package manager. Defaults merge by manager
+across fragments; later values win and apply to all resolved declarations.
+`tools.system` uses the policy of its resolved manager. A package's `ownership`
+overrides that default; omitted managers use `"adopt"`.
+
+Claimed packages can be uninstalled when removed from the configuration. Switching
+the policy to `"adopt"` or removing it does not relinquish ownership already recorded.
+Packages installed by Workstation remain owned under either policy. Ownership is
+saved in each machine's private state and survives interrupted upgrades.
+
 ### Backend capabilities
 
 | Backend | Pin behavior | Bootstrap during build | Important limit |
@@ -123,7 +157,7 @@ A fresh first build can bootstrap mise/Homebrew, but not every optional backend.
 A pinned install does not automatically activate a runtime in your terminal.
 Pair mise declarations with [generated activation](shells.md).
 
-If an installed package is adopted, removal normally leaves it installed. Some
+Unless explicitly claimed with `ownership: "own"` or `packageOwnership`, an adopted package is retained on removal. Some
 backends permit adopted updates without taking removal ownership; others reject
 updates that require an explicit migration. Read the reported plan before changing
 ownership. [Operations](operations.md) explains pin availability and removal limits.

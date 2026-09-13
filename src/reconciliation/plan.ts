@@ -72,6 +72,9 @@ async function planDesired(id: string, resource: ResolvedResource, previous: Sta
   }
   if (resource.kind === "symlink" && !inspection.matches) await lstat(resource.source);
   if (!previous) return planUntracked(id, resource, inspection);
+  if (resource.kind === "package" && resource.ownership === "own" && !previous.owned && inspection.matches) {
+    return { type: "adopt", id, resource, previous, reason: "take package ownership" };
+  }
   if (previous.fingerprint !== fingerprint(resource)) return planChanged(id, resource, previous, inspection);
   if (inspection.matches) return;
   if (inspection.conflict && !canRepairManagedFile(resource, previous)) throw new Error(`Managed resource ${id} drifted: ${inspection.conflict}`);
@@ -87,7 +90,7 @@ function driftReason(inspection: Inspection, resource: ResolvedResource): string
 
 /** Choose adoption, creation, or an in-place upgrade for an untracked declaration. */
 function planUntracked(id: string, resource: ResolvedResource, inspection: Inspection): Action {
-  if (inspection.matches) return { type: "adopt", id, resource, reason: "already present" };
+  if (inspection.matches) return { type: "adopt", id, resource, reason: resource.kind === "package" && resource.ownership === "own" ? "take package ownership" : "already present" };
   if (inspection.conflict) throw new Error(`Cannot manage ${id}: ${inspection.conflict}`);
   if (inspection.present) return { type: "update", id, resource, reason: driftReason(inspection, resource) };
   return { type: "create", id, resource, reason: "not present" };
@@ -96,7 +99,7 @@ function planUntracked(id: string, resource: ResolvedResource, inspection: Inspe
 /** Reject unsafe ownership transitions before updating a changed declaration. */
 function planChanged(id: string, resource: ResolvedResource, previous: StateEntry, inspection: Inspection): Action {
   if (previous.originalFile && previous.resource.kind !== resource.kind) throw new Error(`Cannot change the resource kind for ${id} while it holds an original-file backup; remove it first to restore the original`);
-  if (!inspection.matches && !previous.owned && inspection.present && !canUpdateAdoptedInPlace(resource)) throw new Error(`Cannot update adopted resource ${id}; remove or take ownership manually`);
+  if (!inspection.matches && !previous.owned && inspection.present && !canUpdateAdoptedInPlace(resource) && !(resource.kind === "package" && resource.ownership === "own")) throw new Error(`Cannot update adopted resource ${id}; remove or take ownership manually`);
   return { type: "update", id, resource, previous, reason: "configuration changed" };
 }
 

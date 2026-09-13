@@ -65,6 +65,7 @@ export type {
   OriginalFile,
   PackageManager,
   PackageResource,
+  PackageOwnership,
   ResolvedConfig,
   ResolvedPackageResource,
   Resource,
