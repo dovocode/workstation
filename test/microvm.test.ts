@@ -66,7 +66,8 @@ else process.exit(99);
   return { dir, config, run, tasks };
 }
 
-it("checks without mutations, reconciles idempotently, resizes and retains disks", async () => {
+// Full lifecycle tests launch many real subprocesses; allow for slower shared CI runners.
+it("checks without mutations, reconciles idempotently, resizes and retains disks", { timeout: 30_000 }, async () => {
   const f = await fixture();
   expect((await f.run(f.tasks?.["dev:status"])).exitCode).toBe(1);
   await expect(access(join(f.dir, ".local"))).rejects.toThrow();
@@ -86,7 +87,7 @@ it("checks without mutations, reconciles idempotently, resizes and retains disks
   expect(exec.exitCode).toBe(23); expect(JSON.parse(exec.stdout)).toEqual(args);
 });
 
-it("fails closed on inventory errors, checksums, unowned VMs and image changes", async () => {
+it("fails closed on inventory errors, checksums, unowned VMs and image changes", { timeout: 30_000 }, async () => {
   const f = await fixture();
   expect((await f.run(f.tasks?.["dev:up"], [], { FAIL_LIST: "1" })).exitCode).toBe(27);
   await expect(access(join(f.dir, "state"))).rejects.toThrow();

@@ -131,6 +131,8 @@ else throw Error('unexpected utility '+name);
   return { root, run, dir: join(root, "var/lib/workstation-firecracker/dev") };
 }
 
+// Firecracker lifecycle tests launch hundreds of fake host-tool subprocesses.
+// A full retained-disk lifecycle can exceed 30 seconds on Intel macOS CI.
 it("reconciles once, preserves the writable disk across restart, and destroys explicitly", async () => {
   const fixture = await linuxFixture();
   const result = fixture.run("up");
@@ -147,7 +149,7 @@ it("reconciles once, preserves the writable disk across restart, and destroys ex
   expect(await readFile(join(fixture.dir, "rootfs.ext4"), "utf8")).toBe("guest application data");
   expect(fixture.run("destroy").status).toBe(0);
   expect(await readdir(join(fixture.root, "var/lib/workstation-firecracker"))).toEqual(["lock"]);
-}, 30000);
+}, 60_000);
 
 it("leaves no applied checkpoint after checksum or guest provisioning failures", async () => {
   const fixture = await linuxFixture();
@@ -160,7 +162,7 @@ it("leaves no applied checkpoint after checksum or guest provisioning failures",
   expect(await readdir(fixture.dir)).not.toContain("applied");
   const recovery = fixture.run("up");
   expect(recovery.status, recovery.stderr).toBe(0);
-}, 30000);
+}, 60_000);
 
 it("refuses rootfs replacement, externally edited units and occupied subnets", async () => {
   const fixture = await linuxFixture();
@@ -174,4 +176,4 @@ it("refuses rootfs replacement, externally edited units and occupied subnets", a
   await writeFile(unit, "external edit");
   expect(fixture.run("destroy").stderr).toContain("edited externally");
   expect(await readFile(unit, "utf8")).toBe("external edit");
-}, 30000);
+}, 60_000);

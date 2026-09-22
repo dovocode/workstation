@@ -119,7 +119,8 @@ else process.exit(99);
   return { dir, run, config, testPort, tasks: resolved.tasks, state, check: resource.operation.check };
 }
 
-it("sets up iOS once, selects its UDID, retains data and destroys only its device", async () => {
+// Full lifecycle tests launch many real subprocesses; allow for slower shared CI runners.
+it("sets up iOS once, selects its UDID, retains data and destroys only its device", { timeout: 30_000 }, async () => {
   const f = await fixture("ios");
   expect((await f.run(f.check)).exitCode).toBe(1);
   await expect(access(join(f.dir, ".local"))).rejects.toThrow();
@@ -142,7 +143,7 @@ it("sets up iOS once, selects its UDID, retains data and destroys only its devic
   expect((await f.run(f.tasks["phone:destroy"])).exitCode).toBe(0);
 });
 
-it("installs Android packages, retains AVD data, resizes while stopped and targets literal commands", async () => {
+it("installs Android packages, retains AVD data, resizes while stopped and targets literal commands", { timeout: 30_000 }, async () => {
   const f = await fixture("android");
   expect((await f.run(f.check)).exitCode).toBe(1);
   const failed = await f.run(f.tasks["phone:setup"], [], { FAIL_SDK: "1" }); expect(failed.exitCode).toBe(31);
@@ -167,7 +168,7 @@ it("installs Android packages, retains AVD data, resizes while stopped and targe
   expect((await f.run(changed?.["phone:destroy"])).exitCode).toBe(0);
 });
 
-it("fails closed on simulator inventory failures, external identity changes and Android port collisions", async () => {
+it("fails closed on simulator inventory failures, external identity changes and Android port collisions", { timeout: 30_000 }, async () => {
   const i = await fixture("ios");
   expect((await i.run(i.tasks["phone:setup"], [], { FAIL_LIST: "1" })).exitCode).toBe(29);
   await expect(access(join(i.dir, "device.json"))).rejects.toThrow();
@@ -189,7 +190,7 @@ it("dispatches mobile tasks through the embedded client", async () => {
   expect((await client.task("phone:install", ["/tmp/app.app"])).exitCode).toBe(0);
 });
 
-it("starts a stopped Android emulator and verifies boot readiness", async () => {
+it("starts a stopped Android emulator and verifies boot readiness", { timeout: 30_000 }, async () => {
   const f = await fixture("android");
   const result = await f.run(f.tasks["phone:up"]);
   expect(result.exitCode, result.stderr).toBe(0);
@@ -198,7 +199,7 @@ it("starts a stopped Android emulator and verifies boot readiness", async () => 
   expect((await f.run(f.tasks["phone:stop"])).exitCode).toBe(0);
 });
 
-it("rejects redirected Android data paths and changed ports before deletion", async () => {
+it("rejects redirected Android data paths and changed ports before deletion", { timeout: 30_000 }, async () => {
   const f = await fixture("android");
   expect((await f.run(f.tasks["phone:setup"])).exitCode).toBe(0);
   expect((await f.run((await f.config(false, f.testPort === 5554 ? 5556 : 5554)).tasks?.["phone:destroy"])).stderr).toContain("original SDK");

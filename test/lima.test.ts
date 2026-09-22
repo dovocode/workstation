@@ -45,7 +45,8 @@ it("validates declarations without touching the host", async () => {
   await expect(resolveConfig(lima.vm("code", f.options), { ...context, platform: "linux" })).rejects.toThrow("macOS");
 });
 
-it("creates a sparse external disk, attaches it without copying and retains it across starts/stops", async () => {
+// Full lifecycle tests launch many real subprocesses; allow for slower shared CI runners.
+it("creates a sparse external disk, attaches it without copying and retains it across starts/stops", { timeout: 30_000 }, async () => {
   const f = await fixture(); const tasks = (await f.config()).tasks;
   expect(f.run(tasks?.["code:status"]).status).not.toBe(0);
   await expect(access(join(f.root, ".local"))).rejects.toThrow();
@@ -64,7 +65,7 @@ it("creates a sparse external disk, attaches it without copying and retains it a
   expect(exec.status).toBe(17); expect(JSON.parse(exec.stdout)).toEqual(["literal $(id)", "two words"]);
 });
 
-it("preserves unmanaged files and refuses changed disk identity or configuration", async () => {
+it("preserves unmanaged files and refuses changed disk identity or configuration", { timeout: 30_000 }, async () => {
   const f = await fixture(); const tasks = (await f.config()).tasks;
   await writeFile(f.disk, "existing data");
   expect(f.run(tasks?.["code:up"]).stderr).toContain("Refusing to adopt");
@@ -80,7 +81,7 @@ it("preserves unmanaged files and refuses changed disk identity or configuration
   expect(f.run(tasks?.["code:up"]).stderr).toContain("configuration changed");
 });
 
-it("does not checkpoint failed guest setup and retries against the same disk", async () => {
+it("does not checkpoint failed guest setup and retries against the same disk", { timeout: 30_000 }, async () => {
   const f = await fixture(); const tasks = (await f.config()).tasks;
   expect(f.run(tasks?.["code:up"], [], { FAIL_GUEST: "1" }).status).toBe(23);
   const ino = (await stat(f.disk)).ino;
@@ -100,7 +101,7 @@ it("refuses to fabricate a missing parent volume", async () => {
   await expect(access(join(f.root, "absent"))).rejects.toThrow();
 });
 
-it("rejects foreign registry entries and disk replacements without starting the VM", async () => {
+it("rejects foreign registry entries and disk replacements without starting the VM", { timeout: 30_000 }, async () => {
   const f = await fixture(); const tasks = (await f.config()).tasks;
   const result = f.run(tasks?.["code:up"]); expect(result.status, result.stderr).toBe(0);
   const calls = await readFile(join(f.root, "calls"), "utf8");
@@ -111,7 +112,7 @@ it("rejects foreign registry entries and disk replacements without starting the 
 });
 
 
-it("rejects filesystem migrations before CLI calls but allows compression tuning", async () => {
+it("rejects filesystem migrations before CLI calls but allows compression tuning", { timeout: 30_000 }, async () => {
   const f = await fixture();
   const dataDisk = { path: f.disk, sizeGiB: 1 };
   const original = await f.config({ dataDisk: { ...dataDisk, storage: { filesystem: "btrfs", mountPoint: "/code" } } });

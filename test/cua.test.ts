@@ -71,7 +71,8 @@ it("preserves literal guest arguments, appended task arguments, output and exit 
   expect(log).not.toContain("destroy");
 });
 
-it("controls the named desktop and saves screenshots without replacing existing files", async () => {
+// Full lifecycle tests launch many real subprocesses; allow for slower shared CI runners.
+it("controls the named desktop and saves screenshots without replacing existing files", { timeout: 30_000 }, async () => {
   const f = await fixture();
   const output = join(f.dir, "screen.png");
   for (const declaration of [cua.click("desktop", 10, 20), cua.type("desktop", "hello ' $(world)\n"), cua.key("desktop", ["ctrl", "a"]), cua.scroll("desktop", 10, 20, 0, -3), cua.screenshot("desktop", output)]) {
