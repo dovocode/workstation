@@ -21,7 +21,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category", label: "5. Automate & integrate",
-      items: ["tasks", "environments", "embedding"],
+      items: ["tasks", "environments", "microvm", "lima", "mobile", "firecracker", "cua", "embedding"],
     },
     {
       type: "category", label: "Reference & contributing",

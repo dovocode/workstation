@@ -1,5 +1,6 @@
 import { task } from "./tasks.js";
 import type { TaskDefinition } from "./types.js";
+import { managedMicrosandbox } from "./microsandbox.js";
 
 /** Host-side task settings; environment values are not implicitly forwarded into guests. */
 export type EnvironmentTaskOptions = Omit<TaskDefinition, "command" | "args">;
@@ -21,7 +22,7 @@ export interface NestedWorkstationOptions {
 }
 
 /** Construct a literal nested invocation shared by all runtime adapters. */
-function nestedCommand(options: NestedWorkstationOptions): [string, ...string[]] {
+export function nestedCommand(options: NestedWorkstationOptions): [string, ...string[]] {
   return [positional(options.executable ?? "workstation", "guest executable"), options.plan ? "plan" : "build",
     "--config", positional(options.config, "guest configuration"),
     ...(options.machine === undefined ? [] : ["--machine", positional(options.machine, "guest machine")]),
@@ -89,6 +90,8 @@ export const sbx = {
 
 /** Microsandbox lifecycle tasks using the documented msb CLI (0.6.8 interface). */
 export const microsandbox = {
+  /** Manage a persistent microVM with pinned images and guest provisioning (msb 0.7.1). */
+  vm: managedMicrosandbox,
   /** Reconcile or plan a configuration inside an existing Microsandbox microVM. */
   workstation(name: string, guest: NestedWorkstationOptions, host?: EnvironmentTaskOptions): TaskDefinition {
     return microsandbox.exec(name, nestedCommand(guest), host);

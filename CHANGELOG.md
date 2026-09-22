@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 — 2026-09-22
+
+- Add managed Lima VZ VMs with checksum-pinned images, retained external raw disks, and configurable XFS/ext4 with optional VDO/LZ4 or Btrfs native compression. Reject implicit disk and filesystem migrations.
+
+- Add managed Android emulator and iOS Simulator setup, with SDK package/runtime installation, explicit boot and shutdown, app installation, device commands, retained data, and ownership-checked deletion.
+
+- Add `microvm.vm` with automatic Microsandbox/macOS and Firecracker/Linux mapping, shared lifecycle tasks and guest provisioning, explicit backend overrides, and retained disks. Add managed `microsandbox.vm` with digest-pinned OCI images and ownership checks.
+
+- Add managed Firecracker microVM configuration with checksum-pinned downloads, persistent guest disks, TAP/NAT networking, systemd lifecycle, and guest Workstation provisioning. Run natively on Linux or through Lima/Orb on macOS, with KVM capability checks and explicit data deletion.
+- Add Cua local sandbox lifecycle and computer-use tasks, with named SDK connections, literal guest commands, screenshots, mouse/keyboard control, and nested Workstation execution.
 
 ## 0.6.3 — 2026-09-13
 

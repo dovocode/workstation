@@ -156,6 +156,10 @@ and guides for both the CLI and TypeScript API.
 - [Embedded API](docs/embedding.md): integration, custom runners, and isolated tests.
 - [Troubleshooting](docs/troubleshooting.md): symptoms, diagnostics, and recovery steps.
 - [Docker, Docker Sandboxes, and Microsandbox task integration](docs/environments.md)
+- [Managed Android emulators and iOS simulators](docs/mobile.md)
+- [Portable managed microVMs: Microsandbox on macOS, Firecracker on Linux](docs/microvm.md)
+- [Managed Firecracker microVMs on Linux and macOS (Lima/Orb)](docs/firecracker.md)
+- [Cua local sandboxes and computer-use tasks](docs/cua.md)
 
 ### Use inside a TypeScript codebase
 

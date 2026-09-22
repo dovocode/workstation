@@ -5,8 +5,15 @@ sidebar_label: "Containers & sandboxes"
 
 # Docker, Docker Sandboxes, and Microsandbox
 
+For reconciled Microsandbox/Firecracker VMs with one declaration, persistent disks,
+and guest provisioning, see [Portable managed microVMs](microvm.md).
+For Firecracker-specific networking and execution hosts, see [Firecracker microVMs](firecracker.md).
+For native mobile development devices, see [Android emulators and iOS simulators](mobile.md).
+For desktop sandboxes and screenshot, mouse, and keyboard tasks, see
+[Cua sandboxes and computer use](cua.md).
+
 Workstation provides typed lifecycle **task helpers** for Docker containers,
-Compose projects, Docker Sandboxes (`sbx`), and Microsandbox (`msb`). These helpers
+Compose projects, Docker Sandboxes (`sbx`), and Microsandbox (`msb`). The task helpers below
 work in configuration files and inline embedded clients. They are explicit command
 operations, not reconciled resources: `build`, `plan`, package locks, status and
 rollback do not track their lifecycle. Creating an existing name may fail; no
