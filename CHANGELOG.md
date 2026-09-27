@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1 — 2026-09-28
+
+- Add `lima.vm`'s optional `userHome` setting for explicit guest homes such as `/home/dominic`. Preserve Lima defaults when omitted and reject implicit home migrations for existing VMs.
+
 ## 0.7.0 — 2026-09-22
 
 - Add managed Lima VZ VMs with checksum-pinned images, retained external raw disks, and configurable XFS/ext4 with optional VDO/LZ4 or Btrfs native compression. Reject implicit disk and filesystem migrations.

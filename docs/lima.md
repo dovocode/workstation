@@ -20,6 +20,7 @@ export default lima.vm("code", {
     sha256: "<verified 64-character SHA-256>",
     architecture: "aarch64",
   },
+  userHome: "/home/dominic",
   cpus: 4,
   memoryGiB: 8,
   bootDiskGiB: 32,
@@ -32,6 +33,12 @@ export default lima.vm("code", {
   },
 });
 ```
+
+`userHome` sets the guest login home, independently of the host home. Omit it
+to preserve Lima defaults. Use an absolute non-root path containing letters,
+digits, underscores, hyphens and directory separators. Changing it on an existing
+VM requires an explicit migration of the account, files, Lima configuration and
+Workstation ownership record; it never moves or replaces user data automatically.
 
 The example requires real image metadata. Managed storage installs Ubuntu/Debian
 packages and persists the mount in `/etc/fstab`. VDO requires the guest's

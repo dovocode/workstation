@@ -9,6 +9,8 @@ import { renderStorage, storageLayout, validateStorage, type LimaStorageOptions 
 
 /** A dedicated macOS VZ VM with one persistent, externally located raw data disk. */
 export interface LimaVmOptions {
+  /** Guest login home. Omit to retain Lima defaults. Existing VMs require an explicit migration. */
+  readonly userHome?: string;
   readonly image: { readonly url: string; readonly sha256: string; readonly architecture: "aarch64" | "x86_64" };
   readonly cpus?: number;
   readonly memoryGiB?: number;
@@ -32,6 +34,7 @@ function validate(name: string, options: LimaVmOptions): void {
   if (!["aarch64", "x86_64"].includes(options.image.architecture)) throw new Error("Invalid Lima architecture");
   validateVmCapacity("Lima", [["cpus", options.cpus ?? 4, 64], ["memoryGiB", options.memoryGiB ?? 8, 1024], ["bootDiskGiB", options.bootDiskGiB ?? 32, 65536], ["dataDisk.sizeGiB", options.dataDisk.sizeGiB, 65536]]);
   if (!isAbsolute(options.dataDisk.path) || /[\0\r\n]/.test(options.dataDisk.path)) throw new Error("Lima data disk needs an absolute path");
+  if (options.userHome !== undefined && !/^\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+$/.test(options.userHome)) throw new Error("Lima userHome must be an absolute non-root path without spaces");
   if (options.guestScript !== undefined && (!options.guestScript.trim() || options.guestScript.includes("\0"))) throw new Error("Invalid Lima guest script");
   if (!options.dataDisk.storage && !options.guestScript) throw new Error("Lima requires storage settings or a guest script");
   if (options.dataDisk.storage) validateStorage(options.dataDisk.storage, options.dataDisk.sizeGiB);
@@ -55,6 +58,7 @@ export const lima = {
         images: [{ location: options.image.url, arch: options.image.architecture, digest: `sha256:${options.image.sha256}` }],
         mounts: [], containerd: { user: false, system: false },
         additionalDisks: [{ name: diskName, format: false }],
+        ...(options.userHome !== undefined ? { user: { home: options.userHome } } : {}),
       };
       const owner = createHash("sha256").update(`${context.configDir}\0${context.machine}\0${name}`).digest("hex");
       const payload = JSON.stringify({ name, diskName, config, owner, path: options.dataDisk.path,

@@ -54,6 +54,7 @@ it("creates a sparse external disk, attaches it without copying and retains it a
   const initial = await stat(f.disk); expect(initial.size).toBe(1024 ** 3);
   expect(initial.blocks * 512).toBeLessThan(1024 ** 2);
   const yaml = JSON.parse(await readFile(join(f.root, ".lima/code/lima.yaml"), "utf8"));
+  expect(yaml.user).toBeUndefined();
   expect(yaml.plain).toBe(true); expect(yaml.additionalDisks).toEqual([{ name: "ws-code", format: false }]);
   expect((await stat(join(f.root, ".lima/_disks/ws-code/datadisk"))).ino).toBe(initial.ino);
   expect(f.run(tasks?.["code:stop"]).status).toBe(0);
@@ -127,4 +128,23 @@ it("rejects filesystem migrations before CLI calls but allows compression tuning
   const result = f.run(tuned.tasks?.["code:provision"]);
   expect(result.status, result.stderr).toBe(0);
   expect((await stat(f.disk)).ino).toBe(inode);
+});
+
+
+it("sets the guest home and rejects implicit home migrations before CLI calls", { timeout: 30_000 }, async () => {
+  const f = await fixture();
+  for (const userHome of ["/", "relative", "/home/../root", "/home/with space", "/home/user\n", "/home/user\0"]) {
+    expect(() => lima.vm("code", { ...f.options, userHome })).toThrow("userHome");
+  }
+  const original = await f.config({ userHome: "/home/dominic" });
+  const created = f.run(original.tasks?.["code:up"]);
+  expect(created.status, created.stderr).toBe(0);
+  const yaml = JSON.parse(await readFile(join(f.root, ".lima/code/lima.yaml"), "utf8"));
+  expect(yaml.user).toEqual({ home: "/home/dominic" });
+  const calls = await readFile(join(f.root, "calls"), "utf8");
+  for (const userHome of ["/home/other", undefined]) {
+    const changed = await f.config(userHome === undefined ? {} : { userHome });
+    expect(f.run(changed.tasks?.["code:up"]).stderr).toContain("explicit migration");
+    expect(await readFile(join(f.root, "calls"), "utf8")).toBe(calls);
+  }
 });
