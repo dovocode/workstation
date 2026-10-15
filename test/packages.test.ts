@@ -103,6 +103,23 @@ describe("package backends", () => {
     expect(runner.calls).toHaveLength(3);
   });
 
+  it.each([
+    ["1.7.3", "1.7.3", true],
+    ["1.6.1", "1.6.1", false],
+    [null, "1.7.3", true],
+    ["", "1.7.3", true],
+  ])("selects the active Homebrew keg when linked_keg=%s", async (linked_keg, installedVersion, matches) => {
+    const runner = new RecordingRunner([
+      { exitCode: 0, stdout: "idb-companion", stderr: "" },
+      { exitCode: 0, stderr: "", stdout: JSON.stringify({ formulae: [{
+        installed: [{ version: "1.6.1" }, { version: "1.7.3" }], linked_keg,
+      }] }) },
+    ]);
+    await expect(inspectResource({ kind: "package", manager: "brew", name: "facebook/fb/idb-companion", lockedVersion: "1.7.3" }, runner))
+      .resolves.toMatchObject({ present: true, matches, installedVersion });
+    expect(runner.calls.map(call => call.args[0])).toEqual(["list", "info"]);
+  });
+
   it("uses the same Homebrew formula revision for locking and installed-version checks", async () => {
     const info = {
       exitCode: 0, stderr: "",

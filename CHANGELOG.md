@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2 — 2026-10-15
+
+- Detect the active Homebrew formula version from the linked keg when older kegs remain installed. For keg-only or unlinked formulae, recognize an installed pinned version instead of repeatedly attempting an upgrade.
+
 ## 0.7.1 — 2026-09-28
 
 - Add `lima.vm`'s optional `userHome` setting for explicit guest homes such as `/home/dominic`. Preserve Lima defaults when omitted and reject implicit home migrations for existing VMs.

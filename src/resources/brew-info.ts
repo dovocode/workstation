@@ -11,11 +11,16 @@ export async function readInstalledBrewVersion(
   const installed = item.installed;
   if (typeof installed === "string") return installed;
   if (Array.isArray(installed)) {
-    const value = installed[0];
-    if (typeof value === "string") return value;
-    if (typeof value === "object" && value !== null && "version" in value) {
-      return typeof value.version === "string" ? value.version : undefined;
+    const versions = installed.flatMap((value: unknown) => {
+      if (typeof value === "string") return [value];
+      return isRecord(value) && typeof value.version === "string" ? [value.version] : [];
+    });
+    // Formula metadata retains old kegs after upgrades. The linked keg is active;
+    // keg-only/unlinked formulae can satisfy a pin with any installed keg.
+    if (resource.manager === "brew" && typeof item.linked_keg === "string" && item.linked_keg) {
+      return versions.find(version => version === item.linked_keg);
     }
+    return versions.find(version => version === resource.lockedVersion) ?? versions[0];
   }
   return undefined;
 }
