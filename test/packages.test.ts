@@ -54,7 +54,21 @@ describe("package backends", () => {
     expect(runner.calls).toHaveLength(1);
   });
 
-  it.each([["node", "lts"], ["npm:t3", "0.0.40"], ["npm:t3", "^0.0.40"]])("keeps %s@%s on mise resolution", async (name, version) => {
+  it.each(["zoekt", "zoekt-git-index"])("keeps the exact Go pseudo-version for %s", async (binary) => {
+    const name = `go:github.com/sourcegraph/zoekt/cmd/${binary}`;
+    const version = "0.0.0-20261120203655-b55ce727df8c";
+    const runner = new RecordingRunner([]);
+
+    await expect(resolvePackageVersion({ kind: "package", manager: "mise", name, version }, runner)).resolves.toBe(version);
+    expect(runner.calls).toEqual([]);
+  });
+
+  it.each([
+    ["node", "lts"],
+    ["npm:t3", "0.0.40"],
+    ["npm:t3", "^0.0.40"],
+    ["go:github.com/sourcegraph/zoekt/cmd/zoekt", "latest"],
+  ])("keeps %s@%s on mise resolution", async (name, version) => {
     const runner = new RecordingRunner([{ exitCode: 0, stdout: "1.2.3\n", stderr: "" }]);
     expect(await resolvePackageVersion({ kind: "package", manager: "mise", name, version }, runner)).toBe("1.2.3");
     expect(runner.calls).toEqual([{ command: "mise", args: ["latest", `${name}@${version}`] }]);

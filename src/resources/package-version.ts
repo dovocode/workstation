@@ -1,6 +1,6 @@
 import { readAvailableBrewVersion } from "./brew-info.js";
 import { requireSuccess } from "./shared.js";
-import type { ResolvedResource, Runner } from "../api/types.js";
+import type { ResolvedPackageResource, ResolvedResource, Runner } from "../api/types.js";
 import { resolveRpmVersion } from "./rpm.js";
 import { resolvePacmanVersion } from "./pacman.js";
 import { npmDistTagSpec, resolveNpmDistTag } from "./npm.js";
@@ -13,15 +13,8 @@ export async function resolvePackageVersion(
 ): Promise<string | undefined> {
   if (resource.kind !== "package") return undefined;
   switch (resource.manager) {
-    case "mise": {
-      const npmSpec = npmDistTagSpec(resource);
-      if (npmSpec) return await resolveNpmDistTag(npmSpec, runner);
-      const spec = `${resource.name}@${resource.version ?? "latest"}`;
-      const result = await requireSuccess(runner, "mise", ["latest", spec]);
-      const version = result.stdout.trim().split(/\s+/).at(-1);
-      if (!version) throw new Error(`mise latest ${spec} did not report a version`);
-      return version;
-    }
+    case "mise":
+      return await resolveMiseVersion(resource, runner);
     case "apt": {
       const result = await requireSuccess(runner, "apt-cache", ["policy", resource.name]);
       const candidate = /^\s*Candidate:\s*(\S+)\s*$/m.exec(result.stdout)?.[1];
@@ -47,4 +40,19 @@ export async function resolvePackageVersion(
     case "mas":
       return undefined;
   }
+}
+
+/** Keep exact Go pins that Mise can install even when its remote listing omits them. */
+async function resolveMiseVersion(resource: ResolvedPackageResource, runner: Runner): Promise<string> {
+  const npmSpec = npmDistTagSpec(resource);
+  if (npmSpec) return await resolveNpmDistTag(npmSpec, runner);
+  const selector = resource.version ?? "latest";
+  if (resource.name.startsWith("go:") && /^0\.0\.0-\d{14}-[a-f0-9]{12}$/.test(selector)) {
+    return selector;
+  }
+  const spec = `${resource.name}@${selector}`;
+  const result = await requireSuccess(runner, "mise", ["latest", spec]);
+  const version = result.stdout.trim().split(/\s+/).at(-1);
+  if (!version) throw new Error(`mise latest ${spec} did not report a version`);
+  return version;
 }

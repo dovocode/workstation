@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Keep exact untagged Go pseudo-versions pinned during Mise lock refreshes, so tools such as Zoekt upgrade even when `mise latest` cannot resolve their pinned revisions.
+
 ## 0.7.2 — 2026-10-15
 
 - Detect the active Homebrew formula version from the linked keg when older kegs remain installed. For keg-only or unlinked formulae, recognize an installed pinned version instead of repeatedly attempting an upgrade.
