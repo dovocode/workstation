@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.7.3 — 2026-11-26
 
 - Keep exact untagged Go pseudo-versions pinned during Mise lock refreshes, so tools such as Zoekt upgrade even when `mise latest` cannot resolve their pinned revisions.
 
